@@ -408,12 +408,16 @@ class Pedidos extends BaseController
 		$data = [];
 
 		foreach ($pedidos as $pedido) {
+			// Limpar e formatar o número de telefone para WhatsApp
+			$telefone_limpo = $this->limparTelefone($pedido->telefone);
+			$whatsapp_link = $telefone_limpo ? "https://wa.me/55" . $telefone_limpo : $pedido->telefone;
+			
 			$data[] = [
 
 				'cod_pedido' => anchor("pedidos/ingressos/" . $pedido->id, esc($pedido->cod_pedido), 'title="Exibir usuário ' . esc($pedido->cod_pedido) . ' "'),
 				'nome' => esc($pedido->nome),
 				'email' => esc($pedido->email),
-				'telefone' => esc($pedido->telefone),
+				'telefone' => $telefone_limpo ? anchor($whatsapp_link, esc($pedido->telefone), 'target="_blank" title="Abrir WhatsApp"') : esc($pedido->telefone),
 				'status' => esc($pedido->status),
 				'cinemark' => esc($pedido->cinemark),
 				'frete' => $pedido->frete,
@@ -441,12 +445,16 @@ class Pedidos extends BaseController
 		$data = [];
 
 		foreach ($pedidos as $pedido) {
+			// Limpar e formatar o número de telefone para WhatsApp
+			$telefone_limpo = $this->limparTelefone($pedido->telefone);
+			$whatsapp_link = $telefone_limpo ? "https://wa.me/55" . $telefone_limpo : $pedido->telefone;
+			
 			$data[] = [
 
 				'cod_pedido' => anchor("pedidos/ingressos/" . $pedido->id, esc($pedido->cod_pedido), 'title="Exibir usuário ' . esc($pedido->cod_pedido) . ' "'),
 				'nome' => esc($pedido->nome),
 				'email' => esc($pedido->email),
-				'telefone' => esc($pedido->telefone),
+				'telefone' => $telefone_limpo ? anchor($whatsapp_link, esc($pedido->telefone), 'target="_blank" title="Abrir WhatsApp"') : esc($pedido->telefone),
 				'status' => esc($pedido->status),
 				'cinemark' => esc($pedido->cinemark),
 				'frete' => $pedido->frete,
@@ -1002,5 +1010,33 @@ class Pedidos extends BaseController
 			->update();
 
 		return redirect()->to(site_url("pedidos/recompra/"))->with('sucesso', "Pedido revertido!");
+	}
+
+	/**
+	 * Método para limpar e formatar número de telefone para WhatsApp
+	 *
+	 * @param string $telefone
+	 * @return string|null
+	 */
+	private function limparTelefone($telefone)
+	{
+		if (empty($telefone)) {
+			return null;
+		}
+
+		// Remove todos os caracteres não numéricos
+		$telefone_limpo = preg_replace('/[^0-9]/', '', $telefone);
+
+		// Se o número começa com 0, remove o 0
+		if (strlen($telefone_limpo) > 10 && substr($telefone_limpo, 0, 1) === '0') {
+			$telefone_limpo = substr($telefone_limpo, 1);
+		}
+
+		// Verifica se o número tem pelo menos 10 dígitos (DDD + número)
+		if (strlen($telefone_limpo) >= 10) {
+			return $telefone_limpo;
+		}
+
+		return null;
 	}
 }
