@@ -1330,7 +1330,7 @@ class Checkout extends BaseController
 					'estado' => $post['estado'],
 				]);
 
-				$this->enviaEmailPedidoCartao($cliente);
+				$this->enviaEmailPedidoCartao($cliente, $event_id);
 
 				if (in_array($status, ['CONFIRMED', 'RECEIVED'])) {
 					unset($_SESSION['carrinho']);
@@ -1470,7 +1470,7 @@ class Checkout extends BaseController
 				'copiaecola' => $transaction['payload'],
 				'expire_at' => strtotime($transaction['expirationDate']),
 				'valor' => $payment['value']
-			]);
+			], $event_id);
 
 			unset($_SESSION['carrinho']);
 
@@ -1695,7 +1695,7 @@ class Checkout extends BaseController
 		];
 
 
-		$this->enviaEmailCortesia((object)$montaemail);
+		$this->enviaEmailCortesia((object)$montaemail, 17);
 
 
 
@@ -1783,7 +1783,7 @@ class Checkout extends BaseController
 		$this->ingressoModel->skipValidation(true)->protect(false)->insert($ingressos);
 
 
-		$this->enviaEmailPedido($cliente);
+		$this->enviaEmailPedido($cliente, $event_id);
 
 		return redirect()->to(site_url("ingressos"))->with('sucesso', "Seu ingresso foi gerado com sucesso! Apresente seu cartão na bilheteria do evento para garantir seu acesso.");
 	}
@@ -1924,7 +1924,7 @@ class Checkout extends BaseController
 		return $transaction;
 	}
 
-	private function enviaEmailPedido(object $cliente): void
+	private function enviaEmailPedido(object $cliente, int $event_id = null): void
 	{
 		$email = service('email');
 
@@ -1934,8 +1934,15 @@ class Checkout extends BaseController
 
 		$email->setSubject('Pedido realizado com sucesso!');
 
+		// Buscar dados do evento se o event_id foi fornecido
+		$evento = null;
+		if ($event_id) {
+			$evento = $this->eventoModel->find($event_id);
+		}
+
 		$data = [
 			'cliente' => $cliente,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Pedidos/email_pedido', $data);
@@ -1945,7 +1952,7 @@ class Checkout extends BaseController
 		$email->send();
 	}
 
-	private function enviaEmailCortesia(object $cliente): void
+	private function enviaEmailCortesia(object $cliente, int $event_id = null): void
 	{
 		$email = service('email');
 
@@ -1955,8 +1962,15 @@ class Checkout extends BaseController
 
 		$email->setSubject('Seus ingressos CORTESIA estão disponíveis!');
 
+		// Buscar dados do evento se o event_id foi fornecido
+		$evento = null;
+		if ($event_id) {
+			$evento = $this->eventoModel->find($event_id);
+		}
+
 		$data = [
 			'cliente' => $cliente,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Pedidos/email_cortesia', $data);
@@ -1967,7 +1981,7 @@ class Checkout extends BaseController
 	}
 
 
-	private function enviaEmailPedidoCartao(object $cliente): void
+	private function enviaEmailPedidoCartao(object $cliente, int $event_id = null): void
 	{
 		$email = service('email');
 
@@ -1977,8 +1991,15 @@ class Checkout extends BaseController
 
 		$email->setSubject('Pedido realizado com sucesso!');
 
+		// Buscar dados do evento se o event_id foi fornecido
+		$evento = null;
+		if ($event_id) {
+			$evento = $this->eventoModel->find($event_id);
+		}
+
 		$data = [
 			'cliente' => $cliente,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Pedidos/email_pedido_cartao', $data);
@@ -2032,12 +2053,14 @@ class Checkout extends BaseController
 			->set('status', 'paid')
 			->update();
 
-		$this->enviaEmailPaid($cliente);
+		// Buscar o evento_id do pedido
+		$pedido = $this->pedidoModel->find($pedido_id);
+		$this->enviaEmailPaid($cliente, $pedido->evento_id);
 
 		return redirect()->back()->with('info', "Alterado com sucesso!");
 	}
 
-	private function enviaEmailPaid(object $cliente): void
+	private function enviaEmailPaid(object $cliente, int $event_id = null): void
 	{
 		$email = service('email');
 
@@ -2047,8 +2070,15 @@ class Checkout extends BaseController
 
 		$email->setSubject('Olá, seus ingressos já estão disponíveis!');
 
+		// Buscar dados do evento se o event_id foi fornecido
+		$evento = null;
+		if ($event_id) {
+			$evento = $this->eventoModel->find($event_id);
+		}
+
 		$data = [
 			'cliente' => $cliente,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Pedidos/email_paid', $data);

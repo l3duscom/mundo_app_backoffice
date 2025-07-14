@@ -22,7 +22,6 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <h4 class="mb-0">Concursos do Evento: <strong><?= esc($evento->nome) ?></strong></h4>
-                    <small class="text-muted">ID: <?= $event_id ?></small>
                 </div>
                 <div>
                     <a href="<?= site_url('/') ?>" class="btn btn-outline-secondary btn-sm">
@@ -37,11 +36,6 @@
 <div class="row">
 
 
-    <!--breadcrumb-->
-    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-        <div class="breadcrumb-title pe-3">Concursos</strong></div>
-
-    </div>
 
     <!--end breadcrumb-->
     <div class="ms-auto">

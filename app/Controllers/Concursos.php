@@ -46,7 +46,7 @@ class Concursos extends BaseController
 		$this->notifyService = new \App\Services\NotifyService();
 	}
 
-	    public function index(int $event_id = null)
+	    public function index(int $event_id)
     {
 
         if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
@@ -1151,14 +1151,20 @@ class Concursos extends BaseController
 
 		$email->setTo($cliente->email);
 
-
-
 		$email->setSubject('Sua Inscrição para o ' . $concurso->nome . ' foi aprovada!');
+
+		// Buscar dados do evento se disponível
+		$evento = null;
+		if ($concurso->evento_id) {
+			$eventoModel = new \App\Models\EventoModel();
+			$evento = $eventoModel->find($concurso->evento_id);
+		}
 
 		$data = [
 			'cliente' => $cliente,
 			'inscricao' => $inscricao,
 			'concurso' => $concurso,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Concursos/email_aprovado', $data);
@@ -1284,14 +1290,20 @@ class Concursos extends BaseController
 
 		$email->setTo($cliente->email);
 
-
-
 		$email->setSubject('Sua Inscrição para o ' . $concurso->nome . ' foi rejeitada!');
+
+		// Buscar dados do evento se disponível
+		$evento = null;
+		if ($concurso->evento_id) {
+			$eventoModel = new \App\Models\EventoModel();
+			$evento = $eventoModel->find($concurso->evento_id);
+		}
 
 		$data = [
 			'cliente' => $cliente,
 			'inscricao' => $inscricao,
 			'concurso' => $concurso,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Concursos/email_rejeitado', $data);
@@ -1311,10 +1323,18 @@ class Concursos extends BaseController
 
 		$email->setSubject('Sua Inscrição para o ' . $concurso->nome . ' foi CANCELADA!');
 
+		// Buscar dados do evento se disponível
+		$evento = null;
+		if ($concurso->evento_id) {
+			$eventoModel = new \App\Models\EventoModel();
+			$evento = $eventoModel->find($concurso->evento_id);
+		}
+
 		$data = [
 			'cliente' => $cliente,
 			'inscricao' => $inscricao,
 			'concurso' => $concurso,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Concursos/email_cancelada', $data);
@@ -1451,10 +1471,18 @@ class Concursos extends BaseController
 
 		$email->setSubject('Checkin para o ' . $concurso->nome . ' realizado com sucesso!');
 
+		// Buscar dados do evento se disponível
+		$evento = null;
+		if ($concurso->evento_id) {
+			$eventoModel = new \App\Models\EventoModel();
+			$evento = $eventoModel->find($concurso->evento_id);
+		}
+
 		$data = [
 			'cliente' => $cliente,
 			'inscricao' => $inscricao,
 			'concurso' => $concurso,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Concursos/email_checkin', $data);
@@ -1474,10 +1502,18 @@ class Concursos extends BaseController
 
 		$email->setSubject('Checkin para o ' . $concurso->nome . ' realizado com sucesso!');
 
+		// Buscar dados do evento se disponível
+		$evento = null;
+		if ($concurso->evento_id) {
+			$eventoModel = new \App\Models\EventoModel();
+			$evento = $eventoModel->find($concurso->evento_id);
+		}
+
 		$data = [
 			'cliente' => $cliente,
 			'inscricao' => $inscricao,
 			'concurso' => $concurso,
+			'evento' => $evento,
 		];
 
 		$mensagem = view('Concursos/email_checkin_online', $data);
