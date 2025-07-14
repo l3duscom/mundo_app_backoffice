@@ -210,12 +210,64 @@ if (isset($event_id)) {
 
 
                         <!-- Tab links -->
+                        <?php
+                        $tem_epic = false;
+                        $tem_vip = false;
+                        foreach ($items as $item) {
+                            if (isset($item['categoria'])) {
+                                if (strtolower($item['categoria']) === 'epic') $tem_epic = true;
+                                if (strtolower($item['categoria']) === 'vip') $tem_vip = true;
+                            }
+                        }
+                        ?>
                         <div class="tab">
-                            <button class="tablinks" onclick="openCategoria(event, 'sabado')" id="defaultOpen">Sábado<p class="mb-0" style="font-size: 11px">6 de dezembro</p></button>
-                            <button class="tablinks" onclick="openCategoria(event, 'domingo')">Domingo<p class="mb-0" style="font-size: 11px">7 de dezembro</p></button>
-                            <button class="tablinks" onclick="openCategoria(event, 'passaporte')">2 Dias<p class="mb-0" style="font-size: 11px">6,7 de dezembro</p></button>
-                            <button class="tablinks" onclick="openCategoria(event, 'epic')">EPIC PASS<p class="mb-0" style="font-size: 11px">Experiência Épica</p></button>
-                            <button class="tablinks" onclick="openCategoria(event, 'vip')">VIP FULL<p class="mb-0" style="font-size: 11px">Experiência Máxima</p></button>
+                            <button class="tablinks" onclick="openCategoria(event, 'sabado')" id="defaultOpen">Sábado<p class="mb-0" style="font-size: 11px"><?php
+                                if (isset($evento)) {
+                                    $data_inicio = date_create($evento->data_inicio);
+                                    $meses = [
+                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
+                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
+                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
+                                    ];
+                                    $dia_inicio = date_format($data_inicio, 'd');
+                                    $mes = $meses[date_format($data_inicio, 'm')];
+                                    echo "$dia_inicio de $mes";
+                                }
+                            ?></p></button>
+                            <button class="tablinks" onclick="openCategoria(event, 'domingo')">Domingo<p class="mb-0" style="font-size: 11px"><?php
+                                if (isset($evento)) {
+                                    $data_fim = date_create($evento->data_fim);
+                                    $meses = [
+                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
+                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
+                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
+                                    ];
+                                    $dia_fim = date_format($data_fim, 'd');
+                                    $mes = $meses[date_format($data_fim, 'm')];
+                                    echo "$dia_fim de $mes";
+                                }
+                            ?></p></button>
+                            <button class="tablinks" onclick="openCategoria(event, 'passaporte')">2 Dias<p class="mb-0" style="font-size: 11px"><?php
+                                if (isset($evento)) {
+                                    $data_inicio = date_create($evento->data_inicio);
+                                    $data_fim = date_create($evento->data_fim);
+                                    $meses = [
+                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
+                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
+                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
+                                    ];
+                                    $dia_inicio = date_format($data_inicio, 'd');
+                                    $dia_fim = date_format($data_fim, 'd');
+                                    $mes = $meses[date_format($data_inicio, 'm')];
+                                    echo "$dia_inicio,$dia_fim de $mes";
+                                }
+                            ?></p></button>
+                            <?php if ($tem_epic): ?>
+                                <button class="tablinks" onclick="openCategoria(event, 'epic')">EPIC PASS<p class="mb-0" style="font-size: 11px">Experiência Épica</p></button>
+                            <?php endif; ?>
+                            <?php if ($tem_vip): ?>
+                                <button class="tablinks" onclick="openCategoria(event, 'vip')">VIP FULL<p class="mb-0" style="font-size: 11px">Experiência Máxima</p></button>
+                            <?php endif; ?>
                             <button class="tablinks" onclick="openCategoria(event, 'cosplay')">Cosplayer<p class="mb-0" style="font-size: 11px">Promocional</p></button>
                         </div>
                         <div class="d-grid gap-2 mb-0" style="padding:10px">
@@ -225,15 +277,26 @@ if (isset($event_id)) {
                             </a>
                         </div>
                         <!-- Tab content -->
+                        <?php
+                        // SÁBADO
+                        $tem_sabado = false;
+                        foreach ($items as $key => $value) {
+                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab')) {
+                                $tem_sabado = true;
+                                break;
+                            }
+                        }
+                        ?>
                         <div id="sabado" class="tabcontent">
-
+                            <?php if (!$tem_sabado): ?>
+                                <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
+                            <?php endif; ?>
+                            <!-- instruções e conteúdo já existentes da aba Sábado -->
                             <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 Parte 2 - Mega Convenção Geek <strong>somente no sábado </strong>, dia 6/12/2025 das 11h às 20h</p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
-
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
-
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab') : ?>
                                     <div class="card border border-muted" data-item-id="<?= $key ?>">
@@ -268,16 +331,28 @@ if (isset($event_id)) {
                             <?php endforeach; ?>
                         </div>
 
+                        <?php
+                        // DOMINGO
+                        $tem_domingo = false;
+                        foreach ($items as $key => $value) {
+                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom')) {
+                                $tem_domingo = true;
+                                break;
+                            }
+                        }
+                        ?>
                         <div id="domingo" class="tabcontent">
+                            <?php if (!$tem_domingo): ?>
+                                <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
+                            <?php endif; ?>
+                            <!-- instruções e conteúdo já existentes da aba Domingo -->
                             <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 Parte 2 - Mega Convenção Geek <strong>somente no domingo </strong>, dia 7/12/2025 das 11h às 20h</p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
-
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
-
                             <?php foreach ($items as $key => $value) : ?>
-                                <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium')  && $value['tipo'] == 'individual' && $value['dia'] == 'dom') : ?>
+                                <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom') : ?>
                                     <div class="card border border-muted" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
@@ -312,15 +387,26 @@ if (isset($event_id)) {
                         </div>
 
 
+                        <?php
+                        // 2 DIAS
+                        $tem_passaporte = false;
+                        foreach ($items as $key => $value) {
+                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo')) {
+                                $tem_passaporte = true;
+                                break;
+                            }
+                        }
+                        ?>
                         <div id="passaporte" class="tabcontent">
-
+                            <?php if (!$tem_passaporte): ?>
+                                <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
+                            <?php endif; ?>
+                            <!-- instruções e conteúdo já existentes da aba 2 Dias -->
                             <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Convenção Geek <strong>nos dois dias de evento</strong>, das 11 às 20h</p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
-
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
-
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo') : ?>
                                     <div class="card border border-muted" data-item-id="<?= $key ?>">
@@ -357,7 +443,21 @@ if (isset($event_id)) {
                         </div>
 
 
+                        <?php
+                        // EPIC
+                        $tem_epic_ingresso = false;
+                        foreach ($items as $key => $value) {
+                            if ($value['categoria'] == 'epic') {
+                                $tem_epic_ingresso = true;
+                                break;
+                            }
+                        }
+                        ?>
                         <div id="epic" class="tabcontent">
+                            <?php if (!$tem_epic_ingresso): ?>
+                                <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
+                            <?php endif; ?>
+                            <!-- instruções e conteúdo já existentes da aba EPIC PASS -->
                             <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Convenção Geek nos dias selecionados.</p>
                             <p>Você receberá uma kit colecionável com Credencial, Pulseira, Cordão, Pôster e Guia do evento! A Credencial e Pulseira deverão ser apresentados na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#vip-fanModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a>
@@ -398,7 +498,21 @@ if (isset($event_id)) {
 
                         </div>
 
+                        <?php
+                        // VIP
+                        $tem_vip_ingresso = false;
+                        foreach ($items as $key => $value) {
+                            if ($value['categoria'] == 'vip') {
+                                $tem_vip_ingresso = true;
+                                break;
+                            }
+                        }
+                        ?>
                         <div id="vip" class="tabcontent">
+                            <?php if (!$tem_vip_ingresso): ?>
+                                <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
+                            <?php endif; ?>
+                            <!-- instruções e conteúdo já existentes da aba VIP FULL -->
                             <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Convenção Geek nos dias selecionados.</p>
                             <p>Você receberá uma kit colecionável com Credencial, Pulseira, Cordão, Pôster, Copo, Ingresso holográfico e Guia do evento! A Credencial e Pulseira deverão ser apresentados na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#vip-fullModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a>
@@ -447,7 +561,21 @@ if (isset($event_id)) {
 
                         </div>
 
+                        <?php
+                        // COSPLAY
+                        $tem_cosplay = false;
+                        foreach ($items as $key => $value) {
+                            if ($value['categoria'] == 'cosplay') {
+                                $tem_cosplay = true;
+                                break;
+                            }
+                        }
+                        ?>
                         <div id="cosplay" class="tabcontent">
+                            <?php if (!$tem_cosplay): ?>
+                                <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
+                            <?php endif; ?>
+                            <!-- instruções e conteúdo já existentes da aba Cosplayer -->
                             <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Festival Geek nos dias selecionados.</p>
                             <p>Você receberá uma pulseira colecionável COSPLAYER que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Vvocê terá direito à entrar e sair do evento sempre que quiser!</p>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#cosplayerModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a>
@@ -1329,7 +1457,7 @@ if (isset($event_id)) {
                                                 <div class="col-5 mt-4 font-20 d-flex flex-row-reverse"><strong style="font-size: 24px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 10px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 10px"></i></a></strong></div>
 
                                                 <div class="col-lg-8 col-sm-6 text-muted"><?= $value['descricao'] ?></div>
-                                                <div class="col-lg-4 col-sm-6  text-right ol-4" style="padding-left: 60px; "><span style="font-size: 12px;">R$ </span><strong style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
+                                                <div class="col-lg-4 col-sm-6  text-right ol-4" style="padding-left: 60px; "><span style="font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
                                                     <p class="text-muted" style="font-size: 12px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
                                                 </div>
                                             <?php else : ?>
