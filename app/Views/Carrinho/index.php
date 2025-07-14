@@ -2236,27 +2236,35 @@ function trackInitiateCheckout() {
 </script>
 <script>
     function openCategoria(evt, categoria) {
-        // Declare all variables
-        var i, tabcontent, tablinks;
-
-        // Get all elements with class="tabcontent" and hide them
-        tabcontent = document.getElementsByClassName("tabcontent");
-        for (i = 0; i < tabcontent.length; i++) {
+        // Esconde todas as tabcontent
+        var tabcontent = document.getElementsByClassName("tabcontent");
+        for (var i = 0; i < tabcontent.length; i++) {
             tabcontent[i].style.display = "none";
         }
-
-        // Get all elements with class="tablinks" and remove the class "active"
-        tablinks = document.getElementsByClassName("tablinks");
-        for (i = 0; i < tablinks.length; i++) {
+        // Remove a classe 'active' de todos os botões
+        var tablinks = document.getElementsByClassName("tablinks");
+        for (var i = 0; i < tablinks.length; i++) {
             tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
-
-        // Show the current tab, and add an "active" class to the button that opened the tab
+        // Mostra a aba selecionada
         document.getElementById(categoria).style.display = "block";
         evt.currentTarget.className += " active";
+        // Salva a aba selecionada no localStorage
+        localStorage.setItem('abaCarrinhoSelecionada', categoria);
     }
 
-    document.getElementById("defaultOpen").click();
+    window.addEventListener('DOMContentLoaded', function() {
+        var abaSalva = localStorage.getItem('abaCarrinhoSelecionada');
+        if (abaSalva) {
+            var btn = document.querySelector('.tab button[onclick*="' + abaSalva + '"]');
+            if (btn) {
+                btn.click();
+            }
+        } else {
+            var defaultBtn = document.getElementById('defaultOpen');
+            if (defaultBtn) defaultBtn.click();
+        }
+    });
 </script>
 
 
