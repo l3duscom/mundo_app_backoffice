@@ -27,29 +27,25 @@
 <h3>Detalhes do evento:</h3>
 <p>
     <?php if (isset($evento) && $evento): ?>
-        <strong><?= esc($evento->nome) ?></strong>
-        <?php if ($evento->data_inicio && $evento->data_fim): ?>
-            <br><?= date('d/m/Y', strtotime($evento->data_inicio)) ?> e <?= date('d/m/Y', strtotime($evento->data_fim)) ?>
-        <?php elseif ($evento->data_inicio): ?>
-            <br><?= date('d/m/Y', strtotime($evento->data_inicio)) ?>
-        <?php endif; ?>
-        <?php if ($evento->hora_inicio && $evento->hora_fim): ?>
-            das <?= $evento->hora_inicio ?> às <?= $evento->hora_fim ?>
-        <?php elseif ($evento->hora_inicio): ?>
-            às <?= $evento->hora_inicio ?>
-        <?php endif; ?>
-        <?php if ($evento->local): ?>
-            <br><?= esc($evento->local) ?>
-        <?php endif; ?>
-        <?php if ($evento->endereco): ?>
-            <br><?= esc($evento->endereco) ?><?= $evento->numero ? ', ' . esc($evento->numero) : '' ?>
-            <?php if ($evento->bairro): ?>
-                <br><?= esc($evento->bairro) ?>
-            <?php endif; ?>
-            <?php if ($evento->cidade && $evento->estado): ?>
-                <br><?= esc($evento->cidade) ?> - <?= esc($evento->estado) ?>
-            <?php endif; ?>
-        <?php endif; ?>
+        <div>
+            <strong><?= esc($evento->nome) ?></strong><br>
+            <?php
+                $data_inicio = date_create($evento->data_inicio);
+                $data_fim = date_create($evento->data_fim);
+                $meses = [
+                    '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
+                    '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
+                    '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
+                ];
+                $dia_inicio = date_format($data_inicio, 'd');
+                $dia_fim = date_format($data_fim, 'd');
+                $mes = $meses[date_format($data_inicio, 'm')];
+                $hora_inicio = substr($evento->hora_inicio, 0, 5);
+                $hora_fim = substr($evento->hora_fim, 0, 5);
+                echo "{$dia_inicio} e {$dia_fim} de {$mes} das {$hora_inicio} às {$hora_fim}<br>";
+            ?>
+            <?= esc($evento->local) ?>
+        </div>
     <?php else: ?>
         <strong>Dreamfest 25 Parte 2 - Mega Convenção Geek</strong>
         <br>6 e 7 de dezembro das 11h às 19h
