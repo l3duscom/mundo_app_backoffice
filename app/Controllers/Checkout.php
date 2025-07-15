@@ -227,6 +227,8 @@ class Checkout extends BaseController
 				$valor = $value['preco'];
 				$tipo = $value['tipo'];
 				$ticket_id = $value['ticket_id'];
+				
+				// Registra o ingresso principal
 				$ingressos = [
 					'pedido_id' => $pedido_id,
 					'user_id' => $user_id,
@@ -241,6 +243,26 @@ class Checkout extends BaseController
 
 				$this->ingressoModel->skipValidation(true)->protect(false)->insert($ingressos);
 				$ingresso_id = $this->ingressoModel->getInsertID();
+
+				// Verifica se o ticket tem tickets vinculados (parent_ticket_id)
+				$ticketsVinculados = $this->ticketModel->buscaTicketsVinculados($ticket_id);
+				
+				// Se encontrou tickets vinculados, gera ingressos para cada um
+				foreach ($ticketsVinculados as $ticketVinculado) {
+					$ingressosVinculados = [
+						'pedido_id' => $pedido_id,
+						'user_id' => $user_id,
+						'nome' => $ticketVinculado->nome,
+						'quantidade' => 1,
+						'valor_unitario' => $ticketVinculado->preco,
+						'valor' => $ticketVinculado->preco,
+						'tipo' => $ticketVinculado->tipo,
+						'ticket_id' => $ticketVinculado->id,
+						'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
+					];
+
+					$this->ingressoModel->skipValidation(true)->protect(false)->insert($ingressosVinculados);
+				}
 			}
 		}
 
@@ -773,6 +795,7 @@ class Checkout extends BaseController
 				$tipo = $value['tipo'];
 				$ticket_id = $value['ticket_id'];
 
+				// Registra o ingresso principal
 				$ingressos = [
 					'pedido_id' => $pedido_id,
 					'user_id' => $user_id,
@@ -787,6 +810,26 @@ class Checkout extends BaseController
 
 				$this->ingressoModel->skipValidation(true)->protect(false)->insert($ingressos);
 				$ingresso_id = $this->ingressoModel->getInsertID();
+
+				// Verifica se o ticket tem tickets vinculados (parent_ticket_id)
+				$ticketsVinculados = $this->ticketModel->buscaTicketsVinculados($ticket_id);
+				
+				// Se encontrou tickets vinculados, gera ingressos para cada um
+				foreach ($ticketsVinculados as $ticketVinculado) {
+					$ingressosVinculados = [
+						'pedido_id' => $pedido_id,
+						'user_id' => $user_id,
+						'nome' => $ticketVinculado->nome,
+						'quantidade' => 1,
+						'valor_unitario' => $ticketVinculado->preco,
+						'valor' => $ticketVinculado->preco,
+						'tipo' => $ticketVinculado->tipo,
+						'ticket_id' => $ticketVinculado->id,
+						'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
+					];
+
+					$this->ingressoModel->skipValidation(true)->protect(false)->insert($ingressosVinculados);
+				}
 			}
 		}
 
@@ -1090,6 +1133,7 @@ class Checkout extends BaseController
 				$tipo = $value['tipo'];
 				$ticket_id = $value['ticket_id'];
 
+				// Registra o ingresso principal
 				$ingressos = [
 					'pedido_id' => $pedido_id,
 					'user_id' => $user_id,
@@ -1104,6 +1148,26 @@ class Checkout extends BaseController
 
 				$this->ingressoModel->skipValidation(true)->protect(false)->insert($ingressos);
 				$ingresso_id = $this->ingressoModel->getInsertID();
+
+				// Verifica se o ticket tem tickets vinculados (parent_ticket_id)
+				$ticketsVinculados = $this->ticketModel->buscaTicketsVinculados($ticket_id);
+				
+				// Se encontrou tickets vinculados, gera ingressos para cada um
+				foreach ($ticketsVinculados as $ticketVinculado) {
+					$ingressosVinculados = [
+						'pedido_id' => $pedido_id,
+						'user_id' => $user_id,
+						'nome' => $ticketVinculado->nome,
+						'quantidade' => 1,
+						'valor_unitario' => $ticketVinculado->preco,
+						'valor' => $ticketVinculado->preco,
+						'tipo' => $ticketVinculado->tipo,
+						'ticket_id' => $ticketVinculado->id,
+						'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
+					];
+
+					$this->ingressoModel->skipValidation(true)->protect(false)->insert($ingressosVinculados);
+				}
 			}
 		}
 
@@ -1528,6 +1592,7 @@ class Checkout extends BaseController
 	{
 		foreach ($_SESSION['carrinho'] as $item) {
 			for ($i = 0; $i < $item['quantidade']; $i++) {
+				// Registra o ingresso principal
 				$this->ingressoModel->skipValidation(true)->protect(false)->insert([
 					'pedido_id' => $pedido_id,
 					'user_id' => $user_id,
@@ -1539,6 +1604,24 @@ class Checkout extends BaseController
 					'ticket_id' => $item['ticket_id'],
 					'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
 				]);
+
+				// Verifica se o ticket tem tickets vinculados (parent_ticket_id)
+				$ticketsVinculados = $this->ticketModel->buscaTicketsVinculados($item['ticket_id']);
+				
+				// Se encontrou tickets vinculados, gera ingressos para cada um
+				foreach ($ticketsVinculados as $ticketVinculado) {
+					$this->ingressoModel->skipValidation(true)->protect(false)->insert([
+						'pedido_id' => $pedido_id,
+						'user_id' => $user_id,
+						'nome' => $ticketVinculado->nome,
+						'quantidade' => 1,
+						'valor_unitario' => $ticketVinculado->preco,
+						'valor' => $ticketVinculado->preco,
+						'tipo' => $ticketVinculado->tipo,
+						'ticket_id' => $ticketVinculado->id,
+						'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
+					]);
+				}
 			}
 		}
 	}

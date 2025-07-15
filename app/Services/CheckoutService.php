@@ -23,6 +23,7 @@ class CheckoutService
     protected $transactionModel;
     protected $enderecoModel;
     protected $eventoModel;
+    protected $ticketModel;
     protected $asaasService;
     protected $pagarmeService;
 
@@ -34,6 +35,7 @@ class CheckoutService
         $this->transactionModel = new TransactionModel();
         $this->enderecoModel = new EnderecoModel();
         $this->eventoModel = new EventoModel();
+        $this->ticketModel = new \App\Models\TicketModel();
         $this->asaasService = new AsaasService();
         $this->pagarmeService = new PagarmeService();
     }
@@ -254,6 +256,7 @@ class CheckoutService
     {
         foreach ($_SESSION['carrinho'] as $item) {
             for ($i = 0; $i < $item['quantidade']; $i++) {
+                // Registra o ingresso principal
                 $this->ingressoModel->insert([
                     'pedido_id' => $pedido_id,
                     'user_id' => $user_id,
@@ -265,6 +268,24 @@ class CheckoutService
                     'ticket_id' => $item['ticket_id'],
                     'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso()
                 ]);
+
+                // Verifica se o ticket tem tickets vinculados (parent_ticket_id)
+                $ticketsVinculados = $this->ticketModel->buscaTicketsVinculados($item['ticket_id']);
+                
+                // Se encontrou tickets vinculados, gera ingressos para cada um
+                foreach ($ticketsVinculados as $ticketVinculado) {
+                    $this->ingressoModel->insert([
+                        'pedido_id' => $pedido_id,
+                        'user_id' => $user_id,
+                        'nome' => $ticketVinculado->nome,
+                        'quantidade' => 1,
+                        'valor_unitario' => $ticketVinculado->preco,
+                        'valor' => $ticketVinculado->preco,
+                        'tipo' => $ticketVinculado->tipo,
+                        'ticket_id' => $ticketVinculado->id,
+                        'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso()
+                    ]);
+                }
             }
         }
     }

@@ -12,6 +12,7 @@ class TicketModel extends Model
     protected $allowedFields = [
         'event_id',
         'user_id',
+        'parent_ticket_id',
         'nome',
         'codigo',
         'tipo',
@@ -167,6 +168,18 @@ class TicketModel extends Model
             ->where('event_id', $event_id)
             ->where('data_lote >= now()')
             ->where('promo', 'puc')
+            ->where('ativo', 1)
+            ->where('quantidade >= estoque')
+            ->findAll();
+    }
+
+    /**
+     * Busca tickets vinculados pelo parent_ticket_id
+     */
+    public function buscaTicketsVinculados(int $ticket_id)
+    {
+        return $this->select('*')
+            ->where('parent_ticket_id', $ticket_id)
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
             ->findAll();
