@@ -272,10 +272,29 @@ class CheckoutService
                 // Verifica se o ticket tem tickets vinculados (parent_ticket_id)
                 $ticketsVinculados = $this->ticketModel->buscaTicketsVinculados($item['ticket_id']);
                 
-                // Se encontrou tickets vinculados, gera ingressos para cada um
+                // Se encontrou tickets vinculados, cria pedidos separados para cada um
                 foreach ($ticketsVinculados as $ticketVinculado) {
+                    // Busca o pedido original para copiar os dados
+                    $pedidoOriginal = $this->pedidoModel->find($pedido_id);
+                    
+                    // Cria um novo pedido para o evento do ticket vinculado
+                    $novoPedido = [
+                        'evento_id' => $ticketVinculado->event_id,
+                        'user_id' => $user_id,
+                        'codigo' => $this->pedidoModel->geraCodigoPedido(),
+                        'total' => $ticketVinculado->preco,
+                        'forma_pagamento' => 'PACK',
+                        'status' => $pedidoOriginal->status,
+                        'frete' => $pedidoOriginal->frete ?? 0,
+                        'convite' => $pedidoOriginal->convite ?? '',
+                    ];
+                    
+                    $this->pedidoModel->insert($novoPedido);
+                    $novoPedidoId = $this->pedidoModel->getInsertID();
+                    
+                    // Registra o ingresso vinculado no novo pedido
                     $this->ingressoModel->insert([
-                        'pedido_id' => $pedido_id,
+                        'pedido_id' => $novoPedidoId,
                         'user_id' => $user_id,
                         'nome' => $ticketVinculado->nome,
                         'quantidade' => 1,

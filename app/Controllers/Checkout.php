@@ -1590,38 +1590,69 @@ class Checkout extends BaseController
 
 	private function registraIngressos(int $pedido_id, int $user_id): void
 	{
+		// 1. Agrupar ingressos por event_id
+		$ingressosPorEvento = [];
+		$pedidoOriginal = $this->pedidoModel->find($pedido_id);
+		
 		foreach ($_SESSION['carrinho'] as $item) {
 			for ($i = 0; $i < $item['quantidade']; $i++) {
-				// Registra o ingresso principal
-				$this->ingressoModel->skipValidation(true)->protect(false)->insert([
-					'pedido_id' => $pedido_id,
-					'user_id' => $user_id,
+				// Ingresso principal
+				$ingressosPorEvento[$pedidoOriginal->evento_id][] = [
 					'nome' => $item['nome'],
-					'quantidade' => 1,
 					'valor_unitario' => $item['preco'],
 					'valor' => $item['preco'],
 					'tipo' => $item['tipo'],
 					'ticket_id' => $item['ticket_id'],
-					'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
-				]);
-
-				// Verifica se o ticket tem tickets vinculados (parent_ticket_id)
+				];
+				// Tickets vinculados
 				$ticketsVinculados = $this->ticketModel->buscaTicketsVinculados($item['ticket_id']);
-				
-				// Se encontrou tickets vinculados, gera ingressos para cada um
 				foreach ($ticketsVinculados as $ticketVinculado) {
-					$this->ingressoModel->skipValidation(true)->protect(false)->insert([
-						'pedido_id' => $pedido_id,
-						'user_id' => $user_id,
+					$ingressosPorEvento[$ticketVinculado->event_id][] = [
 						'nome' => $ticketVinculado->nome,
-						'quantidade' => 1,
 						'valor_unitario' => $ticketVinculado->preco,
 						'valor' => $ticketVinculado->preco,
 						'tipo' => $ticketVinculado->tipo,
 						'ticket_id' => $ticketVinculado->id,
-						'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
-					]);
+					];
 				}
+			}
+		}
+
+		// 2. Criar pedidos e registrar ingressos
+		foreach ($ingressosPorEvento as $eventoId => $ingressos) {
+			// Se for o evento principal, usa o pedido original
+			if ($eventoId == $pedidoOriginal->evento_id) {
+				$pedidoUsado = $pedido_id;
+				$formaPagamento = $pedidoOriginal->forma_pagamento;
+			} else {
+				// Cria novo pedido para o evento do ticket vinculado
+				$novoPedido = [
+					'evento_id' => $eventoId,
+					'user_id' => $user_id,
+					'codigo' => $this->pedidoModel->geraCodigoPedido(),
+					'total' => array_sum(array_column($ingressos, 'valor')),
+					'forma_pagamento' => 'PACK',
+					'status' => $pedidoOriginal->status,
+					'frete' => $pedidoOriginal->frete ?? 0,
+					'convite' => $pedidoOriginal->convite ?? '',
+				];
+				$this->pedidoModel->skipValidation(true)->protect(false)->insert($novoPedido);
+				$pedidoUsado = $this->pedidoModel->getInsertID();
+				$formaPagamento = 'PACK';
+			}
+			// Registra todos os ingressos desse evento
+			foreach ($ingressos as $ing) {
+				$this->ingressoModel->skipValidation(true)->protect(false)->insert([
+					'pedido_id' => $pedidoUsado,
+					'user_id' => $user_id,
+					'nome' => $ing['nome'],
+					'quantidade' => 1,
+					'valor_unitario' => $ing['valor_unitario'],
+					'valor' => $ing['valor'],
+					'tipo' => $ing['tipo'],
+					'ticket_id' => $ing['ticket_id'],
+					'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
+				]);
 			}
 		}
 	}
