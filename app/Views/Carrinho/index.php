@@ -475,20 +475,33 @@ if (isset($event_id)) {
                                                     <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                     <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
-
-
                                                 </div>
                                                 <div class="col-5 text-right">
                                                     <?php if ($value['estoque'] > 0) : ?>
-                                                        <div class="col-12 mt-3 font-20"><strong style="font-size: 20px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a></strong></div>
-
-                                                        <div class="col-lg-8 col-sm-6 text-muted"><?= $value['descricao'] ?></div>
-                                                        <div class="col-lg-4 col-sm-6  text-right ol-4" style="padding-left: 60px; "><span style="font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
-                                                            <p class="text-muted" style="font-size: 12px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
+                                                        <div class="col-12 mt-3 font-20">
+                                                            <strong style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                        </div>
+                                                        <div class="col-12 text-right ol-4 mt-2">
+                                                            <span style=" font-size: 12px;">R$ </span>
+                                                            <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;">
+                                                                <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                            </strong>
+                                                            <p class="text-muted" style="font-size: 10px">
+                                                                + <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?>
+                                                                <a href="?adicionar=<?= $key ?>"> </a>
+                                                            </p>
                                                         </div>
                                                     <?php else : ?>
                                                         <strong style="color: red;">ESGOTADO</strong>
                                                     <?php endif; ?>
+                                                </div>
+                                                <div class="col-11 mt-3">
+                                                    <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
+                                                    <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1445,24 +1458,41 @@ if (isset($event_id)) {
                     <div class="card-body">
                         <?php foreach ($items as $key => $value) : ?>
                             <?php if ($value['categoria'] == 'epic') : ?>
-                                <div class="card border border-muted">
+                                <div class="card border border-muted" data-item-id="<?= $key ?>">
                                     <div class="form-check mt-3 mb-3">
-                                        <div class="row ">
-                                            <div class="col-6 mb-2">
-                                                <span style="color: #6C038F">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                <strong class="font-20" style="color: #6C038F"><?= $value['nome'] ?> </strong><br>
-                                                <span class="text-muted"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                        <div class="row">
+                                            <div class="col-7">
+                                                <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
                                             </div>
-                                            <?php if ($value['estoque'] > 0) : ?>
-                                                <div class="col-5 mt-4 font-20 d-flex flex-row-reverse"><strong style="font-size: 24px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 10px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 10px"></i></a></strong></div>
-
-                                                <div class="col-lg-8 col-sm-6 text-muted"><?= $value['descricao'] ?></div>
-                                                <div class="col-lg-4 col-sm-6  text-right ol-4" style="padding-left: 60px; "><span style="font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
-                                                    <p class="text-muted" style="font-size: 12px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
-                                                </div>
-                                            <?php else : ?>
-                                                <strong style="color: red;">ESGOTADO</strong>
-                                            <?php endif; ?>
+                                            <div class="col-5 text-right">
+                                                <?php if ($value['estoque'] > 0) : ?>
+                                                    <div class="col-12 mt-3 font-20">
+                                                        <strong style="font-size: 20px;">
+                                                            <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a>
+                                                            <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                            <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                        </strong>
+                                                    </div>
+                                                    <div class="col-12 text-right ol-4 mt-2">
+                                                        <span style=" font-size: 12px;">R$ </span>
+                                                        <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;">
+                                                            <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                        </strong>
+                                                        <p class="text-muted" style="font-size: 10px">
+                                                            + <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?>
+                                                            <a href="?adicionar=<?= $key ?>"> </a>
+                                                        </p>
+                                                    </div>
+                                                <?php else : ?>
+                                                    <strong style="color: red;">ESGOTADO</strong>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="col-11 mt-3">
+                                                <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
+                                                <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
