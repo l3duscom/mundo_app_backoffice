@@ -1376,6 +1376,9 @@ class Checkout extends BaseController
 					'status' => $status
 				]);
 
+				// Atualiza os pedidos vinculados com o charge_id
+				$this->atualizaPedidosVinculados($pedido_id, $payment['id']);
+
 				$this->transactionModel->protect(false)->insert([
 					'pedido_id' => $pedido_id,
 					'charge_id' => $payment['id'],
@@ -1515,6 +1518,9 @@ class Checkout extends BaseController
 				'status' => $payment['status']
 			]);
 
+			// Atualiza os pedidos vinculados com o charge_id
+			$this->atualizaPedidosVinculados($pedido_id, $payment['id']);
+
 			$this->transactionModel->protect(false)->insert([
 				'pedido_id' => $pedido_id,
 				'charge_id' => $payment['id'],
@@ -1635,7 +1641,6 @@ class Checkout extends BaseController
 					'status' => $pedidoOriginal->status,
 					'frete' => $pedidoOriginal->frete ?? 0,
 					'convite' => $pedidoOriginal->convite ?? '',
-					'charge_id' => $pedidoOriginal->charge_id, // Copia o charge_id do pedido principal
 				];
 				$this->pedidoModel->skipValidation(true)->protect(false)->insert($novoPedido);
 				$pedidoUsado = $this->pedidoModel->getInsertID();
@@ -1655,6 +1660,27 @@ class Checkout extends BaseController
 					'codigo' => $user_id . $this->ingressoModel->geraCodigoIngresso(),
 				]);
 			}
+		}
+	}
+
+	/**
+	 * Atualiza os pedidos vinculados com o charge_id após o pagamento ser confirmado
+	 */
+	private function atualizaPedidosVinculados(int $pedido_id, string $charge_id): void
+	{
+		// Busca todos os pedidos vinculados (forma_pagamento = 'PACK') do mesmo usuário
+		$pedidoOriginal = $this->pedidoModel->find($pedido_id);
+		$pedidosVinculados = $this->pedidoModel->where('user_id', $pedidoOriginal->user_id)
+			->where('forma_pagamento', 'PACK')
+			->where('charge_id IS NULL')
+			->findAll();
+
+		// Atualiza o charge_id em todos os pedidos vinculados
+		foreach ($pedidosVinculados as $pedidoVinculado) {
+			$this->pedidoModel->skipValidation(true)->protect(false)->update($pedidoVinculado->id, [
+				'charge_id' => $charge_id,
+				'status' => $pedidoOriginal->status
+			]);
 		}
 	}
 
