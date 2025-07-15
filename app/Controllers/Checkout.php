@@ -1635,6 +1635,7 @@ class Checkout extends BaseController
 					'status' => $pedidoOriginal->status,
 					'frete' => $pedidoOriginal->frete ?? 0,
 					'convite' => $pedidoOriginal->convite ?? '',
+					'charge_id' => $pedidoOriginal->charge_id, // Copia o charge_id do pedido principal
 				];
 				$this->pedidoModel->skipValidation(true)->protect(false)->insert($novoPedido);
 				$pedidoUsado = $this->pedidoModel->getInsertID();
