@@ -307,8 +307,11 @@ if (isset($event_id)) {
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
-                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                            <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                                + Econômico
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -368,8 +371,11 @@ if (isset($event_id)) {
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
-                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                            <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                                + Econômico
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -431,8 +437,11 @@ if (isset($event_id)) {
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
-                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                            <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                                + Econômico
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -497,8 +506,11 @@ if (isset($event_id)) {
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
-                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                            <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                                + Econômico
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -578,8 +590,11 @@ if (isset($event_id)) {
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
-                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                            <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                                + Econômico
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -642,8 +657,11 @@ if (isset($event_id)) {
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
-                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                            <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                                + Econômico
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -692,8 +710,11 @@ if (isset($event_id)) {
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
-                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                            <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                                + Econômico
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -1515,8 +1536,11 @@ if (isset($event_id)) {
                                                 <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
                                                 <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                     <div class="mt-1 mb-1">
-                                                        <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                        <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                             <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                        </span>
+                                                        <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                            + Econômico
                                                         </span>
                                                     </div>
                                                 <?php endif; ?>
