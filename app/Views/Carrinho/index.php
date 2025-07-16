@@ -74,6 +74,127 @@
     @media screen and (max-width: 768px) {
         .tab button {
             width: 50%;
+            font-size: 14px;
+            padding: 10px 8px;
+        }
+        
+        .card {
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+        
+        .card-body {
+            padding: 15px;
+        }
+        
+        .item-name {
+            font-size: 14px !important;
+            line-height: 1.3;
+        }
+        
+        .item-price {
+            font-size: 20px !important;
+        }
+        
+        .badge {
+            font-size: 10px !important;
+            padding: 3px 6px !important;
+            margin-bottom: 5px;
+            display: inline-block;
+            word-wrap: break-word;
+            white-space: normal;
+            line-height: 1.2;
+        }
+        
+        .badge-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .badge-container .badge {
+            width: 100%;
+            margin-right: 0 !important;
+        }
+        
+        .quantity-controls {
+            font-size: 36px !important;
+        }
+        
+        .quantity-controls a {
+            padding: 4px 6px;
+        }
+        
+        .quantity-controls i {
+            font-size: 20px !important;
+        }
+        
+        .service-fee {
+            font-size: 10px !important;
+        }
+        
+        .ticket-info {
+            font-size: 9px !important;
+            margin-bottom: 5px !important;
+        }
+        
+        .quantity-section {
+            margin-top: 10px !important;
+        }
+        
+        .price-section {
+            margin-top: 15px !important;
+        }
+        
+        .eligibility-section {
+            margin-top: 10px !important;
+        }
+        
+        .eligibility-section strong {
+            font-size: 12px !important;
+        }
+        
+        .eligibility-section .text-muted {
+            font-size: 10px !important;
+        }
+    }
+    
+    /* Estilos para dispositivos muito pequenos */
+    @media screen and (max-width: 480px) {
+        .tab {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tab button {
+            width: 100%;
+            margin-bottom: 2px;
+            border-radius: 0;
+        }
+        
+        .col-7, .col-5 {
+            width: 100% !important;
+            margin-bottom: 10px;
+        }
+        
+        .text-right {
+            text-align: center !important;
+        }
+        
+        .d-flex.align-items-end {
+            align-items: center !important;
+        }
+        
+        .item-price {
+            font-size: 18px !important;
+        }
+        
+        .quantity-controls {
+            font-size: 32px !important;
+        }
+        
+        .quantity-controls i {
+            font-size: 18px !important;
         }
     }
 
@@ -299,14 +420,14 @@ if (isset($event_id)) {
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab') : ?>
-                                    <div class="card border border-muted" data-item-id="<?= $key ?>">
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
-                                                        <div class="mt-1 mb-1">
+                                                        <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
@@ -315,22 +436,30 @@ if (isset($event_id)) {
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
                                                 </div>
                                                 <div class="col-5 text-right">
                                                     <?php if ($value['estoque'] > 0) : ?>
-                                                        <div class="col-12 mt-3 font-20"><strong style="font-size: 20px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a></strong></div>
-
-                                                        <div class="col-12 text-right ol-4 mt-2"><span style=" font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
-                                                            <p class="text-muted" style="font-size: 10px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                                </strong>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
                                                         </div>
                                                     <?php else : ?>
                                                         <strong style="color: red;">ESGOTADO</strong>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="col-11 mt-3">
+                                                <div class="col-11 mt-3 eligibility-section">
                                                     <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
                                                     <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                                 </div>
@@ -363,14 +492,14 @@ if (isset($event_id)) {
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom') : ?>
-                                    <div class="card border border-muted" data-item-id="<?= $key ?>">
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
-                                                        <div class="mt-1 mb-1">
+                                                        <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
@@ -379,22 +508,30 @@ if (isset($event_id)) {
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
                                                 </div>
                                                 <div class="col-5 text-right">
                                                     <?php if ($value['estoque'] > 0) : ?>
-                                                        <div class="col-12 mt-3 font-20"><strong style="font-size: 20px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a></strong></div>
-
-                                                        <div class="col-12 text-right ol-4 mt-2"><span style=" font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
-                                                            <p class="text-muted" style="font-size: 10px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                                </strong>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
                                                         </div>
                                                     <?php else : ?>
                                                         <strong style="color: red;">ESGOTADO</strong>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="col-11 mt-3">
+                                                <div class="col-11 mt-3 eligibility-section">
                                                     <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
                                                     <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                                 </div>
@@ -429,14 +566,14 @@ if (isset($event_id)) {
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo') : ?>
-                                    <div class="card border border-muted" data-item-id="<?= $key ?>">
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
-                                                        <div class="mt-1 mb-1">
+                                                        <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
@@ -445,22 +582,30 @@ if (isset($event_id)) {
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
                                                 </div>
                                                 <div class="col-5 text-right">
                                                     <?php if ($value['estoque'] > 0) : ?>
-                                                        <div class="col-12 mt-3 font-20"><strong style="font-size: 20px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a></strong></div>
-
-                                                        <div class="col-12 text-right ol-4 mt-2"><span style=" font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
-                                                            <p class="text-muted" style="font-size: 10px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                                </strong>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
                                                         </div>
                                                     <?php else : ?>
                                                         <strong style="color: red;">ESGOTADO</strong>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="col-11 mt-3">
+                                                <div class="col-11 mt-3 eligibility-section">
                                                     <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
                                                     <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                                 </div>
@@ -498,14 +643,14 @@ if (isset($event_id)) {
 
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ($value['categoria'] == 'epic') : ?>
-                                    <div class="card border border-muted" data-item-id="<?= $key ?>">
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
-                                                        <div class="mt-1 mb-1">
+                                                        <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
@@ -514,32 +659,28 @@ if (isset($event_id)) {
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
                                                 </div>
                                                 <div class="col-5 text-right">
                                                     <?php if ($value['estoque'] > 0) : ?>
-                                                        <div class="col-12 mt-3 font-20">
-                                                            <strong style="font-size: 20px;">
-                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
                                                                 <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
                                                                 <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
                                                             </strong>
-                                                        </div>
-                                                        <div class="col-12 text-right ol-4 mt-2">
-                                                            <span style=" font-size: 12px;">R$ </span>
-                                                            <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;">
-                                                                <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
                                                             </strong>
-                                                            <p class="text-muted" style="font-size: 10px">
-                                                                + <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?>
-                                                                <a href="?adicionar=<?= $key ?>"> </a>
-                                                            </p>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
                                                         </div>
                                                     <?php else : ?>
                                                         <strong style="color: red;">ESGOTADO</strong>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="col-11 mt-3">
+                                                <div class="col-11 mt-3 eligibility-section">
                                                     <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
                                                     <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                                 </div>
@@ -582,14 +723,14 @@ if (isset($event_id)) {
                             </div> -->
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ($value['categoria'] == 'vip') : ?>
-                                    <div class="card border border-muted" data-item-id="<?= $key ?>">
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
-                                                        <div class="mt-1 mb-1">
+                                                        <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
@@ -598,21 +739,30 @@ if (isset($event_id)) {
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
                                                 </div>
                                                 <div class="col-5 text-right">
                                                     <?php if ($value['estoque'] > 0) : ?>
-                                                        <div class="col-12 mt-3 font-20"><strong style="font-size: 20px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a></strong></div>
-                                                        <div class="col-12 text-right ol-4 mt-2"><span style=" font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
-                                                            <p class="text-muted" style="font-size: 10px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                                </strong>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
                                                         </div>
                                                     <?php else : ?>
                                                         <strong style="color: red;">ESGOTADO</strong>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="col-11 mt-3">
+                                                <div class="col-11 mt-3 eligibility-section">
                                                     <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
                                                     <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                                 </div>
@@ -649,14 +799,14 @@ if (isset($event_id)) {
 
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ($value['categoria'] == 'cosplay') : ?>
-                                    <div class="card border border-muted" data-item-id="<?= $key ?>">
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
-                                                        <div class="mt-1 mb-1">
+                                                        <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
@@ -665,22 +815,30 @@ if (isset($event_id)) {
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
                                                 </div>
                                                 <div class="col-5 text-right">
                                                     <?php if ($value['estoque'] > 0) : ?>
-                                                        <div class="col-12 mt-3 font-20"><strong style="font-size: 20px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a></strong></div>
-
-                                                        <div class="col-12 text-right ol-4 mt-2"><span style=" font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
-                                                            <p class="text-muted" style="font-size: 10px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                                </strong>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
                                                         </div>
                                                     <?php else : ?>
                                                         <strong style="color: red;">ESGOTADO</strong>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="col-11 mt-3">
+                                                <div class="col-11 mt-3 eligibility-section">
                                                     <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
                                                     <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                                 </div>
@@ -702,14 +860,14 @@ if (isset($event_id)) {
 
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ($value['categoria'] == 'mae') : ?>
-                                    <div class="card border border-muted" data-item-id="<?= $key ?>">
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
-                                                        <div class="mt-1 mb-1">
+                                                        <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                                 <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
@@ -718,22 +876,30 @@ if (isset($event_id)) {
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
                                                 </div>
                                                 <div class="col-5 text-right">
                                                     <?php if ($value['estoque'] > 0) : ?>
-                                                        <div class="col-12 mt-3 font-20"><strong style="font-size: 20px;"><a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a> <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?> <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a></strong></div>
-
-                                                        <div class="col-12 text-right ol-4 mt-2"><span style=" font-size: 12px;">R$ </span><strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;"> <?= number_format($value['preco'], 2, ',', ''); ?> </strong>
-                                                            <p class="text-muted" style="font-size: 10px">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?> <a href="?adicionar=<?= $key ?>"> </a></p>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                                </strong>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
                                                         </div>
                                                     <?php else : ?>
                                                         <strong style="color: red;">ESGOTADO</strong>
                                                     <?php endif; ?>
                                                 </div>
-                                                <div class="col-11 mt-3">
+                                                <div class="col-11 mt-3 eligibility-section">
                                                     <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
                                                     <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                                 </div>
@@ -1528,14 +1694,14 @@ if (isset($event_id)) {
                     <div class="card-body">
                         <?php foreach ($items as $key => $value) : ?>
                             <?php if ($value['categoria'] == 'epic') : ?>
-                                <div class="card border border-muted" data-item-id="<?= $key ?>">
+                                <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                     <div class="form-check mt-3 mb-3">
                                         <div class="row">
                                             <div class="col-7">
-                                                <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                 <?php if (!empty($value['parent_ticket_id'])) : ?>
-                                                    <div class="mt-1 mb-1">
+                                                    <div class="mt-1 mb-1 badge-container">
                                                         <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                             <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                         </span>
@@ -1544,32 +1710,28 @@ if (isset($event_id)) {
                                                         </span>
                                                     </div>
                                                 <?php endif; ?>
-                                                <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
                                             </div>
                                             <div class="col-5 text-right">
                                                 <?php if ($value['estoque'] > 0) : ?>
-                                                    <div class="col-12 mt-3 font-20">
-                                                        <strong style="font-size: 20px;">
-                                                            <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style=" padding-right: 4px;"></i></a>
+                                                    <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                        <strong class="quantity-controls" style="font-size: 20px;">
+                                                            <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
                                                             <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
                                                             <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
                                                         </strong>
-                                                    </div>
-                                                    <div class="col-12 text-right ol-4 mt-2">
-                                                        <span style=" font-size: 12px;">R$ </span>
-                                                        <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal;font-size: 26px;">
-                                                            <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                        <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                            <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
                                                         </strong>
-                                                        <p class="text-muted" style="font-size: 10px">
-                                                            + <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' Taxa de ingresso' : ' Taxa de ingresso' ?>
-                                                            <a href="?adicionar=<?= $key ?>"> </a>
-                                                        </p>
+                                                            <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                        </div>
                                                     </div>
                                                 <?php else : ?>
                                                     <strong style="color: red;">ESGOTADO</strong>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="col-11 mt-3">
+                                            <div class="col-11 mt-3 eligibility-section">
                                                 <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
                                                 <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
                                             </div>
