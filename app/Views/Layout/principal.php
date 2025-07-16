@@ -359,7 +359,7 @@
                     <a href="<?php echo site_url('usuarios/perfil'); ?>">
                         <div class="parent-icon"><i class="bi bi-person-lines-fill"></i>
                         </div>
-                        <div class="menu-title">Alterar senha</div>
+                        <div class="menu-title">Gerenciar Perfil</div>
                     </a>
                 </li>
                 <?php endif; ?>
