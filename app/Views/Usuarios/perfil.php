@@ -33,6 +33,7 @@
                     <div class="form-group col-md-4">
                         <label class="form-control-label">CEP</label>
                         <input type="text" name="cep" class="form-control cep" value="<?php echo esc($cliente->cep); ?>">
+                        <div id="cep"></div>
                     </div>
                     <div class="form-group col-md-6">
                         <label class="form-control-label">Endereço</label>
