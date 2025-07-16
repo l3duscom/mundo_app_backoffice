@@ -94,14 +94,14 @@ class TicketModel extends Model
             '*',
         ];
 
-
-
         return $this->select($atributos)
             ->where('event_id', $event_id)
             ->where('data_lote >= now()')
             ->where('promo', null)
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
+            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
+            ->orderBy('nome', 'ASC')
             ->findAll();
     }
 
@@ -111,14 +111,14 @@ class TicketModel extends Model
             '*',
         ];
 
-
-
         return $this->select($atributos)
             ->where('event_id', $event_id)
             ->where('data_lote >= now()')
             ->where('promo', null)
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
+            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
+            ->orderBy('nome', 'ASC')
             ->findAll();
     }
 
@@ -128,14 +128,14 @@ class TicketModel extends Model
             '*',
         ];
 
-
-
         return $this->select($atributos)
             ->where('event_id', $event_id)
             ->where('data_lote >= now()')
             ->where('promo', 'girafinhas')
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
+            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
+            ->orderBy('nome', 'ASC')
             ->findAll();
     }
     public function recuperaIngressosOtakadaPorEvento(int $event_id)
@@ -144,14 +144,14 @@ class TicketModel extends Model
             '*',
         ];
 
-
-
         return $this->select($atributos)
             ->where('event_id', $event_id)
             ->where('data_lote >= now()')
             ->where('promo', 'otakada')
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
+            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
+            ->orderBy('nome', 'ASC')
             ->findAll();
     }
 
@@ -162,14 +162,14 @@ class TicketModel extends Model
             '*',
         ];
 
-
-
         return $this->select($atributos)
             ->where('event_id', $event_id)
             ->where('data_lote >= now()')
             ->where('promo', 'puc')
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
+            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
+            ->orderBy('nome', 'ASC')
             ->findAll();
     }
 
