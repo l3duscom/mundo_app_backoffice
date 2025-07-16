@@ -305,6 +305,13 @@ if (isset($event_id)) {
                                                 <div class="col-7">
                                                     <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                        <div class="mt-1 mb-1">
+                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                        </div>
+                                                    <?php endif; ?>
                                                     <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
@@ -359,6 +366,13 @@ if (isset($event_id)) {
                                                 <div class="col-7">
                                                     <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                        <div class="mt-1 mb-1">
+                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                            </span>
+                                                        </div>
+                                                    <?php endif; ?>
                                                     <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
@@ -415,6 +429,13 @@ if (isset($event_id)) {
                                                 <div class="col-7">
                                                     <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                        <div class="mt-1 mb-1">
+                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                            </span>
+                                                        </div>
+                                                    <?php endif; ?>
                                                     <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
@@ -474,6 +495,13 @@ if (isset($event_id)) {
                                                 <div class="col-7">
                                                     <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                        <div class="mt-1 mb-1">
+                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                            </span>
+                                                        </div>
+                                                    <?php endif; ?>
                                                     <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
                                                 </div>
                                                 <div class="col-5 text-right">
@@ -548,6 +576,13 @@ if (isset($event_id)) {
                                                 <div class="col-7">
                                                     <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                        <div class="mt-1 mb-1">
+                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                            </span>
+                                                        </div>
+                                                    <?php endif; ?>
                                                     <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
@@ -605,6 +640,13 @@ if (isset($event_id)) {
                                                 <div class="col-7">
                                                     <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                        <div class="mt-1 mb-1">
+                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                            </span>
+                                                        </div>
+                                                    <?php endif; ?>
                                                     <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
@@ -648,6 +690,13 @@ if (isset($event_id)) {
                                                 <div class="col-7">
                                                     <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                     <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                    <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                        <div class="mt-1 mb-1">
+                                                            <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                            </span>
+                                                        </div>
+                                                    <?php endif; ?>
                                                     <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
 
 
@@ -1464,6 +1513,13 @@ if (isset($event_id)) {
                                             <div class="col-7">
                                                 <span style="color: purple; font-size: 10px">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
                                                 <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?> </strong><br>
+                                                <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                    <div class="mt-1 mb-1">
+                                                        <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
+                                                            <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                        </span>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <span class="text-muted" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
                                             </div>
                                             <div class="col-5 text-right">

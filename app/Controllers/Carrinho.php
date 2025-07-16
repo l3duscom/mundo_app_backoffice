@@ -61,7 +61,8 @@ class Carrinho extends BaseController
 				'lote' => $item->lote,
 				'categoria' => $item->categoria,
 				'data_lote' => $item->data_lote,
-				'estoque' => $item->estoque
+				'estoque' => $item->estoque,
+				'parent_ticket_id' => $item->parent_ticket_id
 			);
 		}
 
