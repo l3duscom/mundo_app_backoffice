@@ -44,6 +44,21 @@ class Pedidos extends BaseController
 
 		$pedidos = $this->pedidosModel->recuperaPedidosPorUsuario($id);
 
+		// Separar próximos e anteriores
+		$proximos = [];
+		$anteriores = [];
+		$hoje = date('Y-m-d');
+		$ingressoModel = new \App\Models\IngressoModel();
+		foreach ($pedidos as $pedido) {
+			$data_fim = isset($pedido->data_fim) ? date('Y-m-d', strtotime($pedido->data_fim)) : null;
+			// Buscar ingressos do pedido
+			$pedido->ingressos = $ingressoModel->recuperaIngressosPorPedido($pedido->id);
+			if ($data_fim && $data_fim >= $hoje) {
+				$proximos[] = $pedido;
+			} else {
+				$anteriores[] = $pedido;
+			}
+		}
 
 		$card = $this->cartaoModel->withDeleted(true)->where('user_id', $id)->first();
 		//dd($ingressos);
@@ -51,7 +66,8 @@ class Pedidos extends BaseController
 			'titulo' => 'Dashboard de ' . esc($cliente->nome),
 			'cliente' => $cliente,
 			'card' => $card,
-			'pedidos' => $pedidos
+			'proximos' => $proximos,
+			'anteriores' => $anteriores,
 		];
 
 
