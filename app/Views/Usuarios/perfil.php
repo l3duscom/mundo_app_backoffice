@@ -77,8 +77,13 @@
 <?php echo $this->endSection() ?>
 
 <?php echo $this->section('scripts') ?>
+<script src="<?php echo site_url('recursos/vendor/loadingoverlay/loadingoverlay.min.js') ?>"></script>
+<script src="<?php echo site_url('recursos/vendor/mask/jquery.mask.min.js') ?>"></script>
+<script src="<?php echo site_url('recursos/vendor/mask/app.js') ?>"></script>
 <script>
 $(document).ready(function(){
+    // Aplica máscara ao campo CEP
+    $('[name=cep]').mask('00000-000');
     $("#form-perfil").on('submit', function(e){
         e.preventDefault();
         $.ajax({
@@ -118,46 +123,45 @@ $(document).ready(function(){
     $("#form-perfil").submit(function () {
         $(this).find(":submit").attr('disabled', 'disabled');
     });
-
-    // Busca automática de endereço pelo CEP (igual Clientes)
-    $('[name=cep]').on('keyup', function() {
-        var cep = $(this).val();
-        if (cep.length === 9) {
-            $.ajax({
-                type: 'GET',
-                url: '<?php echo site_url('clientes/consultacep'); ?>',
-                data: { cep: cep },
-                dataType: 'json',
-                beforeSend: function() {
-                    $("#form-perfil").LoadingOverlay("show");
-                    $("#cep").html('');
-                },
-                success: function(response) {
-                    $("#form-perfil").LoadingOverlay("hide", true);
-                    if (!response.erro) {
-                        if (!response.endereco) {
-                            $('[name=endereco]').prop('readonly', false);
-                            $('[name=endereco]').focus();
-                        }
-                        if (!response.bairro) {
-                            $('[name=bairro]').prop('readonly', false);
-                        }
-                        $('[name=endereco]').val(response.endereco);
-                        $('[name=bairro]').val(response.bairro);
-                        $('[name=cidade]').val(response.cidade);
-                        $('[name=estado]').val(response.estado);
+});
+// Script de busca automática de endereço pelo CEP (igual Clientes)
+$('[name=cep]').on('keyup', function() {
+    var cep = $(this).val();
+    if (cep.length === 9) {
+        $.ajax({
+            type: 'GET',
+            url: '<?php echo site_url('clientes/consultacep'); ?>',
+            data: { cep: cep },
+            dataType: 'json',
+            beforeSend: function() {
+                $("#form-perfil").LoadingOverlay("show");
+                $("#cep").html('');
+            },
+            success: function(response) {
+                $("#form-perfil").LoadingOverlay("hide", true);
+                if (!response.erro) {
+                    if (!response.endereco) {
+                        $('[name=endereco]').prop('readonly', false);
+                        $('[name=endereco]').focus();
                     }
-                    if (response.erro) {
-                        $("#cep").html(response.erro);
+                    if (!response.bairro) {
+                        $('[name=bairro]').prop('readonly', false);
                     }
-                },
-                error: function() {
-                    $("#form-perfil").LoadingOverlay("hide", true);
-                    alert('Não foi possível procesar a solicitação. Por favor entre em contato com o suporte técnico.');
+                    $('[name=endereco]').val(response.endereco);
+                    $('[name=bairro]').val(response.bairro);
+                    $('[name=cidade]').val(response.cidade);
+                    $('[name=estado]').val(response.estado);
                 }
-            });
-        }
-    });
+                if (response.erro) {
+                    $("#cep").html(response.erro);
+                }
+            },
+            error: function() {
+                $("#form-perfil").LoadingOverlay("hide", true);
+                alert('Não foi possível procesar a solicitação. Por favor entre em contato com o suporte técnico.');
+            }
+        });
+    }
 });
 </script>
 <?php echo $this->endSection() ?> 
