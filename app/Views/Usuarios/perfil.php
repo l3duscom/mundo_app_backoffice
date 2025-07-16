@@ -89,7 +89,7 @@ $(document).ready(function(){
         e.preventDefault();
         $.ajax({
             type: 'POST',
-            url: '<?php echo site_url('usuarios/atualizarperfil'); ?>',
+            url: '<?php echo site_url('usuarios/atualizarPerfil'); ?>',
             data: new FormData(this),
             dataType: 'json',
             contentType: false,

@@ -22,36 +22,36 @@
         <div class="d-flex align-items-center mb-4">
             <i class="bi bi-bag-check-fill text-primary me-2" style="font-size:2rem;"></i>
             <h2 class="mb-0 fw-bold" style="letter-spacing:0.5px;">Meus Pedidos</h2>
-        </div>
+    </div>
         <div class="card shadow radius-10 border-0 mb-4">
             <div class="card-body pb-0">
                 <ul class="nav nav-tabs nav-justified nav-primary mb-4" role="tablist">
-                    <li class="nav-item" role="presentation">
+                                    <li class="nav-item" role="presentation">
                         <a class="nav-link active fw-bold" data-bs-toggle="tab" href="#proximos" role="tab" aria-selected="true">
                             <i class="bi bi-calendar-event me-1"></i> PRÓXIMOS
-                        </a>
-                    </li>
-                    <li class="nav-item" role="presentation">
+                                        </a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
                         <a class="nav-link fw-bold" data-bs-toggle="tab" href="#anteriores" role="tab" aria-selected="false">
                             <i class="bi bi-clock-history me-1"></i> ANTERIORES
-                        </a>
-                    </li>
-                </ul>
+                                        </a>
+                                    </li>
+                                </ul>
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="proximos" role="tabpanel">
                         <?php if (!empty($proximos)) : ?>
                             <div class="row g-4">
                                 <?php foreach ($proximos as $p) : ?>
-                                    <?php
-                                    if ($p->status == 'paid' || $p->status == 'CONFIRMED' || $p->status == 'RECEIVED') {
-                                        $status_pedido = 'Aprovado';
-                                    } else if ($p->status == 'waiting' || $p->status == 'PENDING' || $p->status == 'AWAITING_RISK_ANALYSIS') {
+                                                    <?php
+                                                    if ($p->status == 'paid' || $p->status == 'CONFIRMED' || $p->status == 'RECEIVED') {
+                                                        $status_pedido = 'Aprovado';
+                                                    } else if ($p->status == 'waiting' || $p->status == 'PENDING' || $p->status == 'AWAITING_RISK_ANALYSIS') {
                                         $status_pedido = 'Aguardando Pagamento';
-                                    } else if ($p->status == 'canceled' || $p->status == 'REFUNDED' || $p->status == 'REFUND_REQUESTED' || $p->status == 'REFUND_IN_PROGRESS') {
-                                        $status_pedido = 'Cancelado';
-                                    } else {
-                                        $status_pedido = 'Recusado';
-                                    }
+                                                    } else if ($p->status == 'canceled' || $p->status == 'REFUNDED' || $p->status == 'REFUND_REQUESTED' || $p->status == 'REFUND_IN_PROGRESS') {
+                                                        $status_pedido = 'Cancelado';
+                                                    } else {
+                                                        $status_pedido = 'Recusado';
+                                                    }
                                     $badgeClass = 'bg-secondary';
                                     if ($status_pedido == 'Aprovado') $badgeClass = 'bg-success';
                                     elseif ($status_pedido == 'Aguardando Pagamento') $badgeClass = 'bg-warning text-dark';
@@ -134,7 +134,7 @@
                                                                             <td class="fw-semibold"> <?= $ingresso->nome ?> </td>
                                                                             <td> <?= !empty($ingresso->tipo) ? ucfirst($ingresso->tipo) : '-' ?> </td>
                                                                             <td> <?= $ingresso->quantidade ?? 1 ?> </td>
-                                                                        </tr>
+                                                    </tr>
                                                                     <?php endforeach; ?>
                                                                 </tbody>
                                                             </table>
@@ -262,10 +262,10 @@
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
-                                        </div>
+                                    </div>
                                     </div>
                                 <?php endforeach; ?>
-                            </div>
+                                </div>
                         <?php else : ?>
                             <div class="text-center py-5">
                                 <i class="bi bi-bag-x-fill text-muted mb-3" style="font-size:2.5rem;"></i>
@@ -274,11 +274,11 @@
                             </div>
                         <?php endif; ?>
                     </div>
+                    </div>
                 </div>
-            </div>
         </div>
     </div>
-</div>
+    </div>
 
 
 </div>
