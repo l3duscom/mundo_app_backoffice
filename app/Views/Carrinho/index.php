@@ -369,7 +369,7 @@ if (isset($event_id)) {
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
                                                             <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
-                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -432,7 +432,7 @@ if (isset($event_id)) {
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
                                                             <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
-                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -498,7 +498,7 @@ if (isset($event_id)) {
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
                                                             <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
-                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -579,7 +579,7 @@ if (isset($event_id)) {
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
                                                             <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
-                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -643,7 +643,7 @@ if (isset($event_id)) {
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
                                                             <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
-                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -693,7 +693,7 @@ if (isset($event_id)) {
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1">
                                                             <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
-                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                             </span>
                                                         </div>
                                                     <?php endif; ?>
@@ -1516,7 +1516,7 @@ if (isset($event_id)) {
                                                 <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                     <div class="mt-1 mb-1">
                                                         <span class="badge bg-success text-white" style="font-size: 11px; padding: 4px 8px;">
-                                                            <i class="bi bi-check-circle-fill me-1"></i>Válido para os 2 eventos. Dream25 e Anime Dream 25
+                                                            <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
                                                         </span>
                                                     </div>
                                                 <?php endif; ?>
