@@ -696,6 +696,72 @@ class Usuarios extends BaseController
     }
 
 
+    /**
+     * Exibe o formulário de edição do perfil do usuário logado
+     */
+    public function perfil()
+    {
+        $usuario = usuario_logado();
+        $clienteModel = new \App\Models\ClienteModel();
+        $cliente = $clienteModel->where('usuario_id', $usuario->id)->first();
+
+        $data = [
+            'titulo' => 'Meu Perfil',
+            'usuario' => $usuario,
+            'cliente' => $cliente,
+        ];
+        return view('Usuarios/perfil', $data);
+    }
+
+    /**
+     * Atualiza o perfil do usuário logado (AJAX)
+     */
+    public function atualizarPerfil()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+        $usuario = usuario_logado();
+        $clienteModel = new \App\Models\ClienteModel();
+        $usuarioModel = $this->usuarioModel;
+        $post = $this->request->getPost();
+
+        // Atualiza cliente
+        $cliente = $clienteModel->where('usuario_id', $usuario->id)->first();
+        if ($cliente) {
+            $cliente->fill($post);
+            if (!$clienteModel->save($cliente)) {
+                $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+                $retorno['erros_model'] = $clienteModel->errors();
+                return $this->response->setJSON($retorno);
+            }
+        }
+
+        // Atualiza e-mail em usuarios se mudou
+        if (isset($post['email']) && $post['email'] !== $usuario->email) {
+            $usuario->email = $post['email'];
+        }
+        // Atualiza nome se mudou
+        if (isset($post['nome']) && $post['nome'] !== $usuario->nome) {
+            $usuario->nome = $post['nome'];
+        }
+        // Atualiza senha se informada
+        if (!empty($post['password'])) {
+            $usuario->password = $post['password'];
+            $usuario->password_confirmation = $post['password_confirmation'] ?? $post['password'];
+        }
+        if ($usuario->hasChanged()) {
+            if (!$usuarioModel->save($usuario)) {
+                $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+                $retorno['erros_model'] = $usuarioModel->errors();
+                return $this->response->setJSON($retorno);
+            }
+        }
+        $retorno['sucesso'] = 'Perfil atualizado com sucesso!';
+        return $this->response->setJSON($retorno);
+    }
 
 
     /**

@@ -175,7 +175,7 @@
                                     <hr class="dropdown-divider">
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="<?php echo site_url('usuarios/editarsenha'); ?>">
+                                    <a class="dropdown-item" href="<?php echo site_url('usuarios/perfil'); ?>">
                                         <div class="d-flex align-items-center">
                                             <div class=""><i class="bi bi-person-fill"></i></div>
                                             <div class="ms-3"><span>Perfil</span></div>
@@ -356,7 +356,7 @@
                 <?php if (!usuario_logado()->is_admin) : ?>
                     <li class="menu-label">EXTRAS</li>
                 <li>
-                    <a href="<?php echo site_url('usuarios/editarsenha'); ?>">
+                    <a href="<?php echo site_url('usuarios/perfil'); ?>">
                         <div class="parent-icon"><i class="bi bi-person-lines-fill"></i>
                         </div>
                         <div class="menu-title">Alterar senha</div>

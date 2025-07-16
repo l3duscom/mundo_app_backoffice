@@ -165,7 +165,7 @@
                 <?php endif; ?>
 
 
-                <li><a href="<?php echo site_url("usuarios/editarsenha"); ?>"> <i class="icon-settings"></i>Alterar
+                <li><a href="<?php echo site_url('usuarios/perfil'); ?>"> <i class="icon-settings"></i>Alterar
                         senha </a></li>
 
 

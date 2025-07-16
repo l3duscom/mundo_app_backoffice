@@ -159,6 +159,9 @@ $routes->group('api/checkout', ['filter' => 'apiKey'], function ($routes) {
 $routes->get('concursos/(:num)', 'Concursos::index/$1');
 $routes->get('concursos', 'Concursos::index');
 
+$routes->get('usuarios/perfil', 'Usuarios::perfil');
+$routes->post('usuarios/atualizarperfil', 'Usuarios::atualizarPerfil');
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing
