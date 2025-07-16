@@ -466,7 +466,6 @@
                 <?php endif; ?>
             </div>
         </div>
-        <a href="<?= site_url('/ingressos') ?>" class="btn btn-sm btn-dark w-100 mt-0 mb-3 shadow">Acessar todos os meus ingressos</a>
     </div>
 </div>
 
