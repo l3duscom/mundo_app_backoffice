@@ -88,6 +88,7 @@ class IngressoModel extends Model
     {
         $atributos = [
             'ingressos.id',
+            'ingressos.ticket_id',
             'ingressos.created_at',
             'ingressos.nome',
             'ingressos.valor_unitario',
@@ -131,6 +132,7 @@ class IngressoModel extends Model
     {
         $atributos = [
             'ingressos.id',
+            'ingressos.ticket_id',
             'ingressos.created_at',
             'ingressos.nome',
             'ingressos.valor_unitario',

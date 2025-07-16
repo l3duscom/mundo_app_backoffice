@@ -55,9 +55,27 @@ class Console extends BaseController
 
 		$ingressos = $this->ingressoModel->recuperaIngressosPorUsuario($id);
 
-
-
-		foreach ($ingressos as $key => $value) {
+		// Separar ingressos em atuais e anteriores
+		$ticketModel = new \App\Models\TicketModel();
+		$ingressos_atuais = [];
+		$ingressos_anteriores = [];
+		$hoje = date('Y-m-d');
+		foreach ($ingressos as $key => $ingresso) {
+			// Buscar ticket vinculado
+			$ticket = $ticketModel->find($ingresso->ticket_id ?? null);
+			$data_fim = $ticket->data_fim ?? null;
+			if ($data_fim) {
+				// Se data_fim passou de 2 dias atrás, é anterior
+				$limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
+				if ($data_fim < $limite) {
+					$ingressos_anteriores[] = $ingresso;
+				} else {
+					$ingressos_atuais[] = $ingresso;
+				}
+			} else {
+				// Se não tem ticket/data_fim, considerar como atual
+				$ingressos_atuais[] = $ingresso;
+			}
 			$ingressos[$key]->qr = (new QRCode)->render($ingressos[$key]->codigo);
 		}
 
@@ -82,11 +100,59 @@ class Console extends BaseController
 			'temingresso' => $temingresso,
 			'convite' => $convite,
 			'indicacoes' => $indicacoes,
-			'ingressos' => $ingressos,
-
+			'ingressos_atuais' => $ingressos_atuais,
+			'ingressos_anteriores' => $ingressos_anteriores,
 		];
 
+		$usuario = $this->usuarioLogado();
+		$campos_obrigatorios = [
+			'nome' => $usuario->nome,
+			'email' => $usuario->email,
+			'cpf' => $cliente->cpf,
+			'telefone' => $cliente->telefone,
+			'cep' => $cliente->cep,
+			'endereco' => $cliente->endereco,
+			'numero' => $cliente->numero,
+			'bairro' => $cliente->bairro,
+			'cidade' => $cliente->cidade,
+			'estado' => $cliente->estado,
+		];
+		$campos_faltando = [];
+		foreach ($campos_obrigatorios as $campo => $valor) {
+			if (empty($valor)) {
+				$campos_faltando[] = $campo;
+			}
+		}
+		$perfil_incompleto = !empty($campos_faltando);
+		$data['perfil_incompleto'] = $perfil_incompleto;
+		$data['campos_faltando'] = $campos_faltando;
 
+        $enderecosModel = new \App\Models\EnderecoModel();
+        $enderecos = $enderecosModel->where('user_id', $usuario->id)->orderBy('id', 'DESC')->findAll();
+
+        $endereco_default = [
+            'endereco' => $cliente->endereco,
+            'numero' => $cliente->numero,
+            'bairro' => $cliente->bairro,
+            'cidade' => $cliente->cidade,
+            'estado' => $cliente->estado,
+            'cep' => $cliente->cep,
+            'default' => true,
+        ];
+
+        $enderecos_lista = array_merge([$endereco_default], array_map(function($e) {
+            return [
+                'endereco' => $e->endereco,
+                'numero' => $e->numero,
+                'bairro' => $e->bairro,
+                'cidade' => $e->cidade,
+                'estado' => $e->estado,
+                'cep' => $e->cep,
+                'default' => false,
+            ];
+        }, $enderecos));
+
+        $data['enderecos_lista'] = $enderecos_lista;
 
 
 		return view('Console/dashboard', $data);
