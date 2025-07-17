@@ -100,7 +100,6 @@ class TicketModel extends Model
             ->where('promo', null)
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
-            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
             ->orderBy('nome', 'ASC')
             ->findAll();
     }
@@ -117,7 +116,6 @@ class TicketModel extends Model
             ->where('promo', null)
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
-            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
             ->orderBy('nome', 'ASC')
             ->findAll();
     }
@@ -134,7 +132,6 @@ class TicketModel extends Model
             ->where('promo', 'girafinhas')
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
-            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
             ->orderBy('nome', 'ASC')
             ->findAll();
     }
@@ -150,7 +147,6 @@ class TicketModel extends Model
             ->where('promo', 'otakada')
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
-            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
             ->orderBy('nome', 'ASC')
             ->findAll();
     }
@@ -168,7 +164,6 @@ class TicketModel extends Model
             ->where('promo', 'puc')
             ->where('ativo', 1)
             ->where('quantidade >= estoque')
-            ->orderBy('ISNULL(parent_ticket_id)', 'ASC')
             ->orderBy('nome', 'ASC')
             ->findAll();
     }

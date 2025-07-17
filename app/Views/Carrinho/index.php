@@ -334,10 +334,14 @@ if (isset($event_id)) {
                         <?php
                         $tem_epic = false;
                         $tem_vip = false;
+                        $tem_super_pack = false;
                         foreach ($items as $item) {
                             if (isset($item['categoria'])) {
                                 if (strtolower($item['categoria']) === 'epic') $tem_epic = true;
                                 if (strtolower($item['categoria']) === 'vip') $tem_vip = true;
+                            }
+                            if (!empty($item['parent_ticket_id'])) {
+                                $tem_super_pack = true;
                             }
                         }
                         ?>
@@ -389,6 +393,9 @@ if (isset($event_id)) {
                             <?php if ($tem_vip): ?>
                                 <button class="tablinks" onclick="openCategoria(event, 'vip')">VIP FULL<p class="mb-0" style="font-size: 11px">Experiência Máxima</p></button>
                             <?php endif; ?>
+                            <?php if ($tem_super_pack): ?>
+                                <button class="tablinks" onclick="openCategoria(event, 'super_pack')">Super Pack<p class="mb-0" style="font-size: 11px">2 Eventos</p></button>
+                            <?php endif; ?>
                             <button class="tablinks" onclick="openCategoria(event, 'cosplay')">Cosplayer<p class="mb-0" style="font-size: 11px">Promocional</p></button>
                         </div>
                         <div class="d-grid gap-2 mb-0" style="padding:10px">
@@ -402,7 +409,7 @@ if (isset($event_id)) {
                         // SÁBADO
                         $tem_sabado = false;
                         foreach ($items as $key => $value) {
-                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab')) {
+                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab' && empty($value['parent_ticket_id']))) {
                                 $tem_sabado = true;
                                 break;
                             }
@@ -419,7 +426,7 @@ if (isset($event_id)) {
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
-                                <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab') : ?>
+                                <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
@@ -474,7 +481,7 @@ if (isset($event_id)) {
                         // DOMINGO
                         $tem_domingo = false;
                         foreach ($items as $key => $value) {
-                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom')) {
+                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom' && empty($value['parent_ticket_id']))) {
                                 $tem_domingo = true;
                                 break;
                             }
@@ -491,7 +498,7 @@ if (isset($event_id)) {
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
-                                <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom') : ?>
+                                <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
@@ -548,7 +555,7 @@ if (isset($event_id)) {
                         // 2 DIAS
                         $tem_passaporte = false;
                         foreach ($items as $key => $value) {
-                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo')) {
+                            if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo' && empty($value['parent_ticket_id']))) {
                                 $tem_passaporte = true;
                                 break;
                             }
@@ -565,7 +572,7 @@ if (isset($event_id)) {
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
-                                <?php if (($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo') : ?>
+                                <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
@@ -622,7 +629,7 @@ if (isset($event_id)) {
                         // EPIC
                         $tem_epic_ingresso = false;
                         foreach ($items as $key => $value) {
-                            if ($value['categoria'] == 'epic') {
+                            if (($value['categoria'] == 'epic' && empty($value['parent_ticket_id']))) {
                                 $tem_epic_ingresso = true;
                                 break;
                             }
@@ -642,7 +649,7 @@ if (isset($event_id)) {
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
 
                             <?php foreach ($items as $key => $value) : ?>
-                                <?php if ($value['categoria'] == 'epic') : ?>
+                                <?php if (($value['categoria'] == 'epic' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
@@ -696,7 +703,7 @@ if (isset($event_id)) {
                         // VIP
                         $tem_vip_ingresso = false;
                         foreach ($items as $key => $value) {
-                            if ($value['categoria'] == 'vip') {
+                            if (($value['categoria'] == 'vip' && empty($value['parent_ticket_id']))) {
                                 $tem_vip_ingresso = true;
                                 break;
                             }
@@ -722,7 +729,7 @@ if (isset($event_id)) {
                                 </div>
                             </div> -->
                             <?php foreach ($items as $key => $value) : ?>
-                                <?php if ($value['categoria'] == 'vip') : ?>
+                                <?php if (($value['categoria'] == 'vip' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
@@ -775,10 +782,80 @@ if (isset($event_id)) {
                         </div>
 
                         <?php
+                        // SUPER PACK
+                        $tem_super_pack_ingresso = false;
+                        foreach ($items as $key => $value) {
+                            if (!empty($value['parent_ticket_id'])) {
+                                $tem_super_pack_ingresso = true;
+                                break;
+                            }
+                        }
+                        ?>
+                        <div id="super_pack" class="tabcontent">
+                            <?php if (!$tem_super_pack_ingresso): ?>
+                                <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
+                            <?php endif; ?>
+                            <!-- instruções e conteúdo já existentes da aba Super Pack -->
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar de <strong>2 eventos incríveis</strong>: Dreamfest 25 + Anime Dream 25!</p>
+                            <p>Você receberá uma credencial exclusiva e colecionável que será válida para ambos os eventos. A credencial deverá ser apresentada na entrada e na saída dos festivais e sempre que for requisitada. Você terá direito à entrar e sair dos eventos sempre que quiser!</p>
+                            <hr>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
+                            <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
+
+                            <?php foreach ($items as $key => $value) : ?>
+                                <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
+                                        <div class="form-check mt-3 mb-3">
+                                            <div class="row">
+                                                <div class="col-7">
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <div class="mt-1 mb-1 badge-container">
+                                                        <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
+                                                            <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                        </span>
+                                                        <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                            + Econômico
+                                                        </span>
+                                                    </div>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                </div>
+                                                <div class="col-5 text-right">
+                                                    <?php if ($value['estoque'] > 0) : ?>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                                </strong>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
+                                                        </div>
+                                                    <?php else : ?>
+                                                        <strong style="color: red;">ESGOTADO</strong>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="col-11 mt-3 eligibility-section">
+                                                    <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
+                                                    <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+
+                        </div>
+
+                        <?php
                         // COSPLAY
                         $tem_cosplay = false;
                         foreach ($items as $key => $value) {
-                            if ($value['categoria'] == 'cosplay') {
+                            if (($value['categoria'] == 'cosplay' && empty($value['parent_ticket_id']))) {
                                 $tem_cosplay = true;
                                 break;
                             }
@@ -798,7 +875,7 @@ if (isset($event_id)) {
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
 
                             <?php foreach ($items as $key => $value) : ?>
-                                <?php if ($value['categoria'] == 'cosplay') : ?>
+                                <?php if (($value['categoria'] == 'cosplay' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
@@ -859,7 +936,7 @@ if (isset($event_id)) {
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
 
                             <?php foreach ($items as $key => $value) : ?>
-                                <?php if ($value['categoria'] == 'mae') : ?>
+                                <?php if (($value['categoria'] == 'mae' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
@@ -1693,7 +1770,7 @@ if (isset($event_id)) {
                 <div class="card">
                     <div class="card-body">
                         <?php foreach ($items as $key => $value) : ?>
-                            <?php if ($value['categoria'] == 'epic') : ?>
+                            <?php if ($value['categoria'] == 'epic' && empty($value['parent_ticket_id'])) : ?>
                                 <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
                                     <div class="form-check mt-3 mb-3">
                                         <div class="row">
