@@ -431,8 +431,8 @@ if (isset($event_id)) {
                                     $dia_inicio = date_format($data_inicio, 'd');
                                     $mes = $meses[date_format($data_inicio, 'm')];
                                     $ano = date_format($data_inicio, 'Y');
-                                    $hora_inicio = date_format($data_inicio, 'H:i');
-                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20h';
+                                    $hora_inicio = isset($evento->hora_inicio) ? $evento->hora_inicio : '11:00';
+                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20:00';
                                     echo ", dia $dia_inicio de $mes de $ano das $hora_inicio às $hora_fim";
                                 }
                             ?></p>
@@ -518,8 +518,8 @@ if (isset($event_id)) {
                                     $dia_fim = date_format($data_fim, 'd');
                                     $mes = $meses[date_format($data_fim, 'm')];
                                     $ano = date_format($data_fim, 'Y');
-                                    $hora_inicio = date_format($data_fim, 'H:i');
-                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20h';
+                                    $hora_inicio = isset($evento->hora_inicio) ? $evento->hora_inicio : '11:00';
+                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20:00';
                                     echo ", dia $dia_fim de $mes de $ano das $hora_inicio às $hora_fim";
                                 }
                             ?></p>
@@ -609,8 +609,8 @@ if (isset($event_id)) {
                                     $dia_fim = date_format($data_fim, 'd');
                                     $mes = $meses[date_format($data_inicio, 'm')];
                                     $ano = date_format($data_inicio, 'Y');
-                                    $hora_inicio = date_format($data_inicio, 'H:i');
-                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20h';
+                                    $hora_inicio = isset($evento->hora_inicio) ? $evento->hora_inicio : '11:00';
+                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20:00';
                                     echo ", dias $dia_inicio e $dia_fim de $mes de $ano das $hora_inicio às $hora_fim";
                                 }
                             ?></p>
