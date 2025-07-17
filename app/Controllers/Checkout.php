@@ -1503,7 +1503,7 @@ class Checkout extends BaseController
 			$payment = $this->asaasService->paymentPix([
 				'customer_id' => $customer_id,
 				'value' => (float) $post['valor_total'],
-				'description' => 'Ingressos Dreamfest 25',
+				'description' => 'Ingressos Dreamfest 25 (PIX com 10% desconto)',
 				'externalReference' => 'Api ASAAS'
 			]);
 
@@ -1524,7 +1524,7 @@ class Checkout extends BaseController
 			$this->transactionModel->protect(false)->insert([
 				'pedido_id' => $pedido_id,
 				'charge_id' => $payment['id'],
-				'installment_value' => $payment['value'],
+				'installment_value' => (float) $post['valor_total'],
 				'expire_at' => date('Y-m-d', strtotime('+1 days')),
 				'payment' => $payment['billingType'],
 				'qrcode' => $transaction['payload'],
@@ -1539,7 +1539,7 @@ class Checkout extends BaseController
 				'qrcode_image' => $transaction['encodedImage'],
 				'copiaecola' => $transaction['payload'],
 				'expire_at' => strtotime($transaction['expirationDate']),
-				'valor' => $payment['value']
+				'valor' => (float) $post['valor_total']
 			], $event_id);
 
 			unset($_SESSION['carrinho']);

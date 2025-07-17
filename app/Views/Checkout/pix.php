@@ -51,7 +51,11 @@
 
                         <?php echo form_open('Checkout/finalizarpix/' . $event_id, ['id' => 'form']) ?>
 
-                        <input type="hidden" name="valor_total" id="valor_total" value="<?= $total * 100 ?>" required>
+                        <?php 
+                        $descontoPix = $total * 0.10;
+                        $totalComDesconto = $total - $descontoPix;
+                        ?>
+                        <input type="hidden" name="valor_total" id="valor_total" value="<?= $totalComDesconto * 100 ?>" required>
                         <input type="hidden" name="frete" id="frete" value="<?= $_SESSION['frete'] ?>" required>
                         <input type="hidden" name="convite" value="<?= $_SESSION['convite'] ?>">
 
@@ -154,7 +158,21 @@
 
 
                         <div class="d-grid gap-2 mb-0" style="padding:7px">
-                            <center><span style="padding-top: 5px; margin-bottom: -5px">Resumo da compra: <strong>R$ <?= number_format($total, 2, ',', '')  ?></strong></span> com <strong>R$ <?= number_format($valor_desconto, 2, ',', '')  ?></strong> de desconto</center>
+                            <?php 
+                            $descontoPix = $total * 0.10;
+                            $totalComDesconto = $total - $descontoPix;
+                            ?>
+                            <center>
+                                <span style="padding-top: 5px; margin-bottom: -5px">
+                                    Resumo da compra: <strong>R$ <?= number_format($total, 2, ',', '') ?></strong>
+                                </span>
+                                <div class="text-success" style="font-size: 12px;">
+                                    <i class="bi bi-check-circle-fill"></i> Desconto PIX: <strong>R$ <?= number_format($descontoPix, 2, ',', '') ?></strong>
+                                </div>
+                                <span style="font-size: 14px; color: #6C038F;">
+                                    <strong>Total com desconto: R$ <?= number_format($totalComDesconto, 2, ',', '') ?></strong>
+                                </span>
+                            </center>
                             <input id="btn-salvar" type="submit" value="Comprar agora" class="btn btn-lg mt-0" style="background-color: purple; border-color: purple; color: white;">
 
                         </div>

@@ -45,6 +45,7 @@
                                         <div class="ms-auto fs-3 mb-0">
                                             <p class="mb-0" style="font-size: 10px;">Total a pagar:</p>
                                             <strong>R$ <?= number_format($transaction->installment_value, 2, ',', ''); ?></strong>
+                                            <div class="text-success" style="font-size: 11px;"><i class="bi bi-check-circle-fill"></i> Desconto de 10% aplicado</div>
                                         </div>
                                     </div>
                                 </div>

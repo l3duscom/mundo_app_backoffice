@@ -139,7 +139,7 @@ if (!isset($_SESSION['impressao'])) {
 
                                                     <div class="ms-auto fs-3 mb-0">
                                                         <p class="mb-0" style="font-size: 10px;">Total a pagar:</p>
-                                                        <strong>R$ <?= number_format($_SESSION['total'] + $_SESSION['valor_frete'], 2, ',', '') ?></strong>
+                                                        <strong class="valor-total">R$ <?= number_format($_SESSION['total'] + $_SESSION['valor_frete'], 2, ',', '') ?></strong>
                                                     </div>
 
                                                 </div>
@@ -297,6 +297,48 @@ fbq('track', 'ViewContent', {
         <?php echo $this->include('Clientes/_checkmail'); ?>
 
         <?php echo $this->include('Clientes/_viacep'); ?>
+
+        // Função para calcular desconto PIX
+        function calcularDescontoPix() {
+            var valorOriginal = <?= $_SESSION['total'] ?? 0 ?>;
+            var desconto = valorOriginal * 0.10; // 10% de desconto
+            var valorComDesconto = valorOriginal - desconto;
+            
+            // Atualizar o valor total exibido
+            $('.valor-total').text('R$ ' + valorComDesconto.toFixed(2).replace('.', ','));
+            
+            // Adicionar informação do desconto
+            if (!$('.desconto-pix-info').length) {
+                $('.valor-total').after('<div class="desconto-pix-info text-success" style="font-size: 12px;"><i class="bi bi-check-circle-fill"></i> Desconto de 10% aplicado no PIX</div>');
+            }
+            
+            return valorComDesconto;
+        }
+
+        // Função para remover desconto PIX
+        function removerDescontoPix() {
+            var valorOriginal = <?= $_SESSION['total'] ?? 0 ?>;
+            $('.valor-total').text('R$ ' + valorOriginal.toFixed(2).replace('.', ','));
+            $('.desconto-pix-info').remove();
+        }
+
+        // Aplicar desconto quando clicar no botão PIX
+        $('a[href*="checkout/pix"]').click(function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            var valorComDesconto = calcularDescontoPix();
+            
+            // Adicionar o valor com desconto como parâmetro na URL
+            var separator = href.includes('?') ? '&' : '?';
+            href += separator + 'desconto_pix=' + valorComDesconto;
+            
+            window.location.href = href;
+        });
+
+        // Remover desconto quando clicar no botão Cartão
+        $('a[href*="checkout/cartao"]').click(function() {
+            removerDescontoPix();
+        });
 
 
         $("#form").on('submit', function(e) {
