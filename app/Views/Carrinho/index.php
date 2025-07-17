@@ -420,7 +420,22 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <!-- instruções e conteúdo já existentes da aba Sábado -->
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 Parte 2 - Mega Convenção Geek <strong>somente no sábado </strong>, dia 6/12/2025 das 11h às 20h</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> <strong>somente no sábado</strong><?php
+                                if (isset($evento)) {
+                                    $data_inicio = date_create($evento->data_inicio);
+                                    $meses = [
+                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
+                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
+                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
+                                    ];
+                                    $dia_inicio = date_format($data_inicio, 'd');
+                                    $mes = $meses[date_format($data_inicio, 'm')];
+                                    $ano = date_format($data_inicio, 'Y');
+                                    $hora_inicio = date_format($data_inicio, 'H:i');
+                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20h';
+                                    echo ", dia $dia_inicio de $mes de $ano das $hora_inicio às $hora_fim";
+                                }
+                            ?></p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
@@ -492,7 +507,22 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <!-- instruções e conteúdo já existentes da aba Domingo -->
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 Parte 2 - Mega Convenção Geek <strong>somente no domingo </strong>, dia 7/12/2025 das 11h às 20h</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> <strong>somente no domingo</strong><?php
+                                if (isset($evento)) {
+                                    $data_fim = date_create($evento->data_fim);
+                                    $meses = [
+                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
+                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
+                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
+                                    ];
+                                    $dia_fim = date_format($data_fim, 'd');
+                                    $mes = $meses[date_format($data_fim, 'm')];
+                                    $ano = date_format($data_fim, 'Y');
+                                    $hora_inicio = date_format($data_fim, 'H:i');
+                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20h';
+                                    echo ", dia $dia_fim de $mes de $ano das $hora_inicio às $hora_fim";
+                                }
+                            ?></p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
@@ -566,7 +596,24 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <!-- instruções e conteúdo já existentes da aba 2 Dias -->
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Convenção Geek <strong>nos dois dias de evento</strong>, das 11 às 20h</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> <strong>nos dois dias de evento</strong><?php
+                                if (isset($evento)) {
+                                    $data_inicio = date_create($evento->data_inicio);
+                                    $data_fim = date_create($evento->data_fim);
+                                    $meses = [
+                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
+                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
+                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
+                                    ];
+                                    $dia_inicio = date_format($data_inicio, 'd');
+                                    $dia_fim = date_format($data_fim, 'd');
+                                    $mes = $meses[date_format($data_inicio, 'm')];
+                                    $ano = date_format($data_inicio, 'Y');
+                                    $hora_inicio = date_format($data_inicio, 'H:i');
+                                    $hora_fim = isset($evento->hora_fim) ? $evento->hora_fim : '20h';
+                                    echo ", dias $dia_inicio e $dia_fim de $mes de $ano das $hora_inicio às $hora_fim";
+                                }
+                            ?></p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
@@ -640,7 +687,7 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <!-- instruções e conteúdo já existentes da aba EPIC PASS -->
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Convenção Geek nos dias selecionados.</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> nos dias selecionados.</p>
                             <p>Você receberá uma kit colecionável com Credencial, Pulseira, Cordão, Pôster e Guia do evento! A Credencial e Pulseira deverão ser apresentados na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#vip-fanModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a>
 
@@ -714,7 +761,7 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <!-- instruções e conteúdo já existentes da aba VIP FULL -->
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Convenção Geek nos dias selecionados.</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> nos dias selecionados.</p>
                             <p>Você receberá uma kit colecionável com Credencial, Pulseira, Cordão, Pôster, Copo, Ingresso holográfico e Guia do evento! A Credencial e Pulseira deverão ser apresentados na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#vip-fullModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a>
 
@@ -796,7 +843,7 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <!-- instruções e conteúdo já existentes da aba Super Pack -->
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar de <strong>2 eventos incríveis</strong>: Dreamfest 25 + Anime Dream 25!</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar de <strong>2 eventos incríveis</strong>: <?= isset($evento) ? esc($evento->nome) : 'evento principal' ?> + Anime Dream 25!</p>
                             <p>Você receberá uma credencial exclusiva e colecionável que será válida para ambos os eventos. A credencial deverá ser apresentada na entrada e na saída dos festivais e sempre que for requisitada. Você terá direito à entrar e sair dos eventos sempre que quiser!</p>
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
@@ -866,7 +913,7 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <!-- instruções e conteúdo já existentes da aba Cosplayer -->
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Festival Geek nos dias selecionados.</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> nos dias selecionados.</p>
                             <p>Você receberá uma pulseira colecionável COSPLAYER que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Vvocê terá direito à entrar e sair do evento sempre que quiser!</p>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#cosplayerModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a>
 
@@ -927,7 +974,7 @@ if (isset($event_id)) {
 
                         </div>
                         <div id="mae" class="tabcontent">
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do Dreamfest 25 - Mega Festival Geek nos dias selecionados.</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> nos dias selecionados.</p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#cosplayerModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a>
 
