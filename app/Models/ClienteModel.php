@@ -21,6 +21,10 @@ class ClienteModel extends Model
         'bairro',
         'cidade',
         'estado',
+        'pj',
+        'tipo_parceria',
+        'area_atuacao',
+        'observacoes'
     ];
 
     // Dates
@@ -60,6 +64,10 @@ class ClienteModel extends Model
             'clientes.bairro',
             'clientes.cidade',
             'clientes.estado',
+            'clientes.pj',
+            'clientes.tipo_parceria',
+            'clientes.area_atuacao',
+            'clientes.observacoes',
 
         ];
 

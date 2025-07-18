@@ -250,6 +250,13 @@
                         </a>
                     </li>
                     <li>
+                        <a href="<?php echo site_url('/clientes/parceiros'); ?>">
+                            <div class="parent-icon"><i class="bx bx-group"></i>
+                            </div>
+                            <div class="menu-title">Parceiros</div>
+                        </a>
+                    </li>
+                    <li>
                         <a href="<?php echo site_url('/eventos'); ?>">
                             <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
                             </div>

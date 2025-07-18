@@ -23,25 +23,24 @@
     <div class="col-lg-12">
         <div class="block">
 
-            <a href="<?php echo site_url('clientes/criar'); ?>" class="btn btn-primary mb-5">Novo cliente</a>
-
-            <a href="<?php echo site_url('clientes/add'); ?>" class="btn btn-warning mb-5">Novo membro</a>
-            <a href="<?php echo site_url('clientes/addinfluencer'); ?>" class="btn btn-secondary mb-5">Novo influencer</a>
-            <a href="<?php echo site_url('clientes/addpartner'); ?>" class="btn btn-warning mb-5">Novo parceiro/expositor</a>
+            <a href="<?php echo site_url('clientes/addpartner'); ?>" class="btn btn-warning mb-5">
+                <i class="bx bx-plus-circle me-2"></i>Novo Parceiro
+            </a>
             
-            <div class="mb-3">
-                <a href="<?php echo site_url('clientes/parceiros'); ?>" class="btn btn-info">
-                    <i class="bx bx-group me-2"></i>Ver Parceiros
-                </a>
-            </div>
+            <a href="<?php echo site_url('clientes'); ?>" class="btn btn-secondary mb-5">
+                <i class="bx bx-arrow-back me-2"></i>Voltar para Clientes
+            </a>
+            
             <div class="table-responsive">
                 <table id="ajaxTable" class="table table-striped table-sm" style="width: 100%;">
                     <thead>
                         <tr>
-                            <th>Nome</th>
-                            <th>CPF</th>
+                            <th>Nome/Razão Social</th>
+                            <th>CPF/CNPJ</th>
                             <th>E-mail</th>
                             <th>Telefone</th>
+                            <th>Tipo Parceria</th>
+                            <th>Área Atuação</th>
                             <th>Situação</th>
                         </tr>
                     </thead>
@@ -105,7 +104,7 @@
 
             "oLanguage": DATATABLE_PTBR,
 
-            "ajax": "<?php echo site_url('clientes/recuperaclientes'); ?>",
+            "ajax": "<?php echo site_url('clientes/recuperaparceiros'); ?>",
             "columns": [{
                     "data": "nome"
                 },
@@ -117,6 +116,12 @@
                 },
                 {
                     "data": "telefone"
+                },
+                {
+                    "data": "tipo_parceria"
+                },
+                {
+                    "data": "area_atuacao"
                 },
                 {
                     "data": "situacao"
@@ -134,4 +139,4 @@
     });
 </script>
 
-<?php echo $this->endSection() ?>
+<?php echo $this->endSection() ?> 

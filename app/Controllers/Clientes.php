@@ -149,6 +149,88 @@ class Clientes extends BaseController
         return view('Clientes/addinfluencer', $data);
     }
 
+    public function addpartner()
+    {
+
+        if (!$this->usuarioLogado()->temPermissaoPara('criar-clientes')) {
+
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+        }
+
+        $cliente = new Cliente();
+
+        $this->removeBlockCepEmailSessao();
+
+        $data = [
+            'titulo' => 'Criando novo Parceiro',
+            'cliente' => $cliente,
+        ];
+
+        return view('Clientes/addpartner', $data);
+    }
+
+    public function parceiros()
+    {
+        if (!$this->usuarioLogado()->temPermissaoPara('listar-clientes')) {
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+        }
+
+        $data = [
+            'titulo' => 'Listando os parceiros',
+        ];
+
+        return view('Clientes/parceiros', $data);
+    }
+
+    public function recuperaParceiros()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $atributos = [
+            'clientes.id',
+            'clientes.nome',
+            'clientes.cpf',
+            'clientes.email',
+            'clientes.telefone',
+            'clientes.deleted_at',
+            'clientes.tipo_parceria',
+            'clientes.area_atuacao',
+            'clientes.pj',
+            'grupos_usuarios.grupo_id'
+        ];
+
+        $parceiros = $this->clienteModel->select($atributos)
+            ->distinct('clientes.id')
+            ->withDeleted(true)
+            ->join('grupos_usuarios', 'grupos_usuarios.usuario_id = clientes.usuario_id')
+            ->where('grupos_usuarios.grupo_id', 4) // Grupo de parceiros
+            ->orderBy('id', 'DESC')
+            ->find();
+
+        // Receberá o array de objetos de parceiros
+        $data = [];
+
+        foreach ($parceiros as $parceiro) {
+            $data[] = [
+                'nome' => anchor("clientes/exibir/$parceiro->id", esc($parceiro->nome), 'title="Exibir parceiro ' . esc($parceiro->nome) . ' "'),
+                'cpf' => $parceiro->pj == 1 ? 'CNPJ: ' . esc($parceiro->cpf) : 'CPF: ' . esc($parceiro->cpf),
+                'email' => esc($parceiro->email),
+                'telefone' => esc($parceiro->telefone),
+                'tipo_parceria' => esc($parceiro->tipo_parceria ?? 'N/A'),
+                'area_atuacao' => esc($parceiro->area_atuacao ?? 'N/A'),
+                'situacao' => $parceiro->exibeSituacao(),
+            ];
+        }
+
+        $retorno = [
+            'data' => $data,
+        ];
+
+        return $this->response->setJSON($retorno);
+    }
+
     public function cadastrar(int $id = null)
     {
         if (!$this->request->isAJAX()) {
@@ -298,6 +380,65 @@ class Clientes extends BaseController
             $retorno['id'] = $this->clienteModel->getInsertID();
 
             return $this->response->setJSON($retorno);
+        }
+
+        // Retornamos os erros de validação
+        $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model'] = $this->clienteModel->errors();
+
+        // Retorno para o ajax request
+        return $this->response->setJSON($retorno);
+    }
+
+    public function cadastrarPartner(int $id = null)
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        if (session()->get('blockEmail') === true) {
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['cep' => 'Informe um E-mail com domínio válido'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        if (session()->get('blockCep') === true) {
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['cep' => 'Informe um CEP válido'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+        $cliente = new Cliente($post);
+
+        if ($this->clienteModel->save($cliente)) {
+
+            try {
+                // Cria usuario do cliente
+                $this->criaUsuarioParaPartner($cliente);
+
+                // Envia dados de acesso ao clente
+                $this->enviaEmailCriacaoPartnerAcesso($cliente);
+
+                $btnCriar = anchor("clientes/addpartner", 'Cadastrar novo Parceiro', ['class' => 'btn btn-danger mt-2']);
+
+                session()->setFlashdata('sucesso', "Dados salvos com sucesso!<br><br>Importante: informe ao cliente os dados de acesso ao sistema: <p>E-mail: $cliente->email <p><p>Senha inicial: 123456</p> Esses mesmos dados foram enviados para o e-mail do cliente.<br> $btnCriar");
+
+                $retorno['id'] = $this->clienteModel->getInsertID();
+
+                return $this->response->setJSON($retorno);
+            } catch (\Exception $e) {
+                // Em caso de erro ao criar usuário ou enviar email, retornamos erro
+                $retorno['erro'] = 'Erro ao processar dados do parceiro: ' . $e->getMessage();
+                return $this->response->setJSON($retorno);
+            }
         }
 
         // Retornamos os erros de validação
@@ -633,6 +774,29 @@ class Clientes extends BaseController
         $email->send();
     }
 
+    private function enviaEmailCriacaoPartnerAcesso(object $cliente): void
+    {
+        $email = service('email');
+
+        $email->setFrom(env('email.fromEmail'), env('email.fromName'));
+
+        $email->setTo($cliente->email);
+
+        $email->setCC('relacionamento@mundodream.com.br');
+
+        $email->setSubject('Dados de acesso ao Mundo Dream para Parceiros');
+
+        $data = [
+            'cliente' => $cliente,
+        ];
+
+        $mensagem = view('Clientes/email_dados_acesso_parceiros', $data);
+
+        $email->setMessage($mensagem);
+
+        $email->send();
+    }
+
     /**
      * Método que envia o e-mail para o cliente informando a alteração no e-mail de acesso.
      *
@@ -773,6 +937,43 @@ class Clientes extends BaseController
         // Inserimos o usuário no grupo de clientes
         $this->grupoUsuarioModel->protect(false)->insert($grupoUsuario);
         $this->grupoUsuarioModel->protect(false)->insert($ativaInfluencer);
+
+        // Atualizamos a tabela de clientes com o ID do usuário criado
+        $this->clienteModel
+            ->protect(false)
+            ->where('id', $this->clienteModel->getInsertID())
+            ->set('usuario_id', $this->usuarioModel->getInsertID())
+            ->update();
+    }
+
+    private function criaUsuarioParaPartner(object $cliente): void
+    {
+
+        // Montamos os dados do usuário do cliente
+        $usuario = [
+            'nome' => $cliente->nome,
+            'email' => $cliente->email,
+            'password' => '123456',
+            'ativo' => true,
+        ];
+
+        // Criamos o usuário do cliente
+        $this->usuarioModel->skipValidation(true)->protect(false)->insert($usuario);
+
+        // Montamos os dados do grupo que o usuário fará parte
+        $grupoUsuario = [
+            'grupo_id' => 2, // Grupo de clientes.... lembrem que esse ID jamais deverá ser alterado ou removido.
+            'usuario_id' => $this->usuarioModel->getInsertID(),
+        ];
+
+        $ativaPartner = [
+            'grupo_id' => 4, // Grupo de Parceiros.... lembrem que esse ID jamais deverá ser alterado ou removido.
+            'usuario_id' => $this->usuarioModel->getInsertID(),
+        ];
+
+        // Inserimos o usuário no grupo de clientes
+        $this->grupoUsuarioModel->protect(false)->insert($grupoUsuario);
+        $this->grupoUsuarioModel->protect(false)->insert($ativaPartner);
 
         // Atualizamos a tabela de clientes com o ID do usuário criado
         $this->clienteModel
