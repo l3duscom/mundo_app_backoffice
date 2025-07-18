@@ -39,6 +39,35 @@ if(function_exists('evento_nome') === false){
 
 }
 
+if(function_exists('evento_descricao_pagamento') === false){
+
+    function evento_descricao_pagamento($tipo_pagamento = null){
+
+        $event_id = session()->get('event_id');
+        if($event_id) {
+            $eventoModel = new \App\Models\EventoModel();
+            $evento = $eventoModel->find($event_id);
+            
+            if($evento) {
+                $descricao = 'Ingressos ' . $evento->nome;
+                
+                // Adiciona informação específica do tipo de pagamento
+                if($tipo_pagamento === 'pix') {
+                    $descricao .= ' (PIX com 10% desconto)';
+                }
+                
+                return $descricao;
+            }
+        }
+        
+        // Fallback para caso não encontre o evento
+        return 'Ingressos Dreamfest 25';
+
+    }
+
+
+}
+
 if(function_exists('precisa_contexto_evento') === false){
 
     function precisa_contexto_evento($rota){

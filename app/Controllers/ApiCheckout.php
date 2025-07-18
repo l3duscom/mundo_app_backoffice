@@ -198,7 +198,7 @@ class ApiCheckout extends BaseController
             $payment = $this->asaasService->paymentPix([
                 'customer_id' => $customer_id,
                 'value' => (float) $data['valor_total'],
-                'description' => 'Ingressos Dreamfest 25',
+                'description' => evento_descricao_pagamento('pix'),
                 'externalReference' => 'Api ASAAS'
             ]);
             if (isset($payment['errors'][0])) {
@@ -308,7 +308,7 @@ class ApiCheckout extends BaseController
                 'customer_id' => $customer_id,
                 'installmentCount' => $installmentCount,
                 'installmentValue' => (float) $installmentValue,
-                'description' => 'Ingressos Dreamfest 25',
+                'description' => evento_descricao_pagamento(),
                 'postalCode' => preg_replace('/[^0-9]/', '', $data['cep'] ?? ''),
                 'observations' => 'Api ASAAS',
                 'holderName' => $data['holderName'] ?? '',

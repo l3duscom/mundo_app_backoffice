@@ -60,7 +60,7 @@ class CheckoutService
         $payment = $this->asaasService->paymentPix([
             'customer_id' => $customer_id,
             'value' => (float)$post['valor_total'],
-            'description' => 'Ingressos Dreamfest 25',
+            'description' => evento_descricao_pagamento('pix'),
             'externalReference' => 'Api ASAAS'
         ]);
 

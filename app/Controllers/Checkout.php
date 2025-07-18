@@ -884,7 +884,7 @@ class Checkout extends BaseController
 			'customer_id' => $customer_id,
 			'installmentCount' => $post['installmentCount'],
 			'installmentValue' => (float)$installmentValue,
-			'description' => 'Ingressos Dreamfest 23',
+			'description' => evento_descricao_pagamento(),
 			'postalCode' => preg_replace('/[^0-9]/', '', $_POST['cep']),
 			'observations' => 'Api ASAAS',
 			'holderName' => $post['holderName'],
@@ -1212,7 +1212,7 @@ class Checkout extends BaseController
 		$pay = [
 			'customer_id' => $customer_id,
 			'value' => (float)$post['valor_total'],
-			'description' => 'Ingressos Dreamfest 25',
+			'description' => evento_descricao_pagamento('pix'),
 			'externalReference' => 'Api ASAAS',
 
 		];
@@ -1350,7 +1350,7 @@ class Checkout extends BaseController
 				'customer_id' => $customer_id,
 				'installmentCount' => $post['installmentCount'],
 				'installmentValue' => (float) $installmentValue,
-				'description' => 'Ingressos Dreamfest 25',
+				'description' => evento_descricao_pagamento(),
 				'postalCode' => preg_replace('/[^0-9]/', '', $post['cep']),
 				'observations' => 'Api ASAAS',
 				'holderName' => $post['holderName'],
@@ -1503,7 +1503,7 @@ class Checkout extends BaseController
 			$payment = $this->asaasService->paymentPix([
 				'customer_id' => $customer_id,
 				'value' => (float) $post['valor_total'],
-				'description' => 'Ingressos Dreamfest 25 (PIX com 10% desconto)',
+				'description' => evento_descricao_pagamento('pix'),
 				'externalReference' => 'Api ASAAS'
 			]);
 
