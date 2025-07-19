@@ -301,7 +301,7 @@ class Ingressos extends BaseController
 
 		//dd($cliente->nome);
 		foreach ($ingressos as $ingresso) {
-			$qrcode = $this->gerarQRCode($ingresso->codigo);
+			$qrcode = (new QRCode)->render($ingresso->codigo);
 			$participante = (isset($ingresso->participante) && trim($ingresso->participante) !== '') ? $ingresso->participante : $cliente->nome;
 
 			$data['ingressos'][] = [
@@ -357,7 +357,7 @@ class Ingressos extends BaseController
 
 		//dd($cliente->nome);
 		foreach ($ingressos as $ingresso) {
-			$qrcode = $this->gerarQRCode($ingresso->codigo);
+			$qrcode = (new QRCode)->render($ingresso->codigo);
 			$participante = (isset($ingresso->participante) && trim($ingresso->participante) !== '') ? $ingresso->participante : $cliente->nome;
 
 			$data['ingressos'][] = [
@@ -412,7 +412,7 @@ class Ingressos extends BaseController
 
 
 		foreach ($ingressos as $ingresso) {
-			$qrcode = $this->gerarQRCode($ingresso->codigo);
+			$qrcode = (new QRCode)->render($ingresso->codigo);
 			$participante = $ingresso->participante ?? $cliente->nome;
 
 			$data['ingressos'][] = [
@@ -467,7 +467,7 @@ class Ingressos extends BaseController
 
 
 		foreach ($ingressos as $ingresso) {
-			$qrcode = $this->gerarQRCode($ingresso->codigo);
+			$qrcode = (new QRCode)->render($ingresso->codigo);
 			$participante = $ingresso->participante ?? $cliente->nome;
 
 			$data['ingressos'][] = [
@@ -504,6 +504,7 @@ class Ingressos extends BaseController
 
 		exit();
 	}
+
 
 
 	public function vincular($id)

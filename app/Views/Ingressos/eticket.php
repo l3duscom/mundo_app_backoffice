@@ -49,7 +49,7 @@
 
             <div style="font-weight: 900; padding: 10px;" class="no-wrap"><strong><?php echo $item['ingresso']->nome; ?></strong></div>
             <div style="font-weight: 900;" class="no-wrap">Participante:<br> <?php echo $item['participante'] ?></div>
-            <div style="font-weight: 900;" class="no-wrap"><strong>R$ <?php echo number_format($item['ingresso']->valor, 2, ',', '.'); ?></strong></div>
+            <div style="font-weight: 900;" class="no-wrap"><strong>R$ <?php echo $item['ingresso']->valor; ?></strong></div>
 
             <div style="font-size: 11px;padding-top: 15px" class="no-wrap"><strong>Ingresso válido para os <br>dias escolhidos </strong> <br>Abertura dos portões: 10h<br>Centro de eventos PUCRS<br>Av. Ipiranga 6681, Porto Alegre, <br>Rio Grande do Sul</div>
 

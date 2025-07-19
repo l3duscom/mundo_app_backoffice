@@ -586,15 +586,15 @@ class Clientes extends BaseController
             'cliente' => $cliente,
         ];
 
-        $ordemModel = new \App\Models\OrdemModel();
+        //$ordemModel = new \App\Models\OrdemModel();
 
-        $ordensCliente = $ordemModel->where('cliente_id', $cliente->id)->orderBy('ordens.id', 'DESC')->paginate(5);
+        //$ordensCliente = $ordemModel->where('cliente_id', $cliente->id)->orderBy('ordens.id', 'DESC')->paginate(5);
 
-        if ($ordensCliente != null) {
+        //if ($ordensCliente != null) {
 
-            $data['ordensCliente'] = $ordensCliente;
-            $data['pager'] = $ordemModel->pager;
-        }
+        //    $data['ordensCliente'] = $ordensCliente;
+        //    $data['pager'] = $ordemModel->pager;
+        //}
 
         return view('Clientes/historico', $data);
     }

@@ -113,7 +113,7 @@
                         </div>
                     </div>
                     <div class="flex-grow-1">
-                        <?php if ($cliente->grupo_id == 3) : ?>
+            <?php if ($cliente->grupo_id == 3) : ?>
                             <h5 class="card-title mb-0">
                                 <i class="lni lni-crown text-warning me-1"></i>
                                 <?php echo esc($cliente->nome); ?>
@@ -131,10 +131,10 @@
                                 <?php echo esc($cliente->nome); ?>
                             </h5>
                             <p class="text-muted mb-0">Influencer</p>
-                        <?php else : ?>
+            <?php else : ?>
                             <h5 class="card-title mb-0"><?php echo esc($cliente->nome); ?></h5>
                             <p class="text-muted mb-0">Cliente</p>
-                        <?php endif; ?>
+            <?php endif; ?>
                     </div>
                 </div>
                 
