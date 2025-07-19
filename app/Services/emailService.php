@@ -34,7 +34,7 @@ class EmailService
             "Abaixo está o link e QR Code para pagamento via PIX:\n" .
             site_url("checkout/qrcode/{$payment['id']}") . "\n\n" .
             "Pix copia e cola: {$qrData['payload']}\n\n" .
-            "Valor: R$ {$payment['value']}\n" .
+            "Valor: R$ " . number_format($payment['value'], 2, ',', '.') . "\n" .
             "Vencimento: " . date('d/m/Y', strtotime($payment['dueDate'] ?? '+1 day')) . "\n\n" .
             "Obrigado por comprar com a gente!";
 

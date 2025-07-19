@@ -7,7 +7,7 @@
 <hr>
 <h3>Reumo do pedido:</h3>
 <p>
-    <strong>Total do pedido: R$ <?= $cliente->valor; ?></strong>
+    <strong>Total do pedido: R$ <?= number_format($cliente->valor, 2, ',', '.'); ?></strong>
     <br>Vencimento: <?= date('d/m/Y', $cliente->expire_at); ?>
     <br>Pix Copia e Cola: <?= $cliente->copiaecola; ?>
     <hr>
