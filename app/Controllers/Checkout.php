@@ -1539,7 +1539,7 @@ class Checkout extends BaseController
 				'qrcode_image' => $transaction['encodedImage'],
 				'copiaecola' => $transaction['payload'],
 				'expire_at' => strtotime($transaction['expirationDate']),
-				'valor' => (float) $post['valor_total']
+				'valor' => $payment['value']
 			], $event_id);
 
 			unset($_SESSION['carrinho']);
