@@ -169,7 +169,8 @@ class Concursos extends BaseController
 
 		$inscricoes = $this->inscricaoModel->recuperarecuperaInscricoesKpopPorConcurso($id);
 
-
+		// Inicializa a variável $data
+		$data = [];
 
 		foreach ($inscricoes as $inscricao) {
 			if ($inscricao->categoria != 'solo') {
@@ -200,7 +201,6 @@ class Concursos extends BaseController
 				'categoria' => esc($inscricao->categoria),
 				'status' => esc($inscricao->status),
 				'email' => esc($inscricao->email),
-				'telefone' => esc($inscricao->telefone),
 				'telefone' => anchor(
 					'https://wa.me/55' . str_replace(array("(", ")", " ", "-"), "", $inscricao->telefone),
 					$inscricao->telefone,
@@ -213,8 +213,6 @@ class Concursos extends BaseController
 				'acao' => $link1 . ' || ' . $link2,
 			];
 		}
-
-
 
 		$retorno = [
 			'data' => $data,
