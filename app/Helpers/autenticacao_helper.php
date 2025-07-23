@@ -90,3 +90,29 @@ if(function_exists('precisa_contexto_evento') === false){
 
 
 }
+
+if(function_exists('evento_selecionado_com_validacao') === false){
+
+    function evento_selecionado_com_validacao(){
+
+        $event_id = session()->get('event_id');
+        
+        if(!$event_id) {
+            return null;
+        }
+        
+        $eventoModel = new \App\Models\EventoModel();
+        $evento = $eventoModel->find($event_id);
+        
+        // Se o evento não existe mais, limpar da sessão
+        if(!$evento) {
+            session()->remove('event_id');
+            return null;
+        }
+        
+        return $evento;
+
+    }
+
+
+}

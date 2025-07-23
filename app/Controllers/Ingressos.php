@@ -643,33 +643,29 @@ class Ingressos extends BaseController
 		return redirect()->to(site_url("ingressos"))->with('atencao', "Erro ao alterar o participante, contate o suporte!");
 	}
 
-	    public function add()
-    {
+	public function add()
+	{
+		if (!$this->usuarioLogado()->temPermissaoPara('editar-clientes')) {
+			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+		}
 
+		// Verificar se há evento selecionado no contexto usando helper
+		$evento_selecionado = evento_selecionado_com_validacao();
+		$event_id = $evento_selecionado ? $evento_selecionado->id : null;
 
-        if (!$this->usuarioLogado()->temPermissaoPara('editar-clientes')) {
+		// Se não há evento selecionado válido, redirecionar para seleção
+		if (!$evento_selecionado) {
+			return redirect()->to(site_url('/'))->with('atencao', 'Selecione um evento primeiro para adicionar ingressos.');
+		}
 
-            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
-        }
+		$data = [
+			'titulo' => 'Add Ingressos ADMIN - ' . esc($evento_selecionado->nome),
+			'event_id' => $event_id,
+			'evento_selecionado' => $evento_selecionado,
+		];
 
-        // Verificar se há evento selecionado no contexto
-        $event_id = session()->get('event_id');
-        $evento_selecionado = null;
-        
-        if ($event_id) {
-            $eventoModel = new \App\Models\EventoModel();
-            $evento_selecionado = $eventoModel->find($event_id);
-        }
-
-        $data = [
-            'titulo' => 'Add Ingressos ADMIN',
-            'event_id' => $event_id,
-            'evento_selecionado' => $evento_selecionado,
-        ];
-
-
-        return view('Carrinho/admin', $data);
-    }
+		return view('Carrinho/admin', $data);
+	}
 
 	public function pdv()
 	{

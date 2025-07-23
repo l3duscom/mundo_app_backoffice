@@ -71,6 +71,14 @@
             display: none;
         }
     }
+    
+    .evento-header {
+        background: linear-gradient(135deg, #6C038F 0%, #9C27B0 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
 </style>
 
 <?php echo $this->endSection() ?>
@@ -129,10 +137,48 @@ if ($_SESSION['convite'] == 'x') {
 }
 ?>
 
+<?php if ($evento_selecionado) : ?>
+    <div class="evento-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="mb-0">Evento Ativo: <strong><?= esc($evento_selecionado->nome) ?></strong></h4>
+                <?php if ($evento_selecionado->data_inicio && $evento_selecionado->data_fim) : ?>
+                    <p class="mb-0 opacity-75">
+                        <?= date('d/m/Y', strtotime($evento_selecionado->data_inicio)) ?> - 
+                        <?= date('d/m/Y', strtotime($evento_selecionado->data_fim)) ?>
+                        <?php if ($evento_selecionado->local) : ?>
+                            // <?= esc($evento_selecionado->local) ?>
+                        <?php endif; ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+            <div>
+                <a href="<?= site_url('/') ?>" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Trocar Evento
+                </a>
+            </div>
+        </div>
+    </div>
+<?php else : ?>
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Atenção:</strong> Nenhum evento selecionado. 
+        <a href="<?= site_url('/') ?>" class="alert-link">Clique aqui para selecionar um evento</a>.
+    </div>
+<?php endif; ?>
 
-
-<h5 class="mb-0 mt-3">DREAMFEST 23 - MEGA FESTIVAL GEEK</h5>
-<strong style="color: #A7A7A7"> 21/06/2025 - 22/06/2025 // PORTO ALEGRE</strong>
+<h5 class="mb-0 mt-3">
+    <?= $evento_selecionado ? esc($evento_selecionado->nome) : 'DREAMFEST 23 - MEGA FESTIVAL GEEK' ?>
+</h5>
+<strong style="color: #A7A7A7">
+    <?php if ($evento_selecionado && $evento_selecionado->data_inicio && $evento_selecionado->data_fim) : ?>
+        <?= date('d/m/Y', strtotime($evento_selecionado->data_inicio)) ?> - 
+        <?= date('d/m/Y', strtotime($evento_selecionado->data_fim)) ?>
+        <?= $evento_selecionado->local ? ' // ' . esc($evento_selecionado->local) : ' // PORTO ALEGRE' ?>
+    <?php else : ?>
+        21/06/2025 - 22/06/2025 // PORTO ALEGRE
+    <?php endif; ?>
+</strong>
 
 <div class="row mt-4">
     <div class="col-lg-8">
@@ -151,6 +197,10 @@ if ($_SESSION['convite'] == 'x') {
 
 
                         <?php
+                        // TODO: Esta lista de itens está hardcoded. No futuro, deveria ser dinamizada
+                        // baseada no evento selecionado ($evento_selecionado) usando dados do banco.
+                        // Exemplo: $ticketModel->recuperaIngressosPorEvento($event_id);
+                        
                         $items = array(
                             ['categoria' => 'add', 'data' => '21/06/2025', 'lote' => '3', 'nome_exibicao' => 'CRIANÇA GRÁTIS', 'tipo_exibicao' => 'CORTESIA', 'tipo' => 'individual', 'modal' => 'comum', 'descricao' => 'CORTESIA - PROMOCIONAL', 'nome' => 'CORTESIA - CRIANÇA GRÁTIS', 'preco' => '0', 'taxa' => '0,05'],
                             ['categoria' => 'geral', 'data' => '21-22/06/2025', 'lote' => '3', 'nome_exibicao' => 'IMPRENSA', 'tipo_exibicao' => 'ACESSO', 'tipo' => 'acesso', 'modal' => 'vip-full', 'descricao' => 'CORTESIA', 'tipo' => 'acesso', 'modal' => 'comum', 'nome' => 'IMPRENSA', 'preco' => '0', 'taxa' => '0,05'],
