@@ -2248,7 +2248,7 @@ class Checkout extends BaseController
 			$status = $payment['status'] ?? 'PENDING';
 
 			// Verifica se o status mudou para pago/confirmado
-			$isPaid = in_array($status, ['RECEIVED', 'CONFIRMED', 'paid']);
+			$isPaid = in_array($status, ['RECEIVED', 'CONFIRMED', 'paid', 'RECEIVED_IN_CASH']);
 
 			return $this->response->setJSON([
 				'status' => $status,
