@@ -2228,4 +2228,37 @@ class Checkout extends BaseController
 
 		$email->send();
 	}
+
+	/**
+	 * Método para verificar o status da transação via AJAX
+	 * Usado para hot reload automático na página do QR Code PIX
+	 *
+	 * @param string $charge_id
+	 * @return Response
+	 */
+	public function checkTransactionStatus(string $charge_id)
+	{
+		if (!$this->request->isAJAX()) {
+			return $this->response->setJSON(['erro' => 'Acesso negado']);
+		}
+
+		try {
+			// Busca o status atual no Asaas
+			$payment = $this->asaasService->listaCobranca($charge_id);
+			$status = $payment['status'] ?? 'PENDING';
+
+			// Verifica se o status mudou para pago/confirmado
+			$isPaid = in_array($status, ['RECEIVED', 'CONFIRMED', 'paid']);
+
+			return $this->response->setJSON([
+				'status' => $status,
+				'is_paid' => $isPaid,
+				'redirect_url' => $isPaid ? site_url('checkout/obrigado/') : null
+			]);
+
+		} catch (Exception $e) {
+			log_message('error', 'Erro ao verificar status da transação: ' . $e->getMessage());
+			return $this->response->setJSON(['erro' => 'Erro ao verificar status']);
+		}
+	}
 }

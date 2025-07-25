@@ -131,6 +131,7 @@ $routes->post('checkout/cartao_step_2/(:num)', 'Checkout::cartao_step_2/$1');
 $routes->post('checkout/finalizarpix/(:num)', 'Checkout::finalizarpix/$1');
 $routes->post('checkout/finalizarcartao/(:num)', 'Checkout::finalizarcartao/$1');
 $routes->get('checkout/qrcode/(:any)', 'Checkout::qrcode/$1');
+$routes->get('checkout/check-status/(:any)', 'Checkout::checkTransactionStatus/$1');
 
 // Rotas para o controller de API do carrinho
 $routes->group('api/carrinho', ['filter' => 'apiKey'], function ($routes) {

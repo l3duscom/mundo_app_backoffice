@@ -185,8 +185,11 @@
 <div class="fixed-bottom bg-white shadow-lg">
 
     <div class="d-grid gap-2 mb-0" style="padding:7px">
-        <center><span style="padding-top: 5px; margin-bottom: -5px; font-size: 16px">Já efetuou o pagamento? </span><strong id="timer" style="font-size: 22px;"></strong></center>
-        <input id="btn-salvar" type="submit" value="Confirmar pagamento" onClick="window.location.reload()" class="btn btn-success btn-lg mt-0">
+        <center>
+            <span style="padding-top: 5px; margin-bottom: -5px; font-size: 14px">Verificando pagamento automaticamente...</span><br>
+            <span style="font-size: 12px; color: #666;">Próxima verificação em: </span><strong id="timer" style="font-size: 18px; color: #6C038F;"></strong>
+        </center>
+        <input id="btn-salvar" type="button" value="Verificar pagamento agora" class="btn btn-success btn-lg mt-0">
 
     </div>
 
@@ -222,110 +225,132 @@ fbq('track', 'Purchase', {
 
 <script>
     $(document).ready(function() {
+        // Variáveis para controle do polling
+        let pollingInterval;
+        let countdownInterval;
+        let nextCheckSeconds = 5; // Próxima verificação em 5 segundos
+        let isPaymentReceived = false;
+        let totalChecks = 0;
+        let maxChecks = 60; // Parar após 60 verificações (5 minutos)
 
-        //$("#form").LoadingOverlay("show");
+        // Função para atualizar o timer da próxima verificação
+        function updateTimer() {
+            $('#timer').text(nextCheckSeconds + 's');
+            nextCheckSeconds--;
 
+            if (nextCheckSeconds < 0) {
+                nextCheckSeconds = 4; // Reiniciar para 5 segundos (4 porque decrementará imediatamente)
+            }
+        }
 
+        // Função para verificar o status da transação
+        function checkTransactionStatus() {
+            if (isPaymentReceived) return; // Evitar verificações desnecessárias
+            
+            totalChecks++;
+            
+            // Parar após o máximo de verificações (5 minutos)
+            if (totalChecks > maxChecks) {
+                clearInterval(pollingInterval);
+                clearInterval(countdownInterval);
+                $('#timer').text('--');
+                console.log('Tempo limite de verificação atingido');
+                return;
+            }
 
-
-        $("#form").on('submit', function(e) {
-
-
-            e.preventDefault();
-
+            // Reiniciar o timer para próxima verificação
+            nextCheckSeconds = 5;
 
             $.ajax({
-
-                type: 'POST',
-                url: '<?php echo site_url('checkout/finalizar'); ?>',
-                data: new FormData(this),
+                type: 'GET',
+                url: '<?php echo site_url('checkout/check-status/' . $charge_id); ?>',
                 dataType: 'json',
-                contentType: false,
-                cache: false,
-                processData: false,
-                beforeSend: function() {
-
-                    $("#response").html('');
-                    $("#btn-salvar").val('Por favor aguarde...');
-
-                },
                 success: function(response) {
-
-                    $("#btn-salvar").val('Salvar');
-                    $("#btn-salvar").removeAttr("disabled");
-
-                    $('[name=csrf_ordem]').val(response.token);
-
-
-                    if (!response.erro) {
-
-
-                        if (response.info) {
-
-                            $("#response").html('<div class="alert alert-info">' + response
-                                .info + '</div>');
-
-                        } else {
-
-                            // Tudo certo com a atualização do usuário
-                            // Podemos agora redirecioná-lo tranquilamente
-
-                            window.location.href = "<?php echo site_url('checkout/qrcode/' . $event_id . '/'); ?>" + response.id;
-
-                        }
-
+                    if (response.is_paid) {
+                        isPaymentReceived = true;
+                        clearInterval(pollingInterval);
+                        clearInterval(countdownInterval);
+                        
+                        // Mostrar feedback visual de sucesso
+                        $("#response").html('<div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> Pagamento confirmado! Redirecionando...</div>');
+                        $("#btn-salvar").val('Pagamento Confirmado!').removeClass('btn-success').addClass('btn-primary').prop('disabled', true);
+                        $('#timer').text('✓').css('color', '#28a745');
+                        
+                        // Redirecionar após 2 segundos
+                        setTimeout(function() {
+                            if (response.redirect_url) {
+                                window.location.href = response.redirect_url;
+                            }
+                        }, 2000);
                     }
-
-                    if (response.erro) {
-
-                        // Exitem erros de validação
-
-
-                        $("#response").html('<div class="alert alert-danger">' + response.erro +
-                            '</div>');
-
-
-                        if (response.erros_model) {
-
-
-                            $.each(response.erros_model, function(key, value) {
-
-                                $("#response").append(
-                                    '<ul class="list-unstyled"><li class="text-danger">' +
-                                    value + '</li></ul>');
-
-                            });
-
-                        }
-
-                    }
-
+                    console.log(`Verificação ${totalChecks}/${maxChecks} - Status:`, response.status);
                 },
-                error: function() {
-
-                    alert(
-                        'Não foi possível procesar a solicitação. Por favor entre em contato com o suporte técnico.'
-                    );
-                    $("#btn-salvar").val('Salvar');
-                    $("#btn-salvar").removeAttr("disabled");
-
+                error: function(xhr, status, error) {
+                    console.error('Erro ao verificar status:', error);
+                    // Em caso de erro, mostrar mensagem amigável
+                    if (totalChecks === 1) {
+                        $("#response").html('<div class="alert alert-warning">Verificando conexão... Tentando novamente em alguns segundos.</div>');
+                    }
                 }
-
-
-
             });
+        }
 
+        // Mostrar feedback inicial
+        $("#response").html('<div class="alert alert-info"><i class="bi bi-info-circle"></i> Aguardando confirmação do pagamento PIX...</div>');
 
+        // Inicializar o countdown timer
+        updateTimer(); // Mostrar o tempo inicial
+        countdownInterval = setInterval(updateTimer, 1000);
+
+        // Inicializar o polling para verificar o status (a cada 5 segundos)
+        pollingInterval = setInterval(checkTransactionStatus, 5000);
+
+        // Verificar imediatamente ao carregar a página (após 2 segundos)
+        setTimeout(checkTransactionStatus, 2000);
+
+        // Botão de verificar pagamento manual
+        $("#btn-salvar").on('click', function() {
+            if (!isPaymentReceived) {
+                $(this).prop('disabled', true).val('Verificando...');
+                
+                // Fazer uma verificação manual imediata
+                $.ajax({
+                    type: 'GET',
+                    url: '<?php echo site_url('checkout/check-status/' . $charge_id); ?>',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.is_paid) {
+                            isPaymentReceived = true;
+                            clearInterval(pollingInterval);
+                            clearInterval(countdownInterval);
+                            
+                            $("#response").html('<div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> Pagamento confirmado! Redirecionando...</div>');
+                            $("#btn-salvar").val('Pagamento Confirmado!').removeClass('btn-success').addClass('btn-primary');
+                            $('#timer').text('✓').css('color', '#28a745');
+                            
+                            setTimeout(function() {
+                                if (response.redirect_url) {
+                                    window.location.href = response.redirect_url;
+                                }
+                            }, 2000);
+                        } else {
+                            $("#btn-salvar").prop('disabled', false).val('Verificar pagamento agora');
+                            $("#response").html('<div class="alert alert-warning">Pagamento ainda não foi detectado. Aguarde ou tente novamente.</div>');
+                        }
+                    },
+                    error: function() {
+                        $("#btn-salvar").prop('disabled', false).val('Verificar pagamento agora');
+                        $("#response").html('<div class="alert alert-danger">Erro ao verificar pagamento. Tente novamente.</div>');
+                    }
+                });
+            }
         });
 
-
-        $("#form").submit(function() {
-
-            $(this).find(":submit").attr('disabled', 'disabled');
-
+        // Cleanup ao sair da página
+        $(window).on('beforeunload', function() {
+            clearInterval(pollingInterval);
+            clearInterval(countdownInterval);
         });
-
-
     });
 </script>
 
