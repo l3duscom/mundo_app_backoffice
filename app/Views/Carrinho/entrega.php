@@ -139,7 +139,7 @@ if (!isset($_SESSION['impressao'])) {
 
                                                     <div class="ms-auto fs-3 mb-0">
                                                         <p class="mb-0" style="font-size: 10px;">Total a pagar:</p>
-                                                        <strong class="valor-total">R$ <?= number_format($_SESSION['total'] + $_SESSION['valor_frete'], 2, ',', '') ?></strong>
+                                                        <strong>R$ <?= number_format($_SESSION['total'] + $_SESSION['valor_frete'], 2, ',', '') ?></strong>
                                                     </div>
 
                                                 </div>
@@ -176,14 +176,28 @@ if (!isset($_SESSION['impressao'])) {
                                 </div> -->
                             <div id="areaBotoes" class="row g-1">
                                 <div class="col-lg-6">
-                                    <a href="<?= site_url('/checkout/cartao/' . $event_id) ?>" class="w-100 btn btn-lg " style="background-color: purple; border-color: purple; color: white;"><span class="text-white" style="font-size: 12px;">Pagar com:</span><i class="bi bi-credit-card-fill me-2 font-16"></i>Cartão</a>
+                                    <a href="<?= site_url('/checkout/cartao/' . ($event_id ?? '')) ?>" class="w-100 btn btn-lg " style="background-color: purple; border-color: purple; color: white;"><span class="text-white" style="font-size: 12px;">Pagar com:</span><i class="bi bi-credit-card-fill me-2 font-16"></i>Cartão</a>
                                 </div>
                                 <div class="col-lg-6">
-                                    <a href="<?= site_url('/checkout/pix/' . $event_id) ?>" class="w-100 btn btn-lg " style="background-color: purple; border-color: purple; color: white;"><span class="text-white" style="font-size: 12px;">Pagar com:</span><i class="fa-brands fa-pix"></i> PIX <span class="badge bg-warning text-dark font-13" style="margin-left: 7px;">10% OFF</span></a>
+                                    <a id="btn-pix" href="<?= site_url('/checkout/pix/' . ($event_id ?? '')) ?>" class="w-100 btn btn-lg " style="background-color: purple; border-color: purple; color: white;"><span class="text-white" style="font-size: 12px;">Pagar com:</span><i class="fa-brands fa-pix"></i> PIX <span class="badge bg-warning text-dark font-13" style="margin-left: 7px;">10% OFF</span></a>
+<script>
+    $(document).ready(function() {
+        // ...outros códigos existentes...
+
+        // Atualiza o valor total na URL do PIX ao clicar
+        $('#btn-pix').on('click', function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href').split('?')[0]; // Limpa qualquer parâmetro antigo
+            var valorTotal = $('.valor-total').text().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+            valorTotal = parseFloat(valorTotal).toFixed(2);
+            window.location.href = href + '?valor_total=' + valorTotal;
+        });
+    });
+</script>
                                 </div>
                                 <!--
                                 <div class="col-lg-4">
-                                    <a href="<?= site_url('/checkout/boleto/'. $event_id) ?>" class="w-100 btn btn-primary btn-lg disabled"><span class="text-white" style="font-size: 12px;">Pagar com:</span><i class="bx bx-barcode-reader me-2 font-24"></i>Boleto</a>
+                                    <a href="<?= site_url('/checkout/boleto') ?>" class="w-100 btn btn-primary btn-lg disabled"><span class="text-white" style="font-size: 12px;">Pagar com:</span><i class="bx bx-barcode-reader me-2 font-24"></i>Boleto</a>
                                 </div>
                             -->
 
@@ -274,172 +288,13 @@ if (!isset($_SESSION['impressao'])) {
 <script src="<?php echo site_url('recursos/vendor/mask/jquery.mask.min.js') ?>"></script>
 <script src="<?php echo site_url('recursos/vendor/mask/app.js') ?>"></script>
 
-<!-- Meta Pixel ViewContent Event -->
-<?php if (isset($evento) && !empty($evento->meta_pixel_id)): ?>
-<script>
-// ViewContent Event - quando a página de entrega é carregada
-fbq('track', 'ViewContent', {
-    content_name: '<?= $evento->nome ?> - Entrega',
-    content_category: '<?= $evento->categoria ?? 'Evento' ?>',
-    content_type: 'product',
-    content_ids: [<?= $evento->id ?>],
-    value: <?= $total ?? 0 ?>,
-    currency: 'BRL'
-});
-</script>
-<?php endif; ?>
-
 <script>
     $(document).ready(function() {
 
         //$("#form").LoadingOverlay("show");
 
         <?php echo $this->include('Clientes/_checkmail'); ?>
-
         <?php echo $this->include('Clientes/_viacep'); ?>
-
-        // Função para calcular desconto PIX
-        function calcularDescontoPix() {
-            var valorOriginal = <?= $_SESSION['total'] ?? 0 ?>;
-            var desconto = valorOriginal * 0.10; // 10% de desconto
-            var valorComDesconto = valorOriginal - desconto;
-            
-            // Atualizar o valor total exibido
-            $('.valor-total').text('R$ ' + valorComDesconto.toFixed(2).replace('.', ','));
-            
-            // Adicionar informação do desconto
-            if (!$('.desconto-pix-info').length) {
-                $('.valor-total').after('<div class="desconto-pix-info text-success" style="font-size: 12px;"><i class="bi bi-check-circle-fill"></i> Desconto de 10% aplicado no PIX</div>');
-            }
-            
-            return valorComDesconto;
-        }
-
-        // Função para remover desconto PIX
-        function removerDescontoPix() {
-            var valorOriginal = <?= $_SESSION['total'] ?? 0 ?>;
-            $('.valor-total').text('R$ ' + valorOriginal.toFixed(2).replace('.', ','));
-            $('.desconto-pix-info').remove();
-        }
-
-        // Aplicar desconto quando clicar no botão PIX
-        $('a[href*="checkout/pix"]').click(function(e) {
-            e.preventDefault();
-            var href = $(this).attr('href');
-            var valorComDesconto = calcularDescontoPix();
-            
-            // Adicionar o valor com desconto como parâmetro na URL
-            var separator = href.includes('?') ? '&' : '?';
-            href += separator + 'desconto_pix=' + valorComDesconto;
-            
-            window.location.href = href;
-        });
-
-        // Remover desconto quando clicar no botão Cartão
-        $('a[href*="checkout/cartao"]').click(function() {
-            removerDescontoPix();
-        });
-
-
-        $("#form").on('submit', function(e) {
-
-
-            e.preventDefault();
-
-
-            $.ajax({
-
-                type: 'POST',
-                url: '<?php echo site_url('carrinho/cupom'); ?>',
-                data: new FormData(this),
-                dataType: 'json',
-                contentType: false,
-                cache: false,
-                processData: false,
-                beforeSend: function() {
-
-                    $("#response").html('');
-                    $("#btn-salvar").val('Por favor aguarde...');
-
-                },
-                success: function(response) {
-
-                    $("#btn-salvar").val('Salvar');
-                    $("#btn-salvar").removeAttr("disabled");
-
-                    $('[name=csrf_ordem]').val(response.token);
-
-
-                    if (!response.erro) {
-
-
-                        if (response.info) {
-
-                            $("#response").html('<div class="alert alert-info">' + response
-                                .info + '</div>');
-
-                        } else {
-
-                            // Tudo certo com a atualização do usuário
-                            // Podemos agora redirecioná-lo tranquilamente
-
-                            window.location.href =
-                                "<?php echo site_url("carrinho"); ?>";
-
-                        }
-
-                    }
-
-                    if (response.erro) {
-
-                        // Exitem erros de validação
-
-
-                        $("#response").html('<div class="alert alert-danger">' + response.erro +
-                            '</div>');
-
-
-                        if (response.erros_model) {
-
-
-                            $.each(response.erros_model, function(key, value) {
-
-                                $("#response").append(
-                                    '<ul class="list-unstyled"><li class="text-danger">' +
-                                    value + '</li></ul>');
-
-                            });
-
-                        }
-
-                    }
-
-                },
-                error: function() {
-
-                    alert(
-                        'Não foi possível procesar a solicitação. Por favor entre em contato com o suporte técnico.'
-                    );
-                    $("#btn-salvar").val('Salvar');
-                    $("#btn-salvar").removeAttr("disabled");
-
-                }
-
-
-
-            });
-
-
-        });
-
-
-        $("#form").submit(function() {
-
-            $(this).find(":submit").attr('disabled', 'disabled');
-
-        });
-
-
     });
 </script>
 

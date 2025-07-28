@@ -15,9 +15,22 @@
 <?php echo $this->section('conteudo') ?>
 <?php
 $juros = 0.034;
-$total = $_SESSION['total'] + $_SESSION['valor_frete'];
+
+// Se vier valor_total via GET, usa ele como base do total (corrigindo para float)
+if (isset($_GET['valor_total']) && !empty($_GET['valor_total'])) {
+    // Limpa o valor e converte para float
+    $valorGet = str_replace(',', '.', $_GET['valor_total']);
+    $valorGet = preg_replace('/[^0-9.]/', '', $valorGet);
+    $total = floatval($valorGet);
+}
+
+// Adiciona o valor do frete ao total
+if (isset($_SESSION['valor_frete'])) {
+    $total += floatval($_SESSION['valor_frete']);
+}
+
+$event_id = session()->get('event_id');
 ?>
-<?php $event_id = session()->get('event_id'); ?>
 
 <h5 class="mb-0 mt-3">Quase lá! Agora é só efetuar o pagamento e garantir seus ingressos!</h5>
 
@@ -336,7 +349,7 @@ $total = $_SESSION['total'] + $_SESSION['valor_frete'];
 
 
                             <div id="areaBotoes" class="row g-3" style="padding:7px">
-                                <center><span class="text-muted" style="padding-top: 5px; margin-bottom: -10px">Resumo da compra: <strong>R$ <?= number_format($total, 2, ',', '') ?> </strong>+ R$ <?= number_format($_SESSION['valor_frete'], 2, ',', '') ?> do frete</span></center>
+                                <center><span class="text-muted" style="padding-top: 5px; margin-bottom: -10px">Resumo da compra: <strong>R$ <?= number_format($total, 2, ',', '') ?> </strong></center>
 
 
                                 <div class="d-grid gap-2 mb-0" style="padding:7px; margin-top: -3px">

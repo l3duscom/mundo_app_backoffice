@@ -51,13 +51,27 @@
 
                         <?php echo form_open('Checkout/finalizarpix/' . $event_id, ['id' => 'form']) ?>
 
-                        <?php 
-                        $descontoPix = $total * 0.10;
-                        $totalComDesconto = $total - $descontoPix;
-                        ?>
-                        <input type="hidden" name="valor_total" id="valor_total" value="<?= $totalComDesconto * 100 ?>" required>
-                        <input type="hidden" name="frete" id="frete" value="<?= $_SESSION['frete'] ?>" required>
-                        <input type="hidden" name="convite" value="<?= $_SESSION['convite'] ?>">
+<?php
+// Se vier valor_total via GET, usa ele como base do total (corrigindo para float)
+if (isset($_GET['valor_total']) && !empty($_GET['valor_total'])) {
+    // Limpa o valor e converte para float
+    $valorGet = str_replace(',', '.', $_GET['valor_total']);
+    $valorGet = preg_replace('/[^0-9.]/', '', $valorGet);
+    $total = floatval($valorGet);
+}
+
+// Adiciona o valor do frete ao total
+if (isset($_SESSION['valor_frete'])) {
+    $total += floatval($_SESSION['valor_frete']);
+}
+
+// Cálculo do desconto
+$descontoPix = $total * 0.10;
+$totalComDesconto = $total - $descontoPix;
+?>
+<input type="hidden" name="valor_total" id="valor_total" value="<?= $totalComDesconto * 100 ?>" required>
+<input type="hidden" name="frete" id="frete" value="<?= $_SESSION['frete'] ?>" required>
+<input type="hidden" name="convite" value="<?= $_SESSION['convite'] ?>"> 
 
 
                         <div class="d-flex align-items-center mt-0">
@@ -158,10 +172,6 @@
 
 
                         <div class="d-grid gap-2 mb-0" style="padding:7px">
-                            <?php 
-                            $descontoPix = $total * 0.10;
-                            $totalComDesconto = $total - $descontoPix;
-                            ?>
                             <center>
                                 <span style="padding-top: 5px; margin-bottom: -5px">
                                     Resumo da compra: <strong>R$ <?= number_format($total, 2, ',', '') ?></strong>
