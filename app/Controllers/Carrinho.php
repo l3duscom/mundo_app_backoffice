@@ -366,7 +366,7 @@ class Carrinho extends BaseController
 		return view('Carrinho/puc', $data);
 	}
 
-
+	
 	/**
 	 * Método que recupera o cliente
 	 *

@@ -168,6 +168,8 @@ class TicketModel extends Model
             ->findAll();
     }
 
+    
+
     /**
      * Busca tickets vinculados pelo parent_ticket_id
      */

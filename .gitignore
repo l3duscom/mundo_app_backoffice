@@ -44,6 +44,8 @@ $RECYCLE.BIN/
 .env
 .vagrant
 Vagrantfile
+CLAUDE.md
+GEMINI.md
 
 #-------------------------
 # Temporary Files
