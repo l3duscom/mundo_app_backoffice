@@ -397,7 +397,7 @@ if (isset($event_id)) {
                                 <button class="tablinks" onclick="openCategoria(event, 'super_pack')">Super Pack<p class="mb-0" style="font-size: 11px">+ econômico</p></button>
                             <?php endif; ?>
                             <button class="tablinks" onclick="openCategoria(event, 'cosplay')">Cosplayer<p class="mb-0" style="font-size: 11px">Promocional</p></button>
-                            <button class="tablinks" onclick="openCategoria(event, 'after')">After Dream<p class="mb-0" style="font-size: 11px">+18</p></button>
+                            <button class="tablinks" onclick="openCategoria(event, 'after')">After Dream<p class="mb-0" style="font-size: 11px">Festa</p></button>
                         </div>
                         <div class="d-grid gap-2 mb-0" style="padding:10px">
                             <a class="btn btn-light" href="#pagar">
