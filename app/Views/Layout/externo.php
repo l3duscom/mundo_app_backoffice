@@ -190,7 +190,6 @@
             }
             
             .navbar {
-                gap: 1rem !important;
                 padding: 0.5rem 0;
             }
             
@@ -198,13 +197,15 @@
                 padding: 1rem 0;
             }
             
-            /* Ajustes para o nome do evento */
-            .evento-titulo-mobile {
-                font-size: clamp(14px, 5vw, 18px) !important;
-                line-height: 1.2;
-                padding: 0.5rem;
-                word-break: break-word;
-                hyphens: auto;
+            /* Título do evento em mobile - permitir quebra se necessário */
+            h2.text-black {
+                white-space: normal !important;
+                max-width: 90vw !important;
+                font-size: 16px !important;
+                line-height: 1.4;
+                word-break: normal;
+                overflow: visible !important;
+                text-overflow: clip !important;
             }
             
             /* Botão WhatsApp flutuante - melhor posicionamento mobile */
@@ -255,17 +256,15 @@
 
     <header class="top-header">
 
-        <nav class="navbar navbar-expand gap-3 shadow">
-            <div class="container-fluid px-3 py-3">
-                <div class="row w-100 align-items-center justify-content-center">
+        <nav class="navbar navbar-expand shadow">
+            <div class="container-fluid">
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-center w-100 gap-2 gap-md-3 py-3">
                     <!-- Logo/Nome do Evento -->
-                    <div class="col-12 col-md-auto text-center mb-2 mb-md-0">
+                    <div class="text-center">
                         <?php if (evento_selecionado() && evento_nome()) : ?>
-                            <div class="px-2">
-                                <h2 class="text-black mb-0 fw-bold evento-titulo-mobile" style="font-size: clamp(16px, 4vw, 20px);">
-                                    <?= evento_nome() ?>
-                                </h2>
-                            </div>
+                            <h2 class="text-black mb-0 fw-bold" style="font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">
+                                <?= evento_nome() ?>
+                            </h2>
                         <?php else : ?>
                             <a href="https://dreamfest.com.br" target="_blank">
                                 <img src="<?php echo site_url('recursos/front/'); ?>images/logo-25-2-negativo.png" 
@@ -277,16 +276,16 @@
                     </div>
 
                     <!-- Separador (apenas desktop) -->
-                    <div class="col-auto d-none d-md-block">
-                        <span class="px-3 text-muted">|</span>
+                    <div class="d-none d-md-block">
+                        <span class="text-muted">|</span>
                     </div>
 
                     <!-- Botão Reportar Erro -->
-                    <div class="col-12 col-md-auto text-center">
+                    <div class="text-center">
                         <a class="btn btn-light btn-sm" 
                            href="https://wa.me/5551993406154?text=Estou%20com%20problemas%20para%20adquirir%20meu%20ingresso!" 
                            target="_blank" 
-                           style="font-size: 11px; white-space: nowrap;">
+                           style="font-size: 11px;">
                             <i class="bi bi-whatsapp me-1"></i>
                             <strong>Reportar Erro</strong>
                         </a>
