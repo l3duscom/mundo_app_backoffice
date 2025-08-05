@@ -181,67 +181,6 @@
 
     <title><?= env('LICENCED'); ?> - <?php echo $this->renderSection('titulo'); ?> </title>
 
-    <!-- Estilos Mobile Específicos -->
-    <style>
-        /* Melhorias para o layout mobile */
-        @media (max-width: 768px) {
-            .top-header {
-                padding: 0.5rem 0;
-            }
-            
-            .navbar {
-                padding: 0.5rem 0;
-            }
-            
-            .page-content {
-                padding: 1rem 0;
-            }
-            
-            /* Título do evento em mobile - permitir quebra se necessário */
-            h2.text-black {
-                white-space: normal !important;
-                max-width: 90vw !important;
-                font-size: 16px !important;
-                line-height: 1.4;
-                word-break: normal;
-                overflow: visible !important;
-                text-overflow: clip !important;
-            }
-            
-            /* Botão WhatsApp flutuante - melhor posicionamento mobile */
-            .whatsapp-float {
-                position: fixed;
-                bottom: 20px;
-                right: 15px;
-                z-index: 1000;
-            }
-            
-            .whatsapp-float img {
-                width: 50px !important;
-                height: 50px !important;
-            }
-            
-            /* Modal responsivo */
-            .modal-dialog {
-                margin: 1rem;
-                max-width: calc(100% - 2rem);
-            }
-            
-            /* Melhor espaçamento para botões em mobile */
-            .btn-sm {
-                font-size: 0.75rem;
-                padding: 0.375rem 0.75rem;
-            }
-        }
-        
-        /* Ajustes para tablets */
-        @media (min-width: 769px) and (max-width: 992px) {
-            .navbar {
-                padding: 1rem 0;
-            }
-        }
-    </style>
-
     <?php echo $this->renderSection('estilos'); ?>
 </head>
 
@@ -256,40 +195,23 @@
 
     <header class="top-header">
 
-        <nav class="navbar navbar-expand shadow">
-            <div class="container-fluid">
-                <div class="d-flex flex-column flex-md-row align-items-center justify-content-center w-100 gap-2 gap-md-3 py-3">
-                    <!-- Logo/Nome do Evento -->
-                    <div class="text-center">
-                        <?php if (evento_selecionado() && evento_nome()) : ?>
-                            <h2 class="text-black mb-0 fw-bold" style="font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">
-                                <?= evento_nome() ?>
-                            </h2>
-                        <?php else : ?>
-                            <a href="https://dreamfest.com.br" target="_blank">
-                                <img src="<?php echo site_url('recursos/front/'); ?>images/logo-25-2-negativo.png" 
-                                     alt="DreamFest Logo" 
-                                     class="img-fluid" 
-                                     style="max-width: 160px; height: auto;">
-                            </a>
-                        <?php endif; ?>
-                    </div>
+        <nav class="navbar navbar-expand gap-3 shadow">
 
-                    <!-- Separador (apenas desktop) -->
-                    <div class="d-none d-md-block">
-                        <span class="text-muted">|</span>
+            <div class="container justify-content-center mt-4 mb-4">
+                <?php if (evento_selecionado() && evento_nome()) : ?>
+                    <div style="padding:10px">
+                        <h2 class="text-black mb-0" style="font-size: 18px; font-weight: bold; text-align: center;">
+                            <?= evento_nome() ?>
+                        </h2>
                     </div>
-
-                    <!-- Botão Reportar Erro -->
-                    <div class="text-center">
-                        <a class="btn btn-light btn-sm" 
-                           href="https://wa.me/5551993406154?text=Estou%20com%20problemas%20para%20adquirir%20meu%20ingresso!" 
-                           target="_blank" 
-                           style="font-size: 11px;">
-                            <i class="bi bi-whatsapp me-1"></i>
-                            <strong>Reportar Erro</strong>
-                        </a>
-                    </div>
+                <?php else : ?>
+                    <a href="https://dreamfest.com.br" target="_blank"><img src="<?php echo site_url('recursos/front/'); ?>images/logo-25-2-negativo.png" alt="" width="180px" height="auto" style="padding:10px"></a>
+                <?php endif; ?>
+                <span style="padding-right: 15px; padding-left: 15px;">|</span>
+                <div class="d-grid gap-2 mb-0" style="padding:10px"><a class="btn btn-light" href="https://wa.me/5551993406154?text=Estou%20com%20problemas%20para%20adquirir%20meu%20ingresso!" target="_blank" style="font-size: 11px;">
+                        <!-- <i class="bi bi-arrow-down-circle-fill" style="font-size: 25px; color: purple;"></i>-->
+                        <strong>Reportar Erro</strong>
+                    </a>
                 </div>
             </div>
 
@@ -321,18 +243,12 @@
     <!--Start Back To Top Button-->
     <!--End Back To Top Button-->
 
-    <div class="container-fluid px-3">
-        <div class="row mb-5" style="padding-bottom: 100px;">
-            <div class="col-12 col-lg-8">
-                <p class="text-center text-black mb-0" style="margin-top: -5px;">
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#politicaModal" class="text-decoration-underline">
-                        Política de cancelamento
-                    </a>
-                </p>
-            </div>
-            <div class="col-12 col-lg-4">
-                <!-- Espaço reservado -->
-            </div>
+    <div class="row mb-5" style="padding-bottom: 250px;">
+        <div class="col-lg-8">
+            <p class="text-clack" style=" text-align: center; margin-top: -5px;"><a href="#" data-bs-toggle="modal" data-bs-target="#politicaModal"><u>Política de cancelamento</u></a> </p>
+        </div>
+        <div class="col-lg-4">
+
         </div>
     </div>
 
