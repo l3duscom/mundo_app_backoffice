@@ -181,6 +181,106 @@
 
     <title><?= env('LICENCED'); ?> - <?php echo $this->renderSection('titulo'); ?> </title>
 
+    <!-- CSS Mobile - Layout Navbar Otimizado -->
+    <style>
+        /* Mobile: Layout otimizado para navbar */
+        @media (max-width: 768px) {
+            .top-header {
+                padding: 0;
+            }
+            
+            .navbar {
+                padding: 8px 0 !important;
+                margin: 0 !important;
+                min-height: auto;
+            }
+            
+            .navbar .container {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 8px 15px !important;
+                margin: 0 !important;
+                gap: 10px !important;
+            }
+            
+            /* Nome do evento - ocupa espaço disponível */
+            .navbar .container > div:first-child {
+                flex: 1 !important;
+                min-width: 0 !important;
+                text-align: left !important;
+                padding: 0 !important;
+            }
+            
+            .navbar h2 {
+                font-size: 14px !important;
+                font-weight: bold !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                line-height: 1.2 !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                text-align: left !important;
+            }
+            
+            /* Separador oculto */
+            .navbar .container > span {
+                display: none !important;
+            }
+            
+            /* Botão reportar erro - tamanho fixo */
+            .navbar .container .d-grid {
+                flex-shrink: 0 !important;
+                width: auto !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            .navbar .container .d-grid .btn {
+                font-size: 10px !important;
+                padding: 6px 12px !important;
+                white-space: nowrap !important;
+                border-radius: 4px !important;
+                min-width: auto !important;
+                width: auto !important;
+            }
+            
+            /* Se o nome for muito longo, permitir quebra em 2 linhas */
+            @media (max-width: 400px) {
+                .navbar .container {
+                    flex-direction: column !important;
+                    align-items: center !important;
+                    padding: 10px 15px !important;
+                }
+                
+                .navbar .container > div:first-child {
+                    width: 100% !important;
+                    text-align: center !important;
+                    margin-bottom: 8px !important;
+                }
+                
+                .navbar h2 {
+                    white-space: normal !important;
+                    overflow: visible !important;
+                    text-overflow: clip !important;
+                    font-size: 13px !important;
+                    text-align: center !important;
+                }
+            }
+        }
+        
+        /* Tablet - ajustes menores */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .navbar .container {
+                padding: 15px 20px !important;
+            }
+        }
+    </style>
+
     <?php echo $this->renderSection('estilos'); ?>
 </head>
 
@@ -200,7 +300,7 @@
             <div class="container justify-content-center mt-4 mb-4">
                 <?php if (evento_selecionado() && evento_nome()) : ?>
                     <div style="padding:10px">
-                        <h2 class="text-black mb-0" style="font-size: 18px; font-weight: bold; text-align: center;">
+                        <h2 class="text-black mb-0" style="font-size: 16px; font-weight: bold; text-align: center;">
                             <?= evento_nome() ?>
                         </h2>
                     </div>
