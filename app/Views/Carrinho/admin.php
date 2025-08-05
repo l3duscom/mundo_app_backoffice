@@ -137,11 +137,13 @@ if ($_SESSION['convite'] == 'x') {
 }
 ?>
 
-<?php if ($evento_selecionado) : ?>
+<?php 
+$nome_evento_banner = evento_nome();
+if ($evento_selecionado && $nome_evento_banner && strlen($nome_evento_banner) > 3) : ?>
     <div class="evento-header">
         <div class="d-flex align-items-center justify-content-between">
             <div>
-                <h4 class="mb-0">Evento Ativo: <strong><?= esc($evento_selecionado->nome) ?></strong></h4>
+                <h4 class="mb-0">Evento Ativo: <strong><?= htmlspecialchars($nome_evento_banner) ?></strong></h4>
                 <?php if ($evento_selecionado->data_inicio && $evento_selecionado->data_fim) : ?>
                     <p class="mb-0 opacity-75">
                         <?= date('d/m/Y', strtotime($evento_selecionado->data_inicio)) ?> - 
@@ -168,7 +170,10 @@ if ($_SESSION['convite'] == 'x') {
 <?php endif; ?>
 
 <h5 class="mb-0 mt-3">
-    <?= $evento_selecionado ? esc($evento_selecionado->nome) : 'DREAMFEST 23 - MEGA FESTIVAL GEEK' ?>
+    <?php 
+    $nome_titulo = evento_nome();
+    echo $nome_titulo && strlen($nome_titulo) > 3 ? htmlspecialchars($nome_titulo) : 'DREAMFEST 23 - MEGA FESTIVAL GEEK';
+    ?>
 </h5>
 <strong style="color: #A7A7A7">
     <?php if ($evento_selecionado && $evento_selecionado->data_inicio && $evento_selecionado->data_fim) : ?>

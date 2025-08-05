@@ -22,7 +22,11 @@
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <h4 class="mb-0">Gerenciando Pedidos: <strong><?= esc($evento_selecionado->nome) ?></strong></h4>
+                    <?php 
+                    $nome_pedidos = evento_nome();
+                    $nome_display = $nome_pedidos && strlen($nome_pedidos) > 3 ? htmlspecialchars($nome_pedidos) : 'Evento Selecionado';
+                    ?>
+                    <h4 class="mb-0">Gerenciando Pedidos: <strong><?= $nome_display ?></strong></h4>
                 </div>
                 <div>
                     <a href="<?= site_url('/') ?>" class="btn btn-outline-secondary btn-sm">

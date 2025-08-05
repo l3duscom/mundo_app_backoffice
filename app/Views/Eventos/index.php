@@ -22,7 +22,11 @@
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between">
                 <div>
-                    <h4 class="mb-0">Evento Ativo: <strong><?= esc($evento_selecionado->nome) ?></strong></h4>
+                    <?php 
+                    $nome_evento_list = evento_nome();
+                    $nome_show = $nome_evento_list && strlen($nome_evento_list) > 3 ? htmlspecialchars($nome_evento_list) : 'Evento Selecionado';
+                    ?>
+                    <h4 class="mb-0">Evento Ativo: <strong><?= $nome_show ?></strong></h4>
                     
                 </div>
                 <div>

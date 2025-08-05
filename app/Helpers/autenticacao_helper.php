@@ -30,7 +30,20 @@ if(function_exists('evento_nome') === false){
         if($event_id) {
             $eventoModel = new \App\Models\EventoModel();
             $evento = $eventoModel->find($event_id);
-            return $evento ? $evento->nome : null;
+            if($evento && isset($evento->nome)) {
+                // Validar se o nome não é um texto de teste
+                $nome = trim($evento->nome);
+                
+                // Lista de nomes inválidos ou de teste
+                $nomes_invalidos = ['test', 'teste', 'asdasd', 'asda', 'asd', 'testando', 'demo'];
+                
+                if(strlen($nome) > 2 && !in_array(strtolower($nome), $nomes_invalidos)) {
+                    return $nome;
+                }
+                
+                // Log para debug (remover em produção)
+                log_message('debug', "Nome de evento inválido rejeitado: '{$nome}'");
+            }
         }
         return null;
 
