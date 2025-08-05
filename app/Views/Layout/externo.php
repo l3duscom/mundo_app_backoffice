@@ -200,12 +200,9 @@
             <div class="container justify-content-center mt-4 mb-4">
                 <?php if (evento_selecionado() && evento_nome()) : ?>
                     <div style="padding:10px">
-                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: bold; text-align: center;">
+                        <h2 class="text-black mb-0" style="font-size: 1rem; font-weight: bold; text-align: center;">
                             <?= evento_nome() ?>
                         </h2>
-                        <p class="text-light mb-0" style="font-size: 0.9rem; text-align: center; margin-top: 5px;">
-                            Evento oficial
-                        </p>
                     </div>
                 <?php else : ?>
                     <a href="https://dreamfest.com.br" target="_blank"><img src="<?php echo site_url('recursos/front/'); ?>images/logo-25-2-negativo.png" alt="" width="180px" height="auto" style="padding:10px"></a>
