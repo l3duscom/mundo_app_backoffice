@@ -198,7 +198,19 @@
         <nav class="navbar navbar-expand gap-3 shadow">
 
             <div class="container justify-content-center mt-4 mb-4">
-                <a href="https://dreamfest.com.br" target="_blank"><img src="<?php echo site_url('recursos/front/'); ?>images/logo-25-2-negativo.png" alt="" width="180px" height="auto" style="padding:10px"></a> <span style="padding-right: 15px; padding-left: 15px;">|</span>
+                <?php if (evento_selecionado() && evento_nome()) : ?>
+                    <div style="padding:10px">
+                        <h2 class="text-white mb-0" style="font-size: 2rem; font-weight: bold; text-align: center;">
+                            <?= evento_nome() ?>
+                        </h2>
+                        <p class="text-light mb-0" style="font-size: 0.9rem; text-align: center; margin-top: 5px;">
+                            Evento oficial
+                        </p>
+                    </div>
+                <?php else : ?>
+                    <a href="https://dreamfest.com.br" target="_blank"><img src="<?php echo site_url('recursos/front/'); ?>images/logo-25-2-negativo.png" alt="" width="180px" height="auto" style="padding:10px"></a>
+                <?php endif; ?>
+                <span style="padding-right: 15px; padding-left: 15px;">|</span>
                 <div class="d-grid gap-2 mb-0" style="padding:10px"><a class="btn btn-light" href="https://wa.me/5551993406154?text=Estou%20com%20problemas%20para%20adquirir%20meu%20ingresso!" target="_blank" style="font-size: 11px;">
                         <!-- <i class="bi bi-arrow-down-circle-fill" style="font-size: 25px; color: purple;"></i>-->
                         <strong>Reportar Erro</strong>

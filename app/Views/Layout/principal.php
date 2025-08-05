@@ -205,19 +205,42 @@
         <!--start sidebar -->
         <aside class="sidebar-wrapper" data-simplebar="true">
             <div class="sidebar-header">
-                <div>
-                    <img src="<?php echo site_url('recursos/theme/'); ?>images/logo-md.png" class="logo-icon" alt="logo icon">
-                </div>
-                <div>
-                    <?php if (usuario_logado()->is_membro) : ?>
-                        <h4 class="logo-text"><span style="color: #ffd700; font-size:10px; margin-left: -10px">PREMIUM</span></h4>
+                <?php if (evento_selecionado() && evento_nome()) : ?>
+                    <div class="d-flex flex-column align-items-center w-100">
+                        <div class="text-center mb-2">
+                            <h4 class="logo-text text-primary mb-1" style="font-size: 1.1rem; font-weight: bold;">
+                                <?= evento_nome() ?>
+                            </h4>
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                Painel de Gerenciamento
+                            </small>
+                        </div>
+                        <div class="mt-1">
+                            <?php if (usuario_logado()->is_membro) : ?>
+                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">PREMIUM</span>
+                            <?php elseif (usuario_logado()->is_admin) : ?>
+                                <span class="badge bg-danger" style="font-size: 0.7rem;">ADMIN</span>
+                            <?php else : ?>
+                                <span class="badge bg-secondary" style="font-size: 0.7rem;">START</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php else : ?>
+                    <div>
+                        <img src="<?php echo site_url('recursos/theme/'); ?>images/logo-md.png" class="logo-icon" alt="logo icon">
+                    </div>
+                    <div>
+                        <?php if (usuario_logado()->is_membro) : ?>
+                            <h4 class="logo-text"><span style="color: #ffd700; font-size:10px; margin-left: -10px">PREMIUM</span></h4>
 
-                    <?php elseif (usuario_logado()->is_admin) : ?>
-                        <h4 class="logo-text"><span style="color: #ffd700; font-size:10px !important"></span>ADMIN</h4>
-                    <?php else : ?>
-                        <h4 class="logo-text"><span style="font-size:10px"></span>START</h4>
-                    <?php endif; ?>
-                </div>
+                        <?php elseif (usuario_logado()->is_admin) : ?>
+                            <h4 class="logo-text"><span style="color: #ffd700; font-size:10px !important"></span>ADMIN</h4>
+                        <?php else : ?>
+                            <h4 class="logo-text"><span style="font-size:10px"></span>START</h4>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
 
 
 
