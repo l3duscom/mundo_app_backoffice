@@ -200,7 +200,7 @@
             <div class="container justify-content-center mt-4 mb-4">
                 <?php if (evento_selecionado() && evento_nome()) : ?>
                     <div style="padding:10px">
-                        <h2 class="text-black mb-0" style="font-size: 16px; font-weight: bold; text-align: center;">
+                        <h2 class="text-black mb-0" style="font-size: 18px; font-weight: bold; text-align: center;">
                             <?= evento_nome() ?>
                         </h2>
                     </div>
