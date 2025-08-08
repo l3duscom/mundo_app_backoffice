@@ -9,6 +9,9 @@ use App\Entities\Cartao;
 use App\Entities\Endereco;
 use App\Entities\Inscricao;
 use App\Traits\ValidacoesTrait;
+use App\Services\ResendService;
+
+
 
 class Concursos extends BaseController
 {
@@ -26,6 +29,7 @@ class Concursos extends BaseController
 	private $credencialModel;
 	private $grupoUsuarioModel;
 	private $notifyService;
+	private $resendService;
 
 
 
@@ -44,6 +48,7 @@ class Concursos extends BaseController
 		$this->credencialModel = new \App\Models\CredencialModel();
 		$this->grupoUsuarioModel = new \App\Models\GrupoUsuarioModel();
 		$this->notifyService = new \App\Services\NotifyService();
+		$this->resendService = new ResendService();
 	}
 
 	    public function index(int $event_id)
@@ -1143,14 +1148,6 @@ class Concursos extends BaseController
 
 	private function enviaEmailInscricaoAprovada(object $cliente, object $inscricao, object $concurso): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Sua Inscrição para o ' . $concurso->nome . ' foi aprovada!');
-
 		// Buscar dados do evento se disponível
 		$evento = null;
 		if ($concurso->evento_id) {
@@ -1158,6 +1155,7 @@ class Concursos extends BaseController
 			$evento = $eventoModel->find($concurso->evento_id);
 		}
 
+		// Preparar dados para o template
 		$data = [
 			'cliente' => $cliente,
 			'inscricao' => $inscricao,
@@ -1165,12 +1163,18 @@ class Concursos extends BaseController
 			'evento' => $evento,
 		];
 
+		// Gerar o conteúdo HTML do email usando o template existente
 		$mensagem = view('Concursos/email_aprovado', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Sua Inscrição para o ' . $concurso->nome . ' foi aprovada!',
+			$mensagem
+		);
 	}
+
+
 
 	public function cancelaInscricao($id)
 	{
@@ -1282,14 +1286,6 @@ class Concursos extends BaseController
 
 	private function enviaEmailInscricaoRejeitada(object $cliente, object $inscricao, object $concurso): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Sua Inscrição para o ' . $concurso->nome . ' foi rejeitada!');
-
 		// Buscar dados do evento se disponível
 		$evento = null;
 		if ($concurso->evento_id) {
@@ -1306,21 +1302,16 @@ class Concursos extends BaseController
 
 		$mensagem = view('Concursos/email_rejeitado', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Sua Inscrição para o ' . $concurso->nome . ' foi rejeitada!',
+			$mensagem
+		);
 	}
 
 	private function enviaEmailInscricaoCancelada(object $cliente, object $inscricao, object $concurso): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Sua Inscrição para o ' . $concurso->nome . ' foi CANCELADA!');
-
 		// Buscar dados do evento se disponível
 		$evento = null;
 		if ($concurso->evento_id) {
@@ -1337,9 +1328,12 @@ class Concursos extends BaseController
 
 		$mensagem = view('Concursos/email_cancelada', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Sua Inscrição para o ' . $concurso->nome . ' foi CANCELADA!',
+			$mensagem
+		);
 	}
 
 
@@ -1461,14 +1455,6 @@ class Concursos extends BaseController
 
 	private function enviaEmailInscricaoCheckin(object $cliente, object $inscricao, object $concurso): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Checkin para o ' . $concurso->nome . ' realizado com sucesso!');
-
 		// Buscar dados do evento se disponível
 		$evento = null;
 		if ($concurso->evento_id) {
@@ -1485,21 +1471,16 @@ class Concursos extends BaseController
 
 		$mensagem = view('Concursos/email_checkin', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Checkin para o ' . $concurso->nome . ' realizado com sucesso!',
+			$mensagem
+		);
 	}
 
 	private function enviaEmailInscricaoCheckinOnline(object $cliente, object $inscricao, object $concurso): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Checkin para o ' . $concurso->nome . ' realizado com sucesso!');
-
 		// Buscar dados do evento se disponível
 		$evento = null;
 		if ($concurso->evento_id) {
@@ -1516,28 +1497,24 @@ class Concursos extends BaseController
 
 		$mensagem = view('Concursos/email_checkin_online', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Checkin para o ' . $concurso->nome . ' realizado com sucesso!',
+			$mensagem
+		);
 	}
 
 	private function enviaEmailInscricao($cliente): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente);
-
-
-
-		$email->setSubject('Olá, Sua inscrição está pronta!');
-
 		$mensagem = view('Concursos/email_inscricao');
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente,
+			'Olá, Sua inscrição está pronta!',
+			$mensagem
+		);
 	}
 
 
@@ -1706,23 +1683,18 @@ class Concursos extends BaseController
 
 	private function enviaEmailEnvioCartao(object $cliente): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Endereço atualizado com sucesso!');
-
 		$data = [
 			'cliente' => $cliente,
 		];
 
 		$mensagem = view('Pedidos/email_envio_cartao', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Endereço atualizado com sucesso!',
+			$mensagem
+		);
 	}
 
 	private function manipulaImagem(string $caminhoImagem, int $usuario_id)
@@ -1804,22 +1776,17 @@ class Concursos extends BaseController
 	 */
 	private function enviaEmailCriacaoEmailAcesso(object $cliente): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Dados de acesso ao sistema');
-
 		$data = [
 			'cliente' => $cliente,
 		];
 
 		$mensagem = view('Clientes/email_dados_acesso', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Dados de acesso ao sistema',
+			$mensagem
+		);
 	}
 }

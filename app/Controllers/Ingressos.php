@@ -8,6 +8,7 @@ use App\Entities\Cartao;
 use App\Entities\Credencial;
 use App\Entities\Ingresso;
 use App\Traits\ValidacoesTrait;
+use App\Services\ResendService;
 
 use Dompdf\Dompdf;
 use Picqer\Barcode\BarcodeGenerator;
@@ -28,6 +29,7 @@ class Ingressos extends BaseController
 	private $pedidosModel;
 	private $enderecoModel;
 	private $credencialModel;
+	private $resendService;
 
 
 	public function __construct()
@@ -39,6 +41,7 @@ class Ingressos extends BaseController
 		$this->pedidosModel = new \App\Models\PedidoModel();
 		$this->enderecoModel = new \App\Models\EnderecoModel();
 		$this->credencialModel = new \App\Models\CredencialModel();
+		$this->resendService = new ResendService();
 	}
 
 	public function index()
@@ -565,25 +568,18 @@ class Ingressos extends BaseController
 
 	private function enviaEmailCinemark(object $cliente): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setCC('relacionamento@mundodream.com.br');
-
-		$email->setSubject('Olá, seu ingresso Cinemark foi enviado com sucesso!!!');
-
 		$data = [
 			'cliente' => $cliente,
 		];
 
 		$mensagem = view('Pedidos/email_cortesia', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Olá, seu ingresso Cinemark foi enviado com sucesso!!!',
+			$mensagem
+		);
 	}
 
 	public function vincular_credencial()

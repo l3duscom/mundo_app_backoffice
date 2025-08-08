@@ -4,17 +4,16 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit604baf579b3455225b4f023e07df6c1b
+class ComposerStaticInit8174cc89b9917939780132a0a7dfb4f4
 {
     public static $files = array (
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
-        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
+        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         '7e9bd612cc444b3eed788ebbe46263a0' => __DIR__ . '/..' . '/laminas/laminas-zendframework-bridge/src/autoload.php',
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         '3917c79c5052b270641b5a200963dbc2' => __DIR__ . '/..' . '/kint-php/kint/init.php',
-        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         'db356362850385d08a5381de2638b5fd' => __DIR__ . '/..' . '/mpdf/mpdf/src/functions.php',
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
     );
@@ -114,9 +113,9 @@ class ComposerStaticInit604baf579b3455225b4f023e07df6c1b
         ),
         'phpDocumentor\\Reflection\\' => 
         array (
-            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
-            1 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
-            2 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
+            0 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
+            1 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
+            2 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
         ),
         'chillerlan\\Settings\\' => 
         array (
@@ -941,10 +940,10 @@ class ComposerStaticInit604baf579b3455225b4f023e07df6c1b
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit604baf579b3455225b4f023e07df6c1b::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit604baf579b3455225b4f023e07df6c1b::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit604baf579b3455225b4f023e07df6c1b::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit604baf579b3455225b4f023e07df6c1b::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit8174cc89b9917939780132a0a7dfb4f4::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit8174cc89b9917939780132a0a7dfb4f4::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit8174cc89b9917939780132a0a7dfb4f4::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit8174cc89b9917939780132a0a7dfb4f4::$classMap;
 
         }, null, ClassLoader::class);
     }

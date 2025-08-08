@@ -135,7 +135,7 @@ email.mailType = 'html'
 
 
 #--------------------------------------------------------------------
-# Chave de recuperação de senha
+# Chave de recuperaï¿½ï¿½o de senha
 #--------------------------------------------------------------------
 
 CHAVE_RECUPERACAO_SENHA = 'g3fWpYDTQijf1W2cDZPYTkcZVxlhWkMZ'
@@ -151,18 +151,19 @@ CHAVE_CHECK_MAIL_ORG_API = '406ab4f1d9mshbf7c5777fc9c0bcp1426e4jsn3a6512e6c78f'
 
 #--------------------------------------------------------------------
 # API KEY para o Gerencianet
-# Quando mudamos para o ambiente produtivo, não podemos usar nosso e-mail e telefone, 
-# cpf da conta da Gerencia net, pois dará o erro de 'Recebedor e cliente não podem ser a mesma pessoa.'
+# Quando mudamos para o ambiente produtivo, nï¿½o podemos usar nosso e-mail e telefone, 
+# cpf da conta da Gerencia net, pois darï¿½ o erro de 'Recebedor e cliente nï¿½o podem ser a mesma pessoa.'
 #--------------------------------------------------------------------
 GERENCIANET_CLIENT_ID = 'Client_Id_d9a0e864d9bef97737629ac2766c3b90b6e59d7c' # lembra de alterar para as credenciais do ambiente produtivo
 GERENCIANET_CLIENT_SECRET = 'Client_Secret_30d34ff192d6c10825cb972fe77a512eb2d38acc' # lembra de alterar para as credenciais do ambiente produtivo
-GERENCIANET_SANDBOX = true # altere conforme o ambiente (true = homologação e false = producao)
-GERENCIANET_TIMEOUT = 60 # usaremos para atribuir desconto quando for boleto e também para exibir na view
+GERENCIANET_SANDBOX = true # altere conforme o ambiente (true = homologaï¿½ï¿½o e false = producao)
+GERENCIANET_TIMEOUT = 60 # usaremos para atribuir desconto quando for boleto e tambï¿½m para exibir na view
 GERENCIANET_PAYEE_CODE = 'f4a23657edfeb8bd4d2613b0a9aa759b'
 
 
 ASAAS_ACCESS_TOKEN = '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAyODMxMDE6OiRhYWNoXzQ1YjRmNTVjLTFjZWItNDYxYS1hZjE4LTgxYTk4YjE1Yzc4OQ=='
 ASAAS_ACCESS_TOKEN_SANDBOX = '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNTI1MTg6OiRhYWNoX2I2OWVlZDAxLWMzNzMtNDdkYi05MDY0LTY0MzdhMDRkNTUxNQ=='
+
 
 
 

@@ -4,17 +4,20 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Libraries\Token;
+use App\Services\ResendService;
 
 class Password extends BaseController
 {
     private $usuarioModel;
     private $notifyService;
+    private $resendService;
 
 
     public function __construct()
     {
         $this->usuarioModel = new \App\Models\UsuarioModel();
         $this->notifyService = new \App\Services\NotifyService();
+        $this->resendService = new ResendService();
     }
 
     public function esqueci()
@@ -155,22 +158,17 @@ class Password extends BaseController
      */
     private function enviaEmailRedefinicaoSenha(object $usuario): void
     {
-        $email = service('email');
-
-        $email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-        $email->setTo($usuario->email);
-
-        $email->setSubject('Redefinição da senha de acesso');
-
         $data = [
             'token' => $usuario->reset_token,
         ];
 
         $mensagem = view('Password/reset_email', $data);
 
-        $email->setMessage($mensagem);
-
-        $email->send();
+        // Enviar via Resend
+        $this->resendService->enviarEmail(
+            $usuario->email,
+            'Redefinição da senha de acesso',
+            $mensagem
+        );
     }
 }

@@ -351,7 +351,6 @@ $event_id = session()->get('event_id');
                             <div id="areaBotoes" class="row g-3" style="padding:7px">
                                 <center><span class="text-muted" style="padding-top: 5px; margin-bottom: -10px">Resumo da compra: <strong>R$ <?= number_format($total, 2, ',', '') ?> </strong></center>
 
-
                                 <div class="d-grid gap-2 mb-0" style="padding:7px; margin-top: -3px">
                                     <input id="btn-salvar" type="submit" value="Comprar agora" class="btn btn-primary btn-lg mt-0" style="background-color: purple; border-color: purple; color: white;">
 

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Entities\Endereco;
 use App\Traits\ValidacoesTrait;
+use App\Services\ResendService;
 
 class Pedidos extends BaseController
 {
@@ -18,6 +19,7 @@ class Pedidos extends BaseController
 	private $ingressoModel;
 	private $credencialModel;
 	private $eventoModel;
+	private $resendService;
 
 
 
@@ -31,6 +33,7 @@ class Pedidos extends BaseController
 		$this->ingressoModel = new \App\Models\IngressoModel();
 		$this->credencialModel = new \App\Models\CredencialModel();
 		$this->eventoModel = new \App\Models\EventoModel();
+		$this->resendService = new ResendService();
 	}
 
 	public function index()
@@ -743,25 +746,18 @@ class Pedidos extends BaseController
 
 	private function enviaEmailRastreio(object $cliente): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setCC('relacionamento@mundodream.com.br');
-
-		$email->setSubject('Olá, seus ingressos foram enviados!');
-
 		$data = [
 			'cliente' => $cliente,
 		];
 
 		$mensagem = view('Pedidos/email_rastreio', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Olá, seus ingressos foram enviados!',
+			$mensagem
+		);
 	}
 
 
@@ -930,25 +926,18 @@ class Pedidos extends BaseController
 
 	private function enviaEmailEnvioCartao(object $cliente): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setCC('relacionamento@mundodream.com.br');
-
-		$email->setSubject('Endereço atualizado com sucesso!');
-
 		$data = [
 			'cliente' => $cliente,
 		];
 
 		$mensagem = view('Pedidos/email_envio_cartao', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Endereço atualizado com sucesso!',
+			$mensagem
+		);
 	}
 
 

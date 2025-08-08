@@ -20,7 +20,6 @@ try {
     $response = $api->createPlan([], $body);
 
     echo '<pre>' . json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</pre>';
-    exit;
 } catch (GerencianetException $e) {
     print_r($e->code);
     print_r($e->error);

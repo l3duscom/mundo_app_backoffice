@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Entities\Cliente;
 use App\Entities\Auditoria;
 use App\Traits\ValidacoesTrait;
+use App\Services\ResendService;
 
 class Clientes extends BaseController
 {
@@ -18,6 +19,7 @@ class Clientes extends BaseController
     private $cartaoModel;
     private $ingressoModel;
     private $pedidoModel;
+    private $resendService;
 
     public function __construct()
     {
@@ -28,6 +30,7 @@ class Clientes extends BaseController
         $this->cartaoModel = new \App\Models\CartaoModel();
         $this->ingressoModel = new \App\Models\IngressoModel();
         $this->pedidoModel = new \App\Models\PedidoModel();
+        $this->resendService = new ResendService();
     }
 
     public function index()
@@ -678,25 +681,18 @@ class Clientes extends BaseController
         ];
         $this->auditoriaModel->skipValidation(true)->protect(false)->insert($log);
 
-        $email = service('email');
-
-        $email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-        $email->setTo($cliente->email);
-
-        $email->setCC('relacionamento@mundodream.com.br');
-
-        $email->setSubject('Seja bem-vindo(a) ao MundoDream!');
-
         $data = [
             'cliente' => $cliente,
         ];
 
         $mensagem = view('Clientes/email_dados_acesso', $data);
 
-        $email->setMessage($mensagem);
-
-        $email->send();
+        // Enviar via Resend
+        $this->resendService->enviarEmail(
+            $cliente->email,
+            'Seja bem-vindo(a) ao MundoDream!',
+            $mensagem
+        );
     }
 
     private function enviaEmailMigracao(object $cliente): void
@@ -707,94 +703,66 @@ class Clientes extends BaseController
         ];
         $this->auditoriaModel->skipValidation(true)->protect(false)->insert($log);
 
-        $email = service('email');
-
-        $email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-        $email->setTo($cliente->email);
-
-        //$email->setCC('relacionamento@mundodream.com.br');
-
-        $email->setSubject('Seja bem-vindo(a) ao MundoDream!');
-
         $data = [
             'cliente' => $cliente,
         ];
 
         $mensagem = view('Clientes/email_migracao', $data);
 
-        $email->setMessage($mensagem);
-
-        $email->send();
+        // Enviar via Resend
+        $this->resendService->enviarEmail(
+            $cliente->email,
+            'Seja bem-vindo(a) ao MundoDream!',
+            $mensagem
+        );
     }
 
     private function enviaEmailCriacaoMembroAcesso(object $cliente): void
     {
-        $email = service('email');
-
-        $email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-        $email->setTo($cliente->email);
-
-        $email->setCC('relacionamento@mundodream.com.br');
-
-        $email->setSubject('Dreamclub | Dados de acesso ao sistema');
-
         $data = [
             'cliente' => $cliente,
         ];
 
         $mensagem = view('Clientes/email_dados_acesso_membro', $data);
 
-        $email->setMessage($mensagem);
-
-        $email->send();
+        // Enviar via Resend
+        $this->resendService->enviarEmail(
+            $cliente->email,
+            'Dreamclub | Dados de acesso ao sistema',
+            $mensagem
+        );
     }
 
     private function enviaEmailCriacaoInfluencerAcesso(object $cliente): void
     {
-        $email = service('email');
-
-        $email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-        $email->setTo($cliente->email);
-
-        $email->setCC('relacionamento@mundodream.com.br');
-
-        $email->setSubject('Dados de acesso ao Mundo Dream para Influencers');
-
         $data = [
             'cliente' => $cliente,
         ];
 
         $mensagem = view('Clientes/email_dados_acesso_influencer', $data);
 
-        $email->setMessage($mensagem);
-
-        $email->send();
+        // Enviar via Resend
+        $this->resendService->enviarEmail(
+            $cliente->email,
+            'Dados de acesso ao Mundo Dream para Influencers',
+            $mensagem
+        );
     }
 
     private function enviaEmailCriacaoPartnerAcesso(object $cliente): void
     {
-        $email = service('email');
-
-        $email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-        $email->setTo($cliente->email);
-
-        $email->setCC('relacionamento@mundodream.com.br');
-
-        $email->setSubject('Dados de acesso ao Mundo Dream para Parceiros');
-
         $data = [
             'cliente' => $cliente,
         ];
 
         $mensagem = view('Clientes/email_dados_acesso_parceiros', $data);
 
-        $email->setMessage($mensagem);
-
-        $email->send();
+        // Enviar via Resend
+        $this->resendService->enviarEmail(
+            $cliente->email,
+            'Dados de acesso ao Mundo Dream para Parceiros',
+            $mensagem
+        );
     }
 
     /**
@@ -805,23 +773,18 @@ class Clientes extends BaseController
      */
     private function enviaEmailAlteracaoEmailAcesso(object $cliente): void
     {
-        $email = service('email');
-
-        $email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-        $email->setTo($cliente->email);
-
-        $email->setSubject('E-mail de acesso ao sistema foi alterado');
-
         $data = [
             'cliente' => $cliente,
         ];
 
         $mensagem = view('Clientes/email_acesso_alterado', $data);
 
-        $email->setMessage($mensagem);
-
-        $email->send();
+        // Enviar via Resend
+        $this->resendService->enviarEmail(
+            $cliente->email,
+            'E-mail de acesso ao sistema foi alterado',
+            $mensagem
+        );
     }
 
     /**

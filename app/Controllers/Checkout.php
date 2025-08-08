@@ -15,6 +15,7 @@ use App\Entities\Endereco;
 use App\Entities\Evento;
 use App\Traits\ValidacoesTrait;
 use App\Services\PagarMeService;
+use App\Services\ResendService;
 
 
 $session = session();
@@ -38,6 +39,7 @@ class Checkout extends BaseController
 	private $pagarmeService;
 	private $eventoModel;
 	private $ticketModel;
+	private $resendService;
 
 
 
@@ -58,6 +60,7 @@ class Checkout extends BaseController
 		$this->pagarmeService = new \App\Services\PagarmeService();
 		$this->eventoModel = new \App\Models\EventoModel();
 		$this->ticketModel = new \App\Models\TicketModel();
+		$this->resendService = new ResendService();
 
 	}
 
@@ -2030,14 +2033,6 @@ class Checkout extends BaseController
 	 */
 	private function enviaEmailCriacaoEmailAcesso(object $cliente, string $newuser): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Dados de acesso ao sistema');
-
 		$data = [
 			'cliente' => $cliente,
 			'newuser' => $newuser
@@ -2045,9 +2040,12 @@ class Checkout extends BaseController
 
 		$mensagem = view('Clientes/email_dados_acesso', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Dados de acesso ao sistema',
+			$mensagem
+		);
 	}
 
 	/**
@@ -2067,14 +2065,6 @@ class Checkout extends BaseController
 
 	private function enviaEmailPedido(object $cliente, int $event_id = null): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Pedido realizado com sucesso!');
-
 		// Buscar dados do evento se o event_id foi fornecido
 		$evento = null;
 		if ($event_id) {
@@ -2088,21 +2078,16 @@ class Checkout extends BaseController
 
 		$mensagem = view('Pedidos/email_pedido', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Pedido realizado com sucesso!',
+			$mensagem
+		);
 	}
 
 	private function enviaEmailCortesia(object $cliente, int $event_id = null): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Seus ingressos CORTESIA estão disponíveis!');
-
 		// Buscar dados do evento se o event_id foi fornecido
 		$evento = null;
 		if ($event_id) {
@@ -2116,22 +2101,17 @@ class Checkout extends BaseController
 
 		$mensagem = view('Pedidos/email_cortesia', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Seus ingressos CORTESIA estão disponíveis!',
+			$mensagem
+		);
 	}
 
 
 	private function enviaEmailPedidoCartao(object $cliente, int $event_id = null): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Pedido realizado com sucesso!');
-
 		// Buscar dados do evento se o event_id foi fornecido
 		$evento = null;
 		if ($event_id) {
@@ -2145,9 +2125,12 @@ class Checkout extends BaseController
 
 		$mensagem = view('Pedidos/email_pedido_cartao', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Pedido realizado com sucesso!',
+			$mensagem
+		);
 	}
 
 	public function consultaCep()
@@ -2203,14 +2186,6 @@ class Checkout extends BaseController
 
 	private function enviaEmailPaid(object $cliente, int $event_id = null): void
 	{
-		$email = service('email');
-
-		$email->setFrom(env('email.fromEmail'), env('email.fromName'));
-
-		$email->setTo($cliente->email);
-
-		$email->setSubject('Olá, seus ingressos já estão disponíveis!');
-
 		// Buscar dados do evento se o event_id foi fornecido
 		$evento = null;
 		if ($event_id) {
@@ -2224,9 +2199,12 @@ class Checkout extends BaseController
 
 		$mensagem = view('Pedidos/email_paid', $data);
 
-		$email->setMessage($mensagem);
-
-		$email->send();
+		// Enviar via Resend
+		$this->resendService->enviarEmail(
+			$cliente->email,
+			'Olá, seus ingressos já estão disponíveis!',
+			$mensagem
+		);
 	}
 
 	/**
