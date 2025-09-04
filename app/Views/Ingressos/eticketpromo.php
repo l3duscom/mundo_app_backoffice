@@ -69,14 +69,14 @@
     <?php foreach ($ingressos as $item) : ?>
         <div class="ingresso-container">
             <div style="padding-bottom: 10px; margin: auto;">
-                <img src="https://dreamfest.com.br/wp-content/uploads/2024/04/logo-dream24-pb.png">
+                <?php echo $evento->nome; ?>
             </div>
             <div style="font-size: 16px;margin-top: 10px;margin-bottom: 5px;padding-top: 10px; padding-bottom: 10px;">
                 <strong>CRIANÇA GRÁTIS</strong>
             </div>
 
 
-            <div style="font-size: 10px;padding-top: 10px" class="no-wrap"><strong>Ingresso válido para DOMINGO, 22 de Junho de 2025 </strong><br>Abertura dos portões: 11h<br>Centro de eventos PUCRS<br>Av. Ipiranga 6681, Porto Alegre, <br>Rio Grande do Sul</div>
+            <div style="font-size: 10px;padding-top: 10px" class="no-wrap"><strong>Ingresso válido para dia 4 ou 5 de outubro de 2025 </strong><br>Abertura dos portões: 11h<br>Parque de Exposições Assis Brasil - Esteio RS<br></div>
             <div style="font-size: 16px;margin-top: 10px;padding-top: 10px; padding-bottom: 10px;">
                 <strong>VENDA PROIBIDA</strong>
             </div>
@@ -86,7 +86,7 @@
                 <img src="<?= $item['qrcode'] ?>" style="background-color:#fff; padding:0px">
             </div>
             <div style="margin-top: -20px;font-size: 10px;" class="no-wrap"> <?php echo $item['ingresso']->codigo; ?></div>
-            <div style="font-size: 12px; padding-top: 10px;"><STRONG>DISTRIBUIÇÃO GRATUITA</STRONG><br>www.dreamfest.com.br</div>
+            <div style="font-size: 12px; padding-top: 10px;"><STRONG>DISTRIBUIÇÃO GRATUITA</STRONG><br>www.mundodream.com.br</div>
 
             <div style="padding-top: 30px; font-size: 8px">-----------------------</div>
         </div>

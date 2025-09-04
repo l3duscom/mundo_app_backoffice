@@ -29,6 +29,7 @@ class Ingressos extends BaseController
 	private $pedidosModel;
 	private $enderecoModel;
 	private $credencialModel;
+	private $eventolModel;
 	private $resendService;
 
 
@@ -41,6 +42,7 @@ class Ingressos extends BaseController
 		$this->pedidosModel = new \App\Models\PedidoModel();
 		$this->enderecoModel = new \App\Models\EnderecoModel();
 		$this->credencialModel = new \App\Models\CredencialModel();
+		$this->eventoModel = new \App\Models\EventoModel();
 		$this->resendService = new ResendService();
 	}
 
@@ -347,6 +349,8 @@ class Ingressos extends BaseController
 	public function gerarEticket($pedido_id)
 	{
 		$pedido = $this->pedidosModel->recuperaPedido($pedido_id);
+		$evento = $this->eventoModel->where('id', $pedido->evento_id)->first();
+		
 		$cliente = $this->clienteModel->withDeleted(true)->where('usuario_id', $pedido->user_id)->first();
 
 		$ingressos = $this->ingressoModel->recuperaIngressosPorPedido($pedido_id);
@@ -355,8 +359,11 @@ class Ingressos extends BaseController
 			'titulo' => 'E-ticket: ' . $pedido->cod_pedido . ' - ' . date('d/m/Y H:i'),
 			'pedido' => $pedido,
 			'cliente' => $cliente,
+			'evento' => $evento,
 			'ingressos' => [],
 		];
+
+		
 
 
 		//dd($cliente->nome);
@@ -402,6 +409,7 @@ class Ingressos extends BaseController
 	public function gerarEticketGratis($pedido_id)
 	{
 		$pedido = $this->pedidosModel->recuperaPedido($pedido_id);
+		$evento = $this->eventoModel->where('id', $pedido->evento_id)->first();
 		$cliente = $this->clienteModel->withDeleted(true)->where('usuario_id', $pedido->user_id)->first();
 
 		$ingressos = $this->ingressoModel->recuperaIngressosPorPedido($pedido_id);
@@ -410,6 +418,7 @@ class Ingressos extends BaseController
 			'titulo' => 'E-ticket: ' . $pedido->cod_pedido . ' - ' . date('d/m/Y H:i'),
 			'pedido' => $pedido,
 			'cliente' => $cliente,
+			'evento' => $evento,
 			'ingressos' => [],
 		];
 
@@ -457,6 +466,7 @@ class Ingressos extends BaseController
 	public function gerarEticketPromo($pedido_id)
 	{
 		$pedido = $this->pedidosModel->recuperaPedido($pedido_id);
+		$evento = $this->eventoModel->where('id', $pedido->evento_id)->first();
 		$cliente = $this->clienteModel->withDeleted(true)->where('usuario_id', $pedido->user_id)->first();
 
 		$ingressos = $this->ingressoModel->recuperaIngressosPorPedido($pedido_id);
@@ -465,6 +475,7 @@ class Ingressos extends BaseController
 			'titulo' => 'E-ticket: ' . $pedido->cod_pedido . ' - ' . date('d/m/Y H:i'),
 			'pedido' => $pedido,
 			'cliente' => $cliente,
+			'evento' => $evento,
 			'ingressos' => [],
 		];
 

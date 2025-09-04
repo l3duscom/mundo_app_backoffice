@@ -43,8 +43,8 @@
 <body>
     <?php foreach ($ingressos as $item) : ?>
         <div class="ingresso-container">
-            <div style="padding-bottom: 10px; margin: auto;">
-                <img src="https://dreamfest.com.br/wp-content/uploads/2024/04/logo-dream24-pb.png">
+            <div style="padding-bottom: 0px; margin: auto;">
+                <?php echo $evento->nome; ?>
             </div>
 
             <div style="font-weight: 900; padding: 10px;" class="no-wrap"><strong><?php echo $item['ingresso']->nome; ?></strong></div>
@@ -57,7 +57,7 @@
                 <img src="<?= $item['qrcode'] ?>" style="background-color:#fff; padding:0px">
             </div>
             <div style="margin-top: -20px;font-size: 10px;" class="no-wrap"> <?php echo $item['ingresso']->codigo; ?></div>
-            <div style="font-size: 12px; padding-top: 10px;"><STRONG>O Universo Geek ao Extremo</STRONG><br>www.dreamfest.com.br</div>
+            <div style="font-size: 12px; padding-top: 10px;"><STRONG>O Universo Geek ao Extremo</STRONG><br>www.mundodream.com.br</div>
 
             <div style="padding-top: 30px; font-size: 8px">-----------------------</div>
         </div>
