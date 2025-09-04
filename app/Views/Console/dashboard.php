@@ -218,7 +218,13 @@
                                                         <hr>
                                                     <?php endif ?>
                                                     <strong class="font-20"><?= $i->nome_evento ?></strong><br>
-                                                    <span class="text-muted font-13 mt-0"> Data do Evento: <?= date('d/m/Y', strtotime($i->data_inicio)) ?> - <?= date('d/m/Y', strtotime($i->data_fim)) ?> das 10h às 19h
+                                                    <span class="text-muted font-13 mt-0"> Data do Evento: <?= ($i->data_inicio instanceof DateTimeInterface)
+    ? $i->data_inicio->format('d/m/Y')
+    : (($dt = DateTime::createFromFormat('!Y-m-d', (string)$i->data_inicio)) ? $dt->format('d/m/Y') : '') ?>
+ - <?= ($i->data_inicio instanceof DateTimeInterface)
+    ? $i->data_inicio->format('d/m/Y')
+    : (($dt = DateTime::createFromFormat('!Y-m-d', (string)$i->data_fim)) ? $dt->format('d/m/Y') : '') ?>
+ das 11h às 20h
                                                     </span>
                                                 </div>
                                                 <?php if ($i->tipo != 'produto') : ?>
