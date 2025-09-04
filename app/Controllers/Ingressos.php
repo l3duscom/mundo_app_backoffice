@@ -203,7 +203,8 @@ class Ingressos extends BaseController
 			$generator = new BarcodeGeneratorHTML();
 			$barcode = $generator->getBarcode($ingresso->codigo, $generator::TYPE_CODE_39);
 
-			$qrcode = $this->gerarQRCode($ingresso->codigo);
+			//$qrcode = $this->gerarQRCode($ingresso->codigo);
+			$qrcode = (new QRCode)->render($ingresso->codigo);
 
 
 
