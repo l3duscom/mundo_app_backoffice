@@ -72,6 +72,21 @@ $routes->group('formas', function ($routes) {
     $routes->match(['get', 'post'], 'excluir/(:segment)', 'FormasPagamentos::excluir/$1');
 });
 
+$routes->group('assinaturas', ['namespace' => 'App\Controllers'], function($routes) {
+    $routes->get('/', 'Assinaturas::index');
+    $routes->get('contratar/(:num)', 'Assinaturas::contratar/$1');
+    $routes->post('processar', 'Assinaturas::processar');
+    $routes->get('confirmacao/(:num)', 'Assinaturas::confirmacao/$1');
+    $routes->get('minhas', 'Assinaturas::minhasAssinaturas');
+    $routes->get('detalhes/(:num)', 'Assinaturas::detalhes/$1');
+    $routes->post('cancelar', 'Assinaturas::cancelar');
+    $routes->post('webhook', 'Assinaturas::webhook');
+    
+    // Área administrativa
+    $routes->get('admin', 'Assinaturas::admin');
+    $routes->get('admin/planos', 'Assinaturas::adminPlanos');
+});
+
 
 // Grupo de rotas para o controller de Ordens Itens para não dar o erro de 404 - Not found
 // quando estiver hospedado
@@ -162,6 +177,7 @@ $routes->get('concursos', 'Concursos::index');
 
 $routes->get('usuarios/perfil', 'Usuarios::perfil');
 $routes->post('usuarios/atualizarperfil', 'Usuarios::atualizarPerfil');
+
 
 /*
  * --------------------------------------------------------------------

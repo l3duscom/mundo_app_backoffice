@@ -227,7 +227,11 @@
                                                         <a href="<?= site_url('/ingressos/gerarIngressoPdf/' . $i->id) ?>" target="_blank" class="btn btn-sm btn-warning mt-0 shadow"><i class="bx bx-printer"></i></a>
                                                         <a href="#" class="btn btn-sm btn-primary mt-0 shadow w-100" data-bs-toggle="modal" data-bs-target="#participante<?= $i->id; ?>Modal"><i class="bx bx-user" style="padding-right: 5px;"></i> Editar participante</a>
                                                     </div>
-                                                
+                                                <?php if (strpos($i->nome, 'VIP') !== false || strpos($i->nome, 'EPIC') !== false || true) : ?>
+                                                    <?php if (!isset($perfil_incompleto) || !$perfil_incompleto): ?>
+                                                        <a href="<?= site_url('/console/meet/' . $i->id) ?>" class="btn btn-success mt-2 shadow w-100"><i class='bx bx-camera'></i> Check in Meet & Greet</a>
+                                                    <?php endif; ?>
+                                                <?php endif; ?>
                                                 </div>
                                                 <?php endif ?>
                                             </div>
