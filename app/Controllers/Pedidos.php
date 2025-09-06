@@ -249,7 +249,7 @@ class Pedidos extends BaseController
 		return view('Pedidos/pendentes', $data);
 	}
 
-	public function recompra($event_id)
+	public function recompra()
 	{
 
 		if (!$this->usuarioLogado()->temPermissaoPara('editar-clientes')) {
