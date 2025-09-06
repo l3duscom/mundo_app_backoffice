@@ -1234,7 +1234,7 @@ if (isset($event_id)) {
                                     <!-- <i class="bi bi-arrow-down-circle-fill" style="font-size: 25px; color: purple;"></i>-->
                                     <strong><i class='bx bx-down-arrow-circle'></i> Ver detalhes da compra</strong>
                                 </a>
-                                <center><span style="padding-top: 5px; margin-bottom: -5px">Total a pagar: <strong>R$ <?= number_format($_SESSION['total'], 2, ',', '')  ?></strong></span> </center>
+                                <center><span style="padding-top: 5px; margin-bottom: -5px; color:#333">Total a pagar: <strong>R$ <?= number_format($_SESSION['total'], 2, ',', '')  ?></strong></span> </center>
 
                                 <a href="<?= site_url('/evento/entrega/'. $event_id) ?>" class="btn btn-lg mt-0" style="padding:10px; background-color: purple; border-color: purple; color: white;"> Ir para o pagamento <i class='bx bx-right-arrow-circle'></i></a>
 
@@ -1251,40 +1251,6 @@ if (isset($event_id)) {
         </div>
     </div>
 
-    <div class="col-lg-4">
-
-        <div class="card shadow radius-10">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-
-
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="">
-                                <h5 class="mb-0">Compra segura
-                                    </h4>
-                                    <p class="mb-0">Ambiente seguro e autenticado</p>
-                                    <span class="text-muted" style="font-size: 10px;">Este site utiliza certificado SSL</span>
-                            </div>
-                            <div class="ms-auto fs-3 ">
-                                <i class="fadeIn animated bx bx-check-shield" style="font-size: 45px;"></i>
-                            </div>
-                        </div>
-                        <div class="progress mt-3" style="height: 5px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 42%"></div>
-                        </div>
-                    </div>
-
-
-
-
-                </div>
-            </div>
-
-        </div>
-
-
-    </div>
 
 </div>
 
