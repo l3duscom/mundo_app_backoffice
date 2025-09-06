@@ -260,7 +260,7 @@ class Pedidos extends BaseController
 		$usuario_logado = $this->usuarioLogado()->id;
 
 
-		$recompra = $this->pedidosModel->recuperaRecompraPorEvento($event_id);
+		$recompra = $this->pedidosModel->recuperaRecompraPorEvento();
 
 		$data = [
 			'titulo' => 'Recompra',
