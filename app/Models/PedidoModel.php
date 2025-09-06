@@ -55,7 +55,7 @@ class PedidoModel extends Model
         return $codigo;
     }
 
-    public function recuperaRecompraPorEvento()
+    public function recuperaRecompraPorEvento(int $event_id)
     {
         $sql = "
     SELECT 
@@ -99,7 +99,7 @@ ORDER BY p11.total DESC;
         return $this->db->query($sql, [$event_id])->getResult();
     }
 
-    public function recuperaRecompraRevertidaPorEvento()
+    public function recuperaRecompraRevertidaPorEvento(int $event_id)
     {
         $sql = "
     SELECT 
@@ -143,7 +143,7 @@ ORDER BY p11.updated_at DESC;
         return $this->db->query($sql, [$event_id])->getResult();
     }
 
-    public function recuperaRecompraRejeitadaPorEvento()
+    public function recuperaRecompraRejeitadaPorEvento(int $event_id)
     {
         $sql = "
     SELECT 
@@ -187,7 +187,7 @@ ORDER BY p11.updated_at DESC;
         return $this->db->query($sql, [$event_id])->getResult();
     }
 
-    public function recuperaRecompraIniciadaPorEvento()
+    public function recuperaRecompraIniciadaPorEvento(int $event_id)
     {
         $sql = "
     SELECT 

@@ -249,7 +249,7 @@ class Pedidos extends BaseController
 		return view('Pedidos/pendentes', $data);
 	}
 
-	public function recompra()
+	public function recompra($event_id)
 	{
 
 		if (!$this->usuarioLogado()->temPermissaoPara('editar-clientes')) {
@@ -260,7 +260,7 @@ class Pedidos extends BaseController
 		$usuario_logado = $this->usuarioLogado()->id;
 
 
-		$recompra = $this->pedidosModel->recuperaRecompraPorEvento();
+		$recompra = $this->pedidosModel->recuperaRecompraPorEvento($event_id);
 
 		$data = [
 			'titulo' => 'Recompra',
