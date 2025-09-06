@@ -269,7 +269,7 @@ if (isset($event_id)) {
 
 
 
-<h5 class="mb-0 mt-3">Quais ingressos você deseja?</h5>
+<h5 class="mb-0 mt-3">Quais ingressos você deseja? <span class="badge bg-danger">Exclusivo para você!</span></h5>
 
 
 <div class="row mt-4">
@@ -534,8 +534,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
