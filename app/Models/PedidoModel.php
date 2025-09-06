@@ -83,7 +83,7 @@ class PedidoModel extends Model
 FROM pedidos p11
 LEFT JOIN pedidos p17 
     ON p11.user_id = p17.user_id 
-    AND p17.evento_id in (17,19)
+    AND p17.evento_id in (17)
 LEFT JOIN clientes c
     ON p11.user_id = c.usuario_id
 WHERE p11.evento_id = 12
@@ -127,10 +127,10 @@ ORDER BY p11.total DESC;
 FROM pedidos p11
 LEFT JOIN pedidos p17 
     ON p11.user_id = p17.user_id 
-    AND p17.evento_id = $event_id
+    AND p17.evento_id in (17)
 LEFT JOIN clientes c
     ON p11.user_id = c.usuario_id
-WHERE p11.evento_id = ?
+WHERE p11.evento_id = 12
 AND p11.status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH', 'PAID')
 AND p17.id IS NULL
 AND p11.crm = 'REVERTIDO'
@@ -171,10 +171,10 @@ ORDER BY p11.updated_at DESC;
 FROM pedidos p11
 LEFT JOIN pedidos p17 
     ON p11.user_id = p17.user_id 
-    AND p17.evento_id = $event_id
+    AND p17.evento_id in (17)
 LEFT JOIN clientes c
     ON p11.user_id = c.usuario_id
-WHERE p11.evento_id = ?
+WHERE p11.evento_id = 12
 AND p11.status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH', 'PAID')
 AND p17.id IS NULL
 AND p11.crm = 'REJEITADO'
@@ -215,7 +215,7 @@ ORDER BY p11.updated_at DESC;
 FROM pedidos p11
 LEFT JOIN pedidos p17 
     ON p11.user_id = p17.user_id 
-    AND p17.evento_id in(17,19)
+    AND p17.evento_id in(17)
 LEFT JOIN clientes c
     ON p11.user_id = c.usuario_id
 WHERE p11.evento_id = 12
