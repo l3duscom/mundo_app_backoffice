@@ -360,21 +360,7 @@
                     </a>
                 </li>
 
-                 <li>
-                    <a href="<?php echo site_url('console/evento/17'); ?>">
-                        <div class="parent-icon"><i class='bx bx-star'></i>
-                        </div>
-                        <div class="menu-title"><strong style="color: white">Comprar ingressos Dream25 Pt.2 com desconto<strong> <span class="badge bg-danger">novo</span></div>
-                    </a>
-                </li>
-
-               <li>
-                    <a href="<?php echo site_url('console/evento/19'); ?>">
-                        <div class="parent-icon"><i class='bx bx-star'></i>
-                        </div>
-                        <div class="menu-title"><strong style="color: white">Comprar ingressos Anime Expo com desconto<strong> <span class="badge bg-danger">novo</span></div>
-                    </a>
-                </li>
+                
 
                 <li>
                     <a href="<?php echo site_url('console/meets'); ?>">

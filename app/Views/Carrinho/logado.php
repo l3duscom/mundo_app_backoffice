@@ -1,4 +1,4 @@
-<?php echo $this->extend('Layout/principal'); ?>
+<?php echo $this->extend('Layout/externo'); ?>
 
 <?php echo $this->section('titulo') ?> <?php echo $titulo; ?> <?php echo $this->endSection() ?>
 
@@ -439,7 +439,7 @@ if (isset($event_id)) {
                             ?></p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab' && empty($value['parent_ticket_id']))) : ?>
@@ -447,8 +447,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
@@ -526,7 +526,7 @@ if (isset($event_id)) {
                             ?></p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom' && empty($value['parent_ticket_id']))) : ?>
@@ -534,8 +534,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
@@ -617,7 +617,7 @@ if (isset($event_id)) {
                             ?></p>
                             <p>Você receberá uma credencial exclusiva e colecionável que deverá ser apresentada na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo' && empty($value['parent_ticket_id']))) : ?>
@@ -625,8 +625,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
@@ -693,7 +693,7 @@ if (isset($event_id)) {
                             <!--<a href="#" data-bs-toggle="modal" data-bs-target="#vip-fanModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a> -->
 
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
 
                             <?php foreach ($items as $key => $value) : ?>
@@ -702,8 +702,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
@@ -767,7 +767,7 @@ if (isset($event_id)) {
                             <!--<a href="#" data-bs-toggle="modal" data-bs-target="#vip-fullModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a> -->
 
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
                             <!-- <div class="card border border-muted">
                                 <div class="form-check mt-3 mb-3">
@@ -782,8 +782,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
@@ -847,7 +847,7 @@ if (isset($event_id)) {
                             <p style="padding-top: 20px;">Este ingresso dá direito a participar de <strong>2 eventos incríveis</strong>: <?= isset($evento) ? esc($evento->nome) : 'evento principal' ?> + Anime Dream 25!</p>
                             <p>Você receberá uma credencial exclusiva e colecionável que será válida para ambos os eventos. A credencial deverá ser apresentada na entrada e na saída dos festivais e sempre que for requisitada. Você terá direito à entrar e sair dos eventos sempre que quiser!</p>
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
 
                             <?php foreach ($items as $key => $value) : ?>
@@ -856,8 +856,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <div class="mt-1 mb-1 badge-container">
                                                         <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
                                                             <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
@@ -919,7 +919,7 @@ if (isset($event_id)) {
                             <!--<a href="#" data-bs-toggle="modal" data-bs-target="#cosplayerModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a> -->
 
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
 
                             <?php foreach ($items as $key => $value) : ?>
@@ -928,8 +928,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
@@ -994,7 +994,7 @@ if (isset($event_id)) {
                             <p>Classificação: 18 Anos <br>Você receberá uma pulseira colecionável que deverá ser apresentada na entrada e na saída da festa e sempre que for requisitada. </p>
 
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
 
                             <?php foreach ($items as $key => $value) : ?>
@@ -1003,8 +1003,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
@@ -1055,7 +1055,7 @@ if (isset($event_id)) {
                             <!--<a href="#" data-bs-toggle="modal" data-bs-target="#cosplayerModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a> -->
 
                             <hr>
-                            <div class="mb-0 mt-3 font-24" style="color: #fff;">Selecione seu ingresso </div>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
 
                             <?php foreach ($items as $key => $value) : ?>
@@ -1064,8 +1064,8 @@ if (isset($event_id)) {
                                         <div class="form-check mt-3 mb-3">
                                             <div class="row">
                                                 <div class="col-7">
-                                                    <span style="color: #fff; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
-                                                    <strong class="item-name" style="color: #fff; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
@@ -1230,11 +1230,11 @@ if (isset($event_id)) {
 
                         <div class="fixed-bottom bg-white shadow-lg">
                             <div class="d-grid gap-2 mb-0" style="padding:10px">
-                                <a class="btn btn-sm" href="#pagar">
+                                <a class="btn btn-sm btn-light" href="#pagar">
                                     <!-- <i class="bi bi-arrow-down-circle-fill" style="font-size: 25px; color: purple;"></i>-->
                                     <strong><i class='bx bx-down-arrow-circle'></i> Ver detalhes da compra</strong>
                                 </a>
-                                <center><span style="padding-top: 5px; margin-bottom: -5px; color:#333">Total a pagar: <strong>R$ <?= number_format($_SESSION['total'], 2, ',', '')  ?></strong></span> </center>
+                                <center><span style="padding-top: 5px; margin-bottom: -5px">Total a pagar: <strong>R$ <?= number_format($_SESSION['total'], 2, ',', '')  ?></strong></span> </center>
 
                                 <a href="<?= site_url('/evento/entrega/'. $event_id) ?>" class="btn btn-lg mt-0" style="padding:10px; background-color: purple; border-color: purple; color: white;"> Ir para o pagamento <i class='bx bx-right-arrow-circle'></i></a>
 
@@ -1245,12 +1245,49 @@ if (isset($event_id)) {
 
                     <?php endif ?>
 
-                   
+                    <center>
+                        <span class="text-muted mb-1" style="font-size: 9px;">Processado por:</span><br>
+                                                    <img class="mt-1 mb-4" src="<?php echo site_url('recursos/front/images/asaas.png'); ?>" width="100px" height="auto">
+                    </center>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="col-lg-4">
+
+        <div class="card shadow radius-10">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+
+
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="">
+                                <h5 class="mb-0">Compra segura
+                                    </h4>
+                                    <p class="mb-0">Ambiente seguro e autenticado</p>
+                                    <span class="text-muted" style="font-size: 10px;">Este site utiliza certificado SSL</span>
+                            </div>
+                            <div class="ms-auto fs-3 ">
+                                <i class="fadeIn animated bx bx-check-shield" style="font-size: 45px;"></i>
+                            </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 5px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 42%"></div>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
 
 </div>
 
