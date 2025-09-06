@@ -10,6 +10,8 @@ use App\Traits\ValidacoesTrait;
 use chillerlan\QRCode\{QRCode, QROptions};
 use chillerlan\QRCode\Data\QRMatrix;
 use chillerlan\QRCode\Output\QROutputInterface;
+use App\Entities\Evento;
+use App\Entities\Ticket;
 
 class Console extends BaseController
 {
@@ -22,6 +24,9 @@ class Console extends BaseController
 	private $pedidoModel;
 	private $meetModel;
 	private $queueModel;
+	private $eventoModel;
+	private $ticketModel;
+	
 
 
 
@@ -34,6 +39,8 @@ class Console extends BaseController
 		$this->pedidoModel = new \App\Models\PedidoModel();
 		$this->meetModel = new \App\Models\MeetModel();
 		$this->queueModel = new \App\Models\QueueModel();
+		$this->eventoModel = new \App\Models\EventoModel();
+		$this->ticketModel = new \App\Models\TicketModel();
 	}
 
 	public function dashboard()
@@ -56,13 +63,13 @@ class Console extends BaseController
 		$ingressos = $this->ingressoModel->recuperaIngressosPorUsuario($id);
 
 		// Separar ingressos em atuais e anteriores
-		$ticketModel = new \App\Models\TicketModel();
+		//$ticketModel = new \App\Models\TicketModel();
 		$ingressos_atuais = [];
 		$ingressos_anteriores = [];
 		$hoje = date('Y-m-d');
 		foreach ($ingressos as $key => $ingresso) {
 			// Buscar ticket vinculado
-			$ticket = $ticketModel->find($ingresso->ticket_id ?? null);
+			$ticket = $this->ticketModel->find($ingresso->ticket_id ?? null);
 			$data_fim = $ticket->data_fim ?? null;
 			if ($data_fim) {
 				// Se data_fim passou de 2 dias atrás, é anterior
@@ -157,6 +164,54 @@ class Console extends BaseController
 
 		return view('Console/dashboard', $data);
 	}
+
+	public function evento($event_id)
+	{
+		// Buscar dados do evento para o pixel
+
+		$evento = $this->eventoModel->find($event_id);
+
+		if ($this->usuarioLogado()) {
+			$id = $this->usuarioLogado()->id;
+			$cli = $this->clienteModel->withDeleted(true)->where('usuario_id', $id)->first();
+			//$cliente = $this->buscaclienteOu404($cli->id);
+			$card = $this->cartaoModel->withDeleted(true)->where('user_id', $id)->first();
+		} else {
+			$id = null;
+		}
+
+		$items = $this->ticketModel->recuperaIngressosPorEvento($event_id);
+
+		$ingressos = array();
+		foreach ($items as $item) {
+			$ingressos[] = array(
+				'id' => $item->id,
+				'nome' => $item->nome,
+				'preco' => $item->preco * 0.85,
+				'descricao' => $item->descricao,
+				'data_inicio' => $item->data_inicio,
+				'data_fim' => $item->data_fim,
+				'tipo' => $item->tipo,
+				'dia' => $item->dia,
+				'lote' => $item->lote,
+				'categoria' => $item->categoria,
+				'data_lote' => $item->data_lote,
+				'estoque' => $item->estoque,
+				'parent_ticket_id' => $item->parent_ticket_id
+			);
+		}
+
+		$data = [
+			'titulo' => 'Comprar ingressos',
+			'id' => $id,
+			'items' => $ingressos,
+			'event_id' => $event_id,
+			'evento' => $evento // Dados do evento para o pixel
+		];
+
+		return view('Carrinho/logado', $data);
+	}
+
 
 	public function meets()
 	{
