@@ -968,7 +968,7 @@ class Pedidos extends BaseController
 			->update();
 
 
-		return redirect()->to(site_url("pedidos/recompra/"))->with('sucesso', "Contato iniciado!");
+		return redirect()->to(site_url("pedidos/recompra/19"))->with('sucesso', "Contato iniciado!");
 	}
 
 	public function revertido($id)
