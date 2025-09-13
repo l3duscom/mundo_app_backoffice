@@ -47,12 +47,7 @@
             <a href="#meus-ingressos" class="btn btn-primary btn-lg fw-bold text-white shadow rounded-pill d-flex align-items-center justify-content-center gap-2 mb-2" style="letter-spacing:0.5px; font">
                 <i class="bi bi-ticket-fill" style="font-size:1.2em;"></i> Ver meus ingressos
             </a>
-             <a href="<?php echo site_url('console/evento/19'); ?>" class="btn btn-danger btn-lg fw-bold shadow rounded-pill d-flex align-items-center justify-content-center gap-2 mb-2" style="letter-spacing:0.5px; font-size: 1.1em;">
-                <i class="bi bi-star" style="font-size:1.2em;"></i> Comprar ingressos Anime Expo com desconto
-            </a>
-            <a href="<?php echo site_url('console/evento/17'); ?>" class="btn btn-warning btn-lg fw-bold shadow rounded-pill d-flex align-items-center justify-content-center gap-2 mb-2" style="letter-spacing:0.5px; font-size: 1.1em;">
-                <i class="bi bi-star" style="font-size:1.2em;"></i> Comprar ingressos Dream25 Pt.2 com desconto
-            </a>
+            
             
             
         </div>
