@@ -1714,6 +1714,7 @@ class Checkout extends BaseController
 
 	public function finalizaradm()
 	{
+		$event_id = 19;
 
 		$post = $this->request->getPost();
 
@@ -1788,7 +1789,7 @@ class Checkout extends BaseController
 			->first();
 
 		$data = [
-			'evento_id' => 17,
+			'evento_id' => $event_id,
 			'user_id' => $user_id,
 			'codigo' => $this->pedidoModel->geraCodigoPedido(),
 			'total' =>  $post['valor_total'] / 100,
@@ -1839,7 +1840,7 @@ class Checkout extends BaseController
 		];
 
 
-		$this->enviaEmailCortesia((object)$montaemail, 17);
+		$this->enviaEmailCortesia((object)$montaemail, $event_id);
 
 
 
