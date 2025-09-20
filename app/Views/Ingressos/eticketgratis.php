@@ -67,7 +67,7 @@
             <div style="font-size: 16px;margin-top: 10px;padding-top: 10px; padding-bottom: 10px;">
                 <strong>VENDA PROIBIDA</strong>
             </div>
-            <div style="font-size: 9px;padding-top: 10px" class="no-wrap">Ingresso <strong>exclusivo para criança</strong> menor de 12 anos, <strong>acompanhada</strong> de um adulto pagante!</div>
+            <div style="font-size: 9px;padding-top: 10px" class="no-wrap">Ingresso <strong>exclusivo para alunos</strong> da rede municipal <strong>de Esteio - RS</strong></div>
 
             <div style=" display: flex; justify-content: center;">
                 <img src="<?= $item['qrcode'] ?>" style="background-color:#fff; padding:0px">
