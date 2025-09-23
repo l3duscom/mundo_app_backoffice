@@ -36,7 +36,7 @@ class Filters extends BaseConfig
     public $globals = [
         'before' => [
             'honeypot',
-            'csrf' => ['except' => 'cron/paynotify', 'except' => 'cidades/getcidades', 'except' => 'api/checkout/notify', 'except' => 'webhook/asaas', 'except' => 'api/acessos/check' ],
+            'csrf' => ['except' => 'cron/paynotify', 'except' => 'cidades/getcidades', 'except' => 'api/checkout/notify', 'except' => 'webhook/asaas'],
         ],
         'after' => [
             'toolbar',
@@ -69,7 +69,6 @@ class Filters extends BaseConfig
             'before' => [
                 'api/checkout/notify',
                 'webhook/asaas',
-    
             ],
         ],
         'login' => [
