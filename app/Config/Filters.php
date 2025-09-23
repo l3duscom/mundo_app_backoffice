@@ -69,6 +69,7 @@ class Filters extends BaseConfig
             'before' => [
                 'api/checkout/notify',
                 'webhook/asaas',
+    
             ],
         ],
         'login' => [
