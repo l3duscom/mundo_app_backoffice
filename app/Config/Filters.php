@@ -36,7 +36,15 @@ class Filters extends BaseConfig
     public $globals = [
         'before' => [
             'honeypot',
-            'csrf' => ['except' => 'cron/paynotify', 'except' => 'cidades/getcidades', 'except' => 'api/acessos/check', 'except' => 'webhook/asaas'],
+            'csrf' => [
+                'except' => [
+                    'cron/paynotify',
+                    'cidades/getcidades',
+                    'api/checkout/notify',
+                    'webhook/asaas',
+                    'api/acessos/check',   // OK: CSRF liberado aqui
+                ],
+            ],
         ],
         'after' => [
             'toolbar',
