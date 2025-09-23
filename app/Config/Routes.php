@@ -138,6 +138,7 @@ $routes->get('api/checkout/obrigado', 'Api\Checkout::obrigado');
 $routes->post('api/checkout/notify', 'Api\Checkout::notify');
 $routes->post('notify', 'Api\Checkout::notify'); // Rota alternativa para o ASAAS
 $routes->post('webhook/asaas', 'Webhook::asaas'); // Rota webhook específica
+$routes->post('api/acessos/check', 'Acessos::check'); 
 
 // Rotas do Checkout
 $routes->get('checkout/pix/(:num)', 'Checkout::pix/$1');
