@@ -653,7 +653,9 @@ class Ingressos extends BaseController
 
 	public function add()
 	{
-		
+		if (!$this->usuarioLogado()->temPermissaoPara('editar-clientes')) {
+			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+		}
 
 		// Verificar se há evento selecionado no contexto usando helper
 		$evento_selecionado = evento_selecionado_com_validacao();
