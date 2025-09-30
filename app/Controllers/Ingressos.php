@@ -668,7 +668,7 @@ class Ingressos extends BaseController
 
 		$event_id = 19;
 		$data = [
-			'titulo' => 'Add Ingressos ADMIN - ' . esc($evento_selecionado->nome),
+			//'titulo' => 'Add Ingressos ADMIN - ' . esc($evento_selecionado->nome),
 			'event_id' => $event_id,
 			'titulo' => 'Add Ingressos ADMIN' ,
 

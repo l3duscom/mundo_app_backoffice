@@ -137,10 +137,53 @@ if ($_SESSION['convite'] == 'x') {
 }
 ?>
 
+<?php 
+$nome_evento_banner = evento_nome();
+if ($evento_selecionado && $nome_evento_banner && strlen($nome_evento_banner) > 3) : ?>
+    <div class="evento-header">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="mb-0">Evento Ativo: <strong><?= htmlspecialchars($nome_evento_banner) ?></strong></h4>
+                <?php if ($evento_selecionado->data_inicio && $evento_selecionado->data_fim) : ?>
+                    <p class="mb-0 opacity-75">
+                        <?= date('d/m/Y', strtotime($evento_selecionado->data_inicio)) ?> - 
+                        <?= date('d/m/Y', strtotime($evento_selecionado->data_fim)) ?>
+                        <?php if ($evento_selecionado->local) : ?>
+                            // <?= esc($evento_selecionado->local) ?>
+                        <?php endif; ?>
+                    </p>
+                <?php endif; ?>
+            </div>
+            <div>
+                <a href="<?= site_url('/') ?>" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Trocar Evento
+                </a>
+            </div>
+        </div>
+    </div>
+<?php else : ?>
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Atenção:</strong> Nenhum evento selecionado. 
+        <a href="<?= site_url('/') ?>" class="alert-link">Clique aqui para selecionar um evento</a>.
+    </div>
+<?php endif; ?>
 
-
-
-
+<h5 class="mb-0 mt-3">
+    <?php 
+    $nome_titulo = evento_nome();
+    echo $nome_titulo && strlen($nome_titulo) > 3 ? htmlspecialchars($nome_titulo) : 'DREAMFEST 23 - MEGA FESTIVAL GEEK';
+    ?>
+</h5>
+<strong style="color: #A7A7A7">
+    <?php if ($evento_selecionado && $evento_selecionado->data_inicio && $evento_selecionado->data_fim) : ?>
+        <?= date('d/m/Y', strtotime($evento_selecionado->data_inicio)) ?> - 
+        <?= date('d/m/Y', strtotime($evento_selecionado->data_fim)) ?>
+        <?= $evento_selecionado->local ? ' // ' . esc($evento_selecionado->local) : ' // PORTO ALEGRE' ?>
+    <?php else : ?>
+        21/06/2025 - 22/06/2025 // PORTO ALEGRE
+    <?php endif; ?>
+</strong>
 
 <div class="row mt-4">
     <div class="col-lg-8">
