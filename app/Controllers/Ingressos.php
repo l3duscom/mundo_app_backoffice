@@ -666,7 +666,7 @@ class Ingressos extends BaseController
 			//return redirect()->to(site_url('/'))->with('atencao', 'Selecione um evento primeiro para adicionar ingressos.');
 		//}
 
-		$event_id = 19;
+		$event_id = 17;
 		$data = [
 			//'titulo' => 'Add Ingressos ADMIN - ' . esc($evento_selecionado->nome),
 			'event_id' => $event_id,
