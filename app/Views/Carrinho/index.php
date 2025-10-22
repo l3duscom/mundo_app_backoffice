@@ -687,7 +687,7 @@ if (isset($event_id)) {
                             }
                         }
                         ?>
-                        <div id="epic" class="tabcontent">
+                        <div id="camping" class="tabcontent">
                             <?php if (!$tem_camping_ingresso): ?>
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
