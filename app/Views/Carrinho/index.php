@@ -332,6 +332,7 @@ if (isset($event_id)) {
 
                         <!-- Tab links -->
                         <?php
+                        $tem_camping = false;
                         $tem_epic = false;
                         $tem_vip = false;
                         $tem_super_pack = false;
@@ -339,6 +340,7 @@ if (isset($event_id)) {
                             if (isset($item['categoria'])) {
                                 if (strtolower($item['categoria']) === 'epic') $tem_epic = true;
                                 if (strtolower($item['categoria']) === 'vip') $tem_vip = true;
+                                if (strtolower($item['categoria']) === 'camping') $tem_camping = true;
                             }
                             if (!empty($item['parent_ticket_id'])) {
                                 $tem_super_pack = true;
@@ -387,6 +389,9 @@ if (isset($event_id)) {
                                     echo "$dia_inicio,$dia_fim de $mes";
                                 }
                             ?></p></button>
+                            <?php if ($tem_camping): ?>
+                                <button class="tablinks" onclick="openCategoria(event, 'camping')">DREAM PASS<p class="mb-0" style="font-size: 11px">Game Party</p></button>
+                            <?php endif; ?>
                             <?php if ($tem_epic): ?>
                                 <button class="tablinks" onclick="openCategoria(event, 'epic')">EPIC PASS<p class="mb-0" style="font-size: 11px">Experiência Épica</p></button>
                             <?php endif; ?>
@@ -653,6 +658,80 @@ if (isset($event_id)) {
                                                                 <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
                                                                     <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
                                                                 </strong>
+                                                                <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
+                                                            </div>
+                                                        </div>
+                                                    <?php else : ?>
+                                                        <strong style="color: red;">ESGOTADO</strong>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="col-11 mt-3 eligibility-section">
+                                                    <strong style="font-size: 13px;" class="mt-5"><i class='bx bx-info-circle'></i> Quem pode comprar? </strong>
+                                                    <div class="text-muted mt-1" style="font-size: 11px;"><?= $value['descricao'] ?></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+
+                        </div>
+
+                        <?php
+                        // DREAM PASS
+                        $tem_camping_ingresso = false;
+                        foreach ($items as $key => $value) {
+                            if (($value['categoria'] == 'camping' && empty($value['parent_ticket_id']))) {
+                                $tem_camping_ingresso = true;
+                                break;
+                            }
+                        }
+                        ?>
+                        <div id="epic" class="tabcontent">
+                            <?php if (!$tem_camping_ingresso): ?>
+                                <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
+                            <?php endif; ?>
+                            <!-- instruções e conteúdo já existentes da aba EPIC PASS -->
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> nos 2 dias + After + Game Party + Camping*</p>
+                            <p>Você receberá uma kit colecionável com Credencial, Pulseira, Cordão, e Guia do evento! A Credencial e Pulseira deverão ser apresentados na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
+                            <!--<a href="#" data-bs-toggle="modal" data-bs-target="#vip-fanModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a> -->
+
+                            <hr>
+                            <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
+                            <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
+
+                            <?php foreach ($items as $key => $value) : ?>
+                                <?php if (($value['categoria'] == 'camping' && empty($value['parent_ticket_id']))) : ?>
+                                    <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
+                                        <div class="form-check mt-3 mb-3">
+                                            <div class="row">
+                                                <div class="col-7">
+                                                    <span style="color: purple; font-size: 10px" class="ticket-info">Finaliza em: <?= date('d/m/Y', strtotime($value['data_lote'])) ?> </span><br>
+                                                    <strong class="item-name" style="color: #6C038F; font-size: 16px"><?= $value['nome'] ?></strong><br>
+                                                    <?php if (!empty($value['parent_ticket_id'])) : ?>
+                                                        <div class="mt-1 mb-1 badge-container">
+                                                            <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
+                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                            </span>
+                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
+                                                                + Econômico
+                                                            </span>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
+                                                </div>
+                                                <div class="col-5 text-right">
+                                                    <?php if ($value['estoque'] > 0) : ?>
+                                                        <div class="col-12 mt-3 font-20 d-flex flex-column align-items-end justify-content-center quantity-section" style="gap:0;">
+                                                            <strong class="quantity-controls" style="font-size: 20px;">
+                                                                <a href="?excluir=<?= $key ?>"><i class="bi bi-dash-circle-fill" style="padding-right: 4px;"></i></a>
+                                                                <?= (isset($_SESSION['carrinho'][$key]['quantidade'])) ? $_SESSION['carrinho'][$key]['quantidade'] : '0' ?>
+                                                                <a href="?adicionar=<?= $key ?>"><i class="bi bi-plus-circle-fill" style="padding-left: 4px"></i></a>
+                                                            </strong>
+                                                            <div class="d-flex flex-column align-items-end price-section" style="margin-top: 2px;">
+                                                                <strong class="item-price" data-price="<?= $value['preco'] ?>" style="word-wrap: normal; font-size: 26px; line-height: 1; margin-bottom: 0;">
+                                                                    <span style="font-size: 0.6em; vertical-align: middle;">R$</span> <?= number_format($value['preco'], 2, ',', ''); ?>
+                                                            </strong>
                                                                 <span class="text-muted service-fee" style="font-size: 11px; line-height: 1.1; margin-top: 0; margin-bottom: 0; padding-top: 0;">+ <?= (isset($_SESSION['carrinho'][$key]['taxa'])) ? 'R$ ' . number_format($_SESSION['carrinho'][$key]['taxa'], 2, ',', '') . ' taxa de serviço' : 'taxa de serviço' ?></span>
                                                             </div>
                                                         </div>
