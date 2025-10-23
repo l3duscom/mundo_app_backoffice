@@ -1070,7 +1070,7 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <p style="padding-top: 20px;">Este ingresso dá direito a participar do After do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> nos dias selecionados.</p>
-                            <p>Classificação: 18 Anos <br>Você receberá uma pulseira colecionável que deverá ser apresentada na entrada e na saída da festa e sempre que for requisitada. </p>
+                            <p>Classificação: 18 Anos <br>Você receberá uma pulseira colecionável que deverá ser apresentada na entrada e na saída da festa e sempre que for requisitada. <br>Funcionamento: 20h às 5h <br> Game Party Inclusa + Camping se selecionado</p>
 
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
