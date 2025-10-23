@@ -92,11 +92,21 @@ $event_id = session()->get('event_id');
                                             </div>
 
                                             <div class="col-sm-4">
-                                                <label for="cpf" class="form-label">CPF</label>
-                                                <input type="text" class="form-control form-control-lg mb-2 shadow" style="font-size:medium; padding:13px" name="cpf" id="cpf" value="<?php if ($data_cli) echo esc($data_cli['cpf']); ?>" <?php if (isset($data_cli['cpf'])) : ?> <?php endif ?> required>
-                                                <div class="invalid-feedback">
-                                                    Este campo é obrigatório.
-                                                </div>
+                                                <?php if (isset($data_cli['cpf']) && !empty($data_cli['cpf'])) : ?>
+                                                    <!-- CPF já cadastrado - campo oculto -->
+                                                    <input type="hidden" name="cpf" value="<?= esc($data_cli['cpf']) ?>">
+                                                    <label class="form-label">CPF</label>
+                                                    <div class="alert alert-info mb-2" style="padding: 10px; font-size: small;">
+                                                        <i class="bi bi-check-circle-fill"></i> CPF já cadastrado
+                                                    </div>
+                                                <?php else : ?>
+                                                    <!-- CPF ainda não cadastrado - mostrar campo -->
+                                                    <label for="cpf" class="form-label">CPF</label>
+                                                    <input type="text" class="form-control form-control-lg mb-2 shadow" style="font-size:medium; padding:13px" name="cpf" id="cpf" value="" required>
+                                                    <div class="invalid-feedback">
+                                                        Este campo é obrigatório.
+                                                    </div>
+                                                <?php endif ?>
                                             </div>
 
                                             <div class="col-lg-8">
@@ -108,9 +118,18 @@ $event_id = session()->get('event_id');
                                             </div>
 
                                             <div class="col-lg-4">
-                                                <label for="telefone" class="form-label">Whatsapp</label>
-                                                <input type="text" class="form-control form-control-lg mb-2 shadow" style="font-size:medium; padding:13px" name="telefone" id="telefone" value="<?php if ($data_cli) echo esc($data_cli['telefone']); ?>" <?php if (isset($data_cli['telefone'])) : ?> <?php endif ?>>
-
+                                                <?php if (isset($data_cli['telefone']) && !empty($data_cli['telefone'])) : ?>
+                                                    <!-- Telefone já cadastrado - campo oculto -->
+                                                    <input type="hidden" name="telefone" value="<?= esc($data_cli['telefone']) ?>">
+                                                    <label class="form-label">Whatsapp</label>
+                                                    <div class="alert alert-info mb-2" style="padding: 10px; font-size: small;">
+                                                        <i class="bi bi-check-circle-fill"></i> Telefone já cadastrado
+                                                    </div>
+                                                <?php else : ?>
+                                                    <!-- Telefone ainda não cadastrado - mostrar campo -->
+                                                    <label for="telefone" class="form-label">Whatsapp</label>
+                                                    <input type="text" class="form-control form-control-lg mb-2 shadow" style="font-size:medium; padding:13px" name="telefone" id="telefone" value="">
+                                                <?php endif ?>
                                             </div>
 
 
