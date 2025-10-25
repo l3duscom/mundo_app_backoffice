@@ -25,6 +25,7 @@ class Filters extends BaseConfig
         'webhook' => \App\Filters\WebhookFilter::class, // Filtro webhook
         'eventoContext' => \App\Filters\EventoContextFilter::class, // Filtro contexto de evento
         'apiKey' => \App\Filters\ApiKeyFilter::class, // Filtro API Key
+        'jwtAuth' => \App\Filters\JwtAuthFilter::class, // Filtro JWT para autenticação de API
     ];
 
     /**
@@ -43,6 +44,7 @@ class Filters extends BaseConfig
                     'api/checkout/notify',
                     'webhook/asaas',
                     'api/acessos/check',   // OK: CSRF liberado aqui
+                    'api/auth/*',   // API de autenticação não usa CSRF
                 ],
             ],
         ],

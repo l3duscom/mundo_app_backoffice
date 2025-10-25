@@ -179,6 +179,18 @@ $routes->get('concursos', 'Concursos::index');
 $routes->get('usuarios/perfil', 'Usuarios::perfil');
 $routes->post('usuarios/atualizarperfil', 'Usuarios::atualizarPerfil');
 
+// ========================================
+// Rotas da API de Autenticação
+// ========================================
+$routes->group('api/auth', function ($routes) {
+    // Rotas públicas (sem autenticação)
+    $routes->post('login', 'Api\Auth::login'); // Login via API - retorna JWT token
+    $routes->post('refresh', 'Api\Auth::refresh'); // Renova o token usando refresh token
+    
+    // Rotas protegidas (requer JWT token)
+    $routes->get('me', 'Api\Auth::me', ['filter' => 'jwtAuth']); // Perfil do usuário autenticado
+});
+
 
 /*
  * --------------------------------------------------------------------
