@@ -181,13 +181,14 @@ $routes->post('usuarios/atualizarperfil', 'Usuarios::atualizarPerfil');
 
 // ========================================
 // Rotas da API de Autenticação
+// COM SEGURANÇA APRIMORADA
 // ========================================
-$routes->group('api/auth', function ($routes) {
-    // Rotas públicas (sem autenticação)
+$routes->group('api/auth', ['filter' => 'secureApi'], function ($routes) {
+    // Rotas públicas (sem autenticação, mas com rate limiting e HTTPS)
     $routes->post('login', 'Api\Auth::login'); // Login via API - retorna JWT token
     $routes->post('refresh', 'Api\Auth::refresh'); // Renova o token usando refresh token
     
-    // Rotas protegidas (requer JWT token)
+    // Rotas protegidas (requer JWT token válido)
     $routes->get('me', 'Api\Auth::me', ['filter' => 'jwtAuth']); // Perfil do usuário autenticado
 });
 

@@ -26,6 +26,7 @@ class Filters extends BaseConfig
         'eventoContext' => \App\Filters\EventoContextFilter::class, // Filtro contexto de evento
         'apiKey' => \App\Filters\ApiKeyFilter::class, // Filtro API Key
         'jwtAuth' => \App\Filters\JwtAuthFilter::class, // Filtro JWT para autenticação de API
+        'secureApi' => \App\Filters\SecureApiFilter::class, // Filtro de segurança para API (HTTPS, rate limiting)
     ];
 
     /**

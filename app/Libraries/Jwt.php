@@ -49,21 +49,44 @@ class Jwt
      * Decodifica e valida um token JWT
      *
      * @param string $token Token JWT a ser validado
+     * @param array $options Opções adicionais de validação
      * @return array|null Payload do token se válido, null se inválido
      */
-    public static function decode(string $token): ?array
+    public static function decode(string $token, array $options = []): ?array
     {
         try {
+            // SEGURANÇA: Limita tamanho do token (evita DoS)
+            if (strlen($token) > 2048) {
+                log_message('warning', 'Token JWT muito grande rejeitado: ' . strlen($token) . ' bytes');
+                return null;
+            }
+
             // Separa o token em suas partes
             $tokenParts = explode('.', $token);
 
             if (count($tokenParts) !== 3) {
+                log_message('warning', 'Token JWT com formato inválido');
                 return null;
             }
 
             [$base64UrlHeader, $base64UrlPayload, $base64UrlSignature] = $tokenParts;
 
-            // Valida a assinatura
+            // SEGURANÇA: Valida caracteres permitidos em base64url
+            if (!preg_match('/^[A-Za-z0-9_-]+$/', $base64UrlHeader) ||
+                !preg_match('/^[A-Za-z0-9_-]+$/', $base64UrlPayload) ||
+                !preg_match('/^[A-Za-z0-9_-]+$/', $base64UrlSignature)) {
+                log_message('warning', 'Token JWT contém caracteres inválidos');
+                return null;
+            }
+
+            // Decodifica e valida o header
+            $header = json_decode(self::base64UrlDecode($base64UrlHeader), true);
+            if (!is_array($header) || !isset($header['alg']) || $header['alg'] !== 'HS256') {
+                log_message('warning', 'Header JWT inválido ou algoritmo não suportado');
+                return null;
+            }
+
+            // Valida a assinatura usando timing-safe comparison
             $signature = hash_hmac(
                 'sha256',
                 $base64UrlHeader . "." . $base64UrlPayload,
@@ -72,8 +95,9 @@ class Jwt
             );
             $expectedSignature = self::base64UrlEncode($signature);
 
-            if ($base64UrlSignature !== $expectedSignature) {
-                // Assinatura inválida
+            // SEGURANÇA: Usa hash_equals para evitar timing attacks
+            if (!hash_equals($base64UrlSignature, $expectedSignature)) {
+                log_message('warning', 'Assinatura JWT inválida');
                 return null;
             }
 
@@ -81,12 +105,63 @@ class Jwt
             $payload = json_decode(self::base64UrlDecode($base64UrlPayload), true);
 
             if (!is_array($payload)) {
+                log_message('warning', 'Payload JWT inválido');
                 return null;
             }
 
-            // Verifica se o token expirou
+            // SEGURANÇA: Valida campos obrigatórios
+            $requiredFields = $options['required_fields'] ?? [];
+            foreach ($requiredFields as $field) {
+                if (!isset($payload[$field])) {
+                    log_message('warning', "Campo obrigatório ausente no JWT: {$field}");
+                    return null;
+                }
+            }
+
+            // SEGURANÇA: Verifica tempo de expiração (exp)
             if (isset($payload['exp']) && $payload['exp'] < time()) {
+                $expiredFor = time() - $payload['exp'];
+                log_message('info', "Token JWT expirado há {$expiredFor} segundos");
                 return null;
+            }
+
+            // SEGURANÇA: Verifica "not before" (nbf)
+            if (isset($payload['nbf']) && $payload['nbf'] > time()) {
+                log_message('warning', 'Token JWT ainda não é válido (nbf)');
+                return null;
+            }
+
+            // SEGURANÇA: Verifica "issued at" (iat)
+            if (isset($payload['iat'])) {
+                $age = time() - $payload['iat'];
+                $maxAge = $options['max_age'] ?? 31536000; // 1 ano padrão
+                
+                if ($age > $maxAge) {
+                    log_message('warning', "Token JWT muito antigo: {$age} segundos");
+                    return null;
+                }
+
+                // Token não pode ser emitido no futuro
+                if ($payload['iat'] > time() + 60) { // 60s de tolerância clock skew
+                    log_message('warning', 'Token JWT emitido no futuro (iat)');
+                    return null;
+                }
+            }
+
+            // SEGURANÇA: Valida audience (aud) se fornecido
+            if (isset($options['audience']) && isset($payload['aud'])) {
+                if ($payload['aud'] !== $options['audience']) {
+                    log_message('warning', 'Token JWT com audience inválida');
+                    return null;
+                }
+            }
+
+            // SEGURANÇA: Valida issuer (iss) se fornecido
+            if (isset($options['issuer']) && isset($payload['iss'])) {
+                if ($payload['iss'] !== $options['issuer']) {
+                    log_message('warning', 'Token JWT com issuer inválido');
+                    return null;
+                }
             }
 
             return $payload;
