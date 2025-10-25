@@ -25,6 +25,11 @@ class ClienteFilter implements FilterInterface
 	 */
 	public function before(RequestInterface $request, $arguments = null)
 	{
+		// IMPORTANTE: Ignora rotas da API - elas usam JWT auth
+		$uri = $request->getUri()->getPath();
+		if (strpos($uri, 'api/') === 0 || strpos($uri, '/api/') !== false) {
+			return null; // Permite passar sem verificar login web
+		}
 
 		$autenticacao = service('autenticacao');
 

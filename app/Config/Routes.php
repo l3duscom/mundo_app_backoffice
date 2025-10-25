@@ -192,6 +192,15 @@ $routes->group('api/auth', ['filter' => 'secureApi'], function ($routes) {
     $routes->get('me', 'Api\Auth::me', ['filter' => 'jwtAuth']); // Perfil do usuário autenticado
 });
 
+// ========================================
+// Rotas da API de Ingressos
+// ========================================
+$routes->group('api/ingressos', ['filter' => 'secureApi'], function ($routes) {
+    $routes->get('/', 'Api\Ingressos::index', ['filter' => 'jwtAuth']); // Lista todos os ingressos do usuário
+    $routes->get('atuais', 'Api\Ingressos::atuais', ['filter' => 'jwtAuth']); // Lista apenas ingressos atuais (não expirados)
+    $routes->get('(:num)', 'Api\Ingressos::show/$1', ['filter' => 'jwtAuth']); // Detalhes de um ingresso específico (com QR code)
+});
+
 
 /*
  * --------------------------------------------------------------------

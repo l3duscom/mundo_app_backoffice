@@ -45,7 +45,7 @@ class Filters extends BaseConfig
                     'api/checkout/notify',
                     'webhook/asaas',
                     'api/acessos/check',   // OK: CSRF liberado aqui
-                    'api/auth/*',   // API de autenticação não usa CSRF
+                    'api/*',   // Todas as rotas da API não usam CSRF
                 ],
             ],
         ],
@@ -111,8 +111,9 @@ class Filters extends BaseConfig
                 'concursos/gerenciar(/*)',
                 'concursos/my(/*)',
                 'concursos',
-
-
+            ],
+            'except' => [
+                'api/*', // Exclui todas as rotas da API do filtro de login web
             ],
         ],
         'visitante' => [
@@ -133,6 +134,9 @@ class Filters extends BaseConfig
 
                 'usuarios(/editar)?',
                 'usuarios(/editarsenha)?',
+            ],
+            'except' => [
+                'api/*', // Exclui todas as rotas da API do filtro cliente web
             ],
         ],
         'eventoContext' => [
