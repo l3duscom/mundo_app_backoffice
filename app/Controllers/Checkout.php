@@ -1714,7 +1714,7 @@ class Checkout extends BaseController
 
 	public function finalizaradm()
 	{
-		$event_id = 19;
+		$event_id = 17;
 
 		$post = $this->request->getPost();
 
