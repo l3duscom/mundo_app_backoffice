@@ -390,7 +390,7 @@ if (isset($event_id)) {
                                 }
                             ?></p></button>
                             <?php if ($tem_camping): ?>
-                                <button class="tablinks" onclick="openCategoria(event, 'camping')">DREAM PASS<p class="mb-0" style="font-size: 11px">Game Party</p></button>
+                                <button class="tablinks" onclick="openCategoria(event, 'camping')">FLORINDA MEZA<p class="mb-0" style="font-size: 11px">Internacional</p></button>
                             <?php endif; ?>
                             <?php if ($tem_epic): ?>
                                 <button class="tablinks" onclick="openCategoria(event, 'epic')">EPIC PASS<p class="mb-0" style="font-size: 11px">Experiência Épica</p></button>
@@ -692,8 +692,7 @@ if (isset($event_id)) {
                                 <div class="alert alert-warning text-center mt-3 mb-3">LOTE ESGOTADO, aguarde novo lote</div>
                             <?php endif; ?>
                             <!-- instruções e conteúdo já existentes da aba EPIC PASS -->
-                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> nos 2 dias + After + Game Party + Camping*</p>
-                            <p>Você receberá uma kit colecionável com Credencial, Pulseira, Cordão, e Guia do evento! A Credencial e Pulseira deverão ser apresentados na entrada e na saída do festival e sempre que for requisitada. Você terá direito à entrar e sair do evento sempre que quiser!</p>
+                            <p style="padding-top: 20px;">Este ingresso dá direito a participar do <?= isset($evento) ? esc($evento->nome) : 'evento' ?> no dia 7 de dezembro de 2025 + Apresentação da Atriz Florinda Meza
                             <!--<a href="#" data-bs-toggle="modal" data-bs-target="#vip-fanModal" class="btn btn-outline-secondary w-100 mt-0" style="margin-right: 5px;">O que está incluso nesse ingresso? </a> -->
 
                             <hr>
@@ -711,11 +710,9 @@ if (isset($event_id)) {
                                                     <?php if (!empty($value['parent_ticket_id'])) : ?>
                                                         <div class="mt-1 mb-1 badge-container">
                                                             <span class="badge bg-success text-white me-2" style="font-size: 11px; padding: 4px 8px;">
-                                                                <i class="bi bi-check-circle-fill me-1"></i>Válido para 2 eventos: Dream25 + Anime Dream 25
+                                                                <i class="bi bi-check-circle-fill me-1"></i>EXCLUSIVO, INÉDITO
                                                             </span>
-                                                            <span class="badge bg-warning text-dark" style="font-size: 11px; padding: 4px 8px;">
-                                                                + Econômico
-                                                            </span>
+                                                            
                                                         </div>
                                                     <?php endif; ?>
                                                     <span class="text-muted ticket-info" style="font-size: 10px"><strong><?= $value['tipo'] ?> - <?= $value['lote'] ?> lote</strong></span>
