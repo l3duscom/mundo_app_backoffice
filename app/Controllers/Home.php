@@ -65,8 +65,8 @@ class Home extends BaseController
         $total_domingo = $total_ingressos_domingo + $total_ingressos_combo;
         $total_epic = $this->ingressoModel->recuperaTotalIngressosEpic($event_id);
         $total_vip = $this->ingressoModel->recuperaTotalIngressosVip($event_id);
-        $total_exp = $this->ingressoModel->recuperaTotalIngressosEpic($event_id);
-        $total_elite = $this->ingressoModel->recuperaTotalIngressosVip($event_id);
+        $total_exp = $this->ingressoModel->recuperaTotalIngressosExp($event_id);
+        $total_elite = $this->ingressoModel->recuperaTotalIngressosElite($event_id);
 
         $data = [
             'titulo' => 'Home',
