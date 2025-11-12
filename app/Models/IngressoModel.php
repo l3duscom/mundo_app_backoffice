@@ -228,6 +228,34 @@ class IngressoModel extends Model
 
         return $retorno;
     }
+    public function recuperaTotalIngressosExp($event_id)
+    {
+
+
+        $retorno = $this->select('*')
+            ->join('pedidos', 'pedidos.id = ingressos.pedido_id')
+            ->whereNotIn('ingressos.tipo', ['cinemark', 'adicional', '', 'produto'])
+            ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
+            ->like('ingressos.nome', 'experience')
+            ->where('pedidos.evento_id', $event_id)
+            ->countAllResults();
+
+        return $retorno;
+    }
+     public function recuperaTotalIngressosElite($event_id)
+    {
+
+
+        $retorno = $this->select('*')
+            ->join('pedidos', 'pedidos.id = ingressos.pedido_id')
+            ->whereNotIn('ingressos.tipo', ['cinemark', 'adicional', '', 'produto'])
+            ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
+            ->like('ingressos.nome', 'elite')
+            ->where('pedidos.evento_id', $event_id)
+            ->countAllResults();
+
+        return $retorno;
+    }
     public function recuperaTotalIngressosVip($event_id)
     {
 

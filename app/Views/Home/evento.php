@@ -203,6 +203,18 @@
                 <div class="type-label">VIP FULL</div>
             </div>
         </div>
+        <div class="col mb-3">
+            <div class="type-card">
+                <div class="type-value"><?= $total_elite; ?></div>
+                <div class="type-label">ELITE</div>
+            </div>
+        </div>
+         <div class="col mb-3">
+            <div class="type-card">
+                <div class="type-value"><?= $total_exp; ?></div>
+                <div class="type-label">EXPERIENCE</div>
+            </div>
+        </div>
     </div>
 </div>
 
