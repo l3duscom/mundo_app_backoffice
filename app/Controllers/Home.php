@@ -80,6 +80,8 @@ class Home extends BaseController
             'total_domingo' => $total_domingo,
             'total_epic' => $total_epic,
             'total_vip' => $total_vip,
+            'total_exp' => $total_exp,
+            'total_elite' => $total_elite,
             'valor_hoje' => $valor_hoje,
             'valor_total' => $valor_total,
         ];
