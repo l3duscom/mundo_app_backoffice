@@ -179,37 +179,37 @@
     </div>
     
     <div class="row row-cols-2 row-cols-lg-4">
-        <div class="col mb-3">
+        <div class="col mb-2">
             <div class="type-card">
                 <div class="type-value"><?= $total_sabado; ?></div>
                 <div class="type-label">Sábado</div>
             </div>
         </div>
-        <div class="col mb-3">
+        <div class="col mb-2">
             <div class="type-card">
                 <div class="type-value"><?= $total_domingo; ?></div>
                 <div class="type-label">Domingo</div>
             </div>
         </div>
-        <div class="col mb-3">
+        <div class="col mb-2">
             <div class="type-card">
                 <div class="type-value"><?= $total_epic; ?></div>
                 <div class="type-label">EPIC PASS</div>
             </div>
         </div>
-        <div class="col mb-3">
+        <div class="col mb-2">
             <div class="type-card">
                 <div class="type-value"><?= $total_vip; ?></div>
                 <div class="type-label">VIP FULL</div>
             </div>
         </div>
-        <div class="col mb-3">
+        <div class="col mb-2">
             <div class="type-card">
                 <div class="type-value"><?= $total_elite; ?></div>
                 <div class="type-label">ELITE</div>
             </div>
         </div>
-         <div class="col mb-3">
+         <div class="col mb-2">
             <div class="type-card">
                 <div class="type-value"><?= $total_exp; ?></div>
                 <div class="type-label">EXPERIENCE</div>
