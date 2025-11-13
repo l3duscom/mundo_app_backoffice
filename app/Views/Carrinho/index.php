@@ -698,7 +698,6 @@ if (isset($event_id)) {
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
-<p><strong style="color:red">Para adquirir as opções PLATEIA (Domingo) e EPIC PASS, navegue no menu acima</strong></p>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if (($value['categoria'] == 'camping' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
