@@ -76,7 +76,7 @@
             </div>
 
 
-            <div style="font-size: 10px;padding-top: 10px" class="no-wrap"><strong>Ingresso válido para dia 4 ou 5 de outubro de 2025 </strong><br>Abertura dos portões: 11h<br>Parque de Exposições Assis Brasil - Esteio RS<br></div>
+            <div style="font-size: 10px;padding-top: 10px" class="no-wrap"><strong>Ingresso válido para dia 6 ou 7 de dezembro de 2025 </strong><br>Abertura dos portões: 11h<br>Centro de Eventos da FENAC - Novo Hamburgo RS<br></div>
             <div style="font-size: 16px;margin-top: 10px;padding-top: 10px; padding-bottom: 10px;">
                 <strong>VENDA PROIBIDA</strong>
             </div>
@@ -86,7 +86,7 @@
                 <img src="<?= $item['qrcode'] ?>" style="background-color:#fff; padding:0px">
             </div>
             <div style="margin-top: -20px;font-size: 10px;" class="no-wrap"> <?php echo $item['ingresso']->codigo; ?></div>
-            <div style="font-size: 12px; padding-top: 10px;"><STRONG>DISTRIBUIÇÃO GRATUITA</STRONG><br>www.mundodream.com.br</div>
+            <div style="font-size: 12px; padding-top: 10px;"><STRONG>DISTRIBUIÇÃO GRATUITA</STRONG><br>www.dreamfest.com.br</div>
 
             <div style="padding-top: 30px; font-size: 8px">-----------------------</div>
         </div>
