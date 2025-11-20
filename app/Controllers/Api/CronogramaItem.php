@@ -74,7 +74,7 @@ class CronogramaItem extends BaseController
                     'data_hora_fim' => $item->data_hora_fim,
                     'duracao_minutos' => $item->getDuracaoMinutos(),
                     'duracao_formatada' => $item->getDuracaoFormatada(),
-                    'ativo' => (bool)$item->ativo,
+                    'ativo' => (int)$item->ativo,
                     'status' => $item->status,
                     'is_passado' => $item->isPassado(),
                     'is_agora' => $item->isAgora(),
@@ -161,7 +161,7 @@ class CronogramaItem extends BaseController
                 'data_hora_fim' => $item->data_hora_fim,
                 'duracao_minutos' => $item->getDuracaoMinutos(),
                 'duracao_formatada' => $item->getDuracaoFormatada(),
-                'ativo' => (bool)$item->ativo,
+                'ativo' => (int)$item->ativo,
                 'status' => $item->status,
                 'is_passado' => $item->isPassado(),
                 'is_agora' => $item->isAgora(),
@@ -265,7 +265,7 @@ class CronogramaItem extends BaseController
                 'nome_item' => $json['nome_item'] ?? '',
                 'data_hora_inicio' => $json['data_hora_inicio'] ?? null,
                 'data_hora_fim' => $json['data_hora_fim'] ?? null,
-                'ativo' => $json['ativo'] ?? true,
+                'ativo' => isset($json['ativo']) ? (int)$json['ativo'] : 1,
                 'status' => $json['status'] ?? 'AGUARDANDO',
             ]);
 
@@ -295,7 +295,7 @@ class CronogramaItem extends BaseController
                             'nome_item' => $itemCriado->nome_item,
                             'data_hora_inicio' => $itemCriado->data_hora_inicio,
                             'data_hora_fim' => $itemCriado->data_hora_fim,
-                            'ativo' => (bool)$itemCriado->ativo,
+                            'ativo' => (int)$itemCriado->ativo,
                             'status' => $itemCriado->status,
                             'created_at' => $itemCriado->created_at,
                         ]
@@ -435,7 +435,7 @@ class CronogramaItem extends BaseController
                             'nome_item' => $itemAtualizado->nome_item,
                             'data_hora_inicio' => $itemAtualizado->data_hora_inicio,
                             'data_hora_fim' => $itemAtualizado->data_hora_fim,
-                            'ativo' => (bool)$itemAtualizado->ativo,
+                            'ativo' => (int)$itemAtualizado->ativo,
                             'status' => $itemAtualizado->status,
                             'updated_at' => $itemAtualizado->updated_at,
                         ]
@@ -579,7 +579,7 @@ class CronogramaItem extends BaseController
                     'data_hora_fim' => $item->data_hora_fim,
                     'duracao_minutos' => $item->getDuracaoMinutos(),
                     'duracao_formatada' => $item->getDuracaoFormatada(),
-                    'ativo' => (bool)$item->ativo,
+                    'ativo' => (int)$item->ativo,
                     'status' => $item->status,
                     'is_passado' => $item->isPassado(),
                     'is_agora' => $item->isAgora(),

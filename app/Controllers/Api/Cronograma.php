@@ -65,7 +65,7 @@ class Cronograma extends BaseController
                 $data[] = [
                     'id' => $cronograma->id,
                     'name' => $cronograma->name,
-                    'ativo' => (bool)$cronograma->ativo,
+                    'ativo' => (int)$cronograma->ativo,
                     'evento' => [
                         'id' => $cronograma->evento_id,
                         'nome' => $cronograma->evento_nome,
@@ -139,7 +139,7 @@ class Cronograma extends BaseController
             $data = [
                 'id' => $cronograma->id,
                 'name' => $cronograma->name,
-                'ativo' => (bool)$cronograma->ativo,
+                            'ativo' => (int)$cronograma->ativo,
                 'evento' => [
                     'id' => $cronograma->event_id,
                     'nome' => $cronograma->evento_nome,
@@ -233,7 +233,7 @@ class Cronograma extends BaseController
             $cronograma = new CronogramaEntity([
                 'event_id' => $json['event_id'],
                 'name' => $json['name'] ?? '',
-                'ativo' => $json['ativo'] ?? true,
+                'ativo' => isset($json['ativo']) ? (int)$json['ativo'] : 1,
             ]);
 
             // Salva no banco
@@ -260,7 +260,7 @@ class Cronograma extends BaseController
                             'id' => $cronogramaCriado->id,
                             'event_id' => $cronogramaCriado->event_id,
                             'name' => $cronogramaCriado->name,
-                            'ativo' => (bool)$cronogramaCriado->ativo,
+                            'ativo' => (int)$cronogramaCriado->ativo,
                             'created_at' => $cronogramaCriado->created_at,
                         ]
                     ])
@@ -374,7 +374,7 @@ class Cronograma extends BaseController
                             'id' => $cronograma->id,
                             'event_id' => $cronograma->event_id,
                             'name' => $cronograma->name,
-                            'ativo' => (bool)$cronograma->ativo,
+                            'ativo' => (int)$cronograma->ativo,
                         ]
                     ])
                     ->setStatusCode(200);
@@ -403,7 +403,7 @@ class Cronograma extends BaseController
                             'id' => $cronogramaAtualizado->id,
                             'event_id' => $cronogramaAtualizado->event_id,
                             'name' => $cronogramaAtualizado->name,
-                            'ativo' => (bool)$cronogramaAtualizado->ativo,
+                            'ativo' => (int)$cronogramaAtualizado->ativo,
                             'updated_at' => $cronogramaAtualizado->updated_at,
                         ]
                     ])
@@ -576,7 +576,7 @@ class Cronograma extends BaseController
                             'id' => $cronogramaRestaurado->id,
                             'event_id' => $cronogramaRestaurado->event_id,
                             'name' => $cronogramaRestaurado->name,
-                            'ativo' => (bool)$cronogramaRestaurado->ativo,
+                            'ativo' => (int)$cronogramaRestaurado->ativo,
                         ]
                     ])
                     ->setStatusCode(200);
@@ -641,7 +641,7 @@ class Cronograma extends BaseController
                 $data[] = [
                     'id' => $cronograma->id,
                     'name' => $cronograma->name,
-                    'ativo' => (bool)$cronograma->ativo,
+                    'ativo' => (int)$cronograma->ativo,
                     'created_at' => $cronograma->created_at,
                     'updated_at' => $cronograma->updated_at,
                 ];
