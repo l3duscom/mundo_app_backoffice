@@ -230,11 +230,11 @@ class CronogramaItem extends BaseController
             // Recupera dados do JSON
             $json = $this->request->getJSON(true);
 
-            if (empty($json)) {
+            if (!is_array($json) || empty($json)) {
                 return $this->response
                     ->setJSON([
                         'success' => false,
-                        'message' => 'Dados não fornecidos'
+                        'message' => 'Dados não fornecidos ou JSON inválido'
                     ])
                     ->setStatusCode(400);
             }
@@ -370,11 +370,11 @@ class CronogramaItem extends BaseController
             // Recupera dados do JSON
             $json = $this->request->getJSON(true);
 
-            if (empty($json)) {
+            if (!is_array($json) || empty($json)) {
                 return $this->response
                     ->setJSON([
                         'success' => false,
-                        'message' => 'Dados não fornecidos'
+                        'message' => 'Dados não fornecidos ou JSON inválido'
                     ])
                     ->setStatusCode(400);
             }
@@ -715,11 +715,11 @@ class CronogramaItem extends BaseController
         try {
             $json = $this->request->getJSON(true);
             
-            if (!isset($json['status'])) {
+            if (!is_array($json) || !isset($json['status'])) {
                 return $this->response
                     ->setJSON([
                         'success' => false,
-                        'message' => 'Campo status é obrigatório'
+                        'message' => 'JSON inválido ou campo status é obrigatório'
                     ])
                     ->setStatusCode(400);
             }

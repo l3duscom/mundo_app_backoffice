@@ -200,11 +200,11 @@ class Cronograma extends BaseController
             // Recupera dados do JSON
             $json = $this->request->getJSON(true);
 
-            if (empty($json)) {
+            if (!is_array($json) || empty($json)) {
                 return $this->response
                     ->setJSON([
                         'success' => false,
-                        'message' => 'Dados não fornecidos'
+                        'message' => 'Dados não fornecidos ou JSON inválido'
                     ])
                     ->setStatusCode(400);
             }
@@ -340,11 +340,11 @@ class Cronograma extends BaseController
             // Recupera dados do JSON
             $json = $this->request->getJSON(true);
 
-            if (empty($json)) {
+            if (!is_array($json) || empty($json)) {
                 return $this->response
                     ->setJSON([
                         'success' => false,
-                        'message' => 'Dados não fornecidos'
+                        'message' => 'Dados não fornecidos ou JSON inválido'
                     ])
                     ->setStatusCode(400);
             }
