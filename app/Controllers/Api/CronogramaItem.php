@@ -274,6 +274,17 @@ class CronogramaItem extends BaseController
                 $id = $this->cronogramaItemModel->getInsertID();
                 $itemCriado = $this->cronogramaItemModel->find($id);
 
+                // Verifica se o item foi encontrado
+                if (!$itemCriado) {
+                    log_message('error', 'Item criado mas não encontrado após inserção. ID: ' . $id);
+                    return $this->response
+                        ->setJSON([
+                            'success' => false,
+                            'message' => 'Item criado mas houve erro ao recuperar os dados'
+                        ])
+                        ->setStatusCode(500);
+                }
+
                 return $this->response
                     ->setJSON([
                         'success' => true,
