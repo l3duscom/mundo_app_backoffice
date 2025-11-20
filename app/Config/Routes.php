@@ -72,6 +72,37 @@ $routes->group('formas', function ($routes) {
     $routes->match(['get', 'post'], 'excluir/(:segment)', 'FormasPagamentos::excluir/$1');
 });
 
+// ========================================
+// Rotas da API de Cronograma
+// ========================================
+$routes->group('api/cronograma', ['filter' => 'secureApi'], function ($routes) {
+    // Rotas protegidas (requer JWT token válido)
+    $routes->get('/', 'Api\Cronograma::index', ['filter' => 'jwtAuth']); // Lista todos os cronogramas
+    $routes->get('(:num)', 'Api\Cronograma::show/$1', ['filter' => 'jwtAuth']); // Detalhes de um cronograma
+    $routes->get('evento/(:num)', 'Api\Cronograma::byEvento/$1', ['filter' => 'jwtAuth']); // Cronogramas por evento
+    $routes->post('/', 'Api\Cronograma::create', ['filter' => 'jwtAuth']); // Cria novo cronograma
+    $routes->put('(:num)', 'Api\Cronograma::update/$1', ['filter' => 'jwtAuth']); // Atualiza cronograma
+    $routes->patch('(:num)', 'Api\Cronograma::update/$1', ['filter' => 'jwtAuth']); // Atualiza parcialmente
+    $routes->delete('(:num)', 'Api\Cronograma::delete/$1', ['filter' => 'jwtAuth']); // Exclui cronograma
+    $routes->post('(:num)/restore', 'Api\Cronograma::restore/$1', ['filter' => 'jwtAuth']); // Restaura cronograma
+});
+
+// ========================================
+// Rotas da API de Itens do Cronograma
+// ========================================
+$routes->group('api/cronograma-item', ['filter' => 'secureApi'], function ($routes) {
+    // Rotas protegidas (requer JWT token válido)
+    $routes->get('/', 'Api\CronogramaItem::index', ['filter' => 'jwtAuth']); // Lista todos os itens
+    $routes->get('(:num)', 'Api\CronogramaItem::show/$1', ['filter' => 'jwtAuth']); // Detalhes de um item
+    $routes->get('cronograma/(:num)', 'Api\CronogramaItem::byCronograma/$1', ['filter' => 'jwtAuth']); // Itens por cronograma
+    $routes->get('cronograma/(:num)/proximos', 'Api\CronogramaItem::proximos/$1', ['filter' => 'jwtAuth']); // Próximos itens
+    $routes->post('/', 'Api\CronogramaItem::create', ['filter' => 'jwtAuth']); // Cria novo item
+    $routes->put('(:num)', 'Api\CronogramaItem::update/$1', ['filter' => 'jwtAuth']); // Atualiza item
+    $routes->patch('(:num)', 'Api\CronogramaItem::update/$1', ['filter' => 'jwtAuth']); // Atualiza parcialmente
+    $routes->patch('(:num)/status', 'Api\CronogramaItem::updateStatus/$1', ['filter' => 'jwtAuth']); // Atualiza apenas status
+    $routes->delete('(:num)', 'Api\CronogramaItem::delete/$1', ['filter' => 'jwtAuth']); // Exclui item
+});
+
 $routes->group('assinaturas', ['namespace' => 'App\Controllers'], function($routes) {
     $routes->get('/', 'Assinaturas::index');
     $routes->get('contratar/(:num)', 'Assinaturas::contratar/$1');
