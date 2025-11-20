@@ -414,6 +414,17 @@ class CronogramaItem extends BaseController
             if ($this->cronogramaItemModel->save($item)) {
                 $itemAtualizado = $this->cronogramaItemModel->find($id);
 
+                // Verifica se o item foi encontrado
+                if (!$itemAtualizado) {
+                    log_message('error', 'Item atualizado mas não encontrado. ID: ' . $id);
+                    return $this->response
+                        ->setJSON([
+                            'success' => false,
+                            'message' => 'Item atualizado mas houve erro ao recuperar os dados'
+                        ])
+                        ->setStatusCode(500);
+                }
+
                 return $this->response
                     ->setJSON([
                         'success' => true,

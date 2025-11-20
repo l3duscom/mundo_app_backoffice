@@ -384,6 +384,17 @@ class Cronograma extends BaseController
             if ($this->cronogramaModel->save($cronograma)) {
                 $cronogramaAtualizado = $this->cronogramaModel->find($id);
 
+                // Verifica se o cronograma foi encontrado
+                if (!$cronogramaAtualizado) {
+                    log_message('error', 'Cronograma atualizado mas não encontrado. ID: ' . $id);
+                    return $this->response
+                        ->setJSON([
+                            'success' => false,
+                            'message' => 'Cronograma atualizado mas houve erro ao recuperar os dados'
+                        ])
+                        ->setStatusCode(500);
+                }
+
                 return $this->response
                     ->setJSON([
                         'success' => true,
@@ -545,6 +556,17 @@ class Cronograma extends BaseController
             // Restaura
             if ($this->cronogramaModel->protect(false)->save($cronograma->undelete())) {
                 $cronogramaRestaurado = $this->cronogramaModel->find($id);
+
+                // Verifica se o cronograma foi encontrado
+                if (!$cronogramaRestaurado) {
+                    log_message('error', 'Cronograma restaurado mas não encontrado. ID: ' . $id);
+                    return $this->response
+                        ->setJSON([
+                            'success' => false,
+                            'message' => 'Cronograma restaurado mas houve erro ao recuperar os dados'
+                        ])
+                        ->setStatusCode(500);
+                }
 
                 return $this->response
                     ->setJSON([
