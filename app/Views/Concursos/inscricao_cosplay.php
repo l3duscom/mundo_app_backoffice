@@ -64,8 +64,7 @@
                                         <div class="card-body">
                                             <?php echo form_open_multipart('Concursos/registrar_inscricao_cosplay_open', ['id' => 'form-inscricao']) ?>
 
-                                            <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" id="csrf_token">
-
+                                            <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" id="csrf_token_field">
                                             <input type="hidden" name="concurso_id" value="<?= $concurso->id ?>">
                                             <center>
                                                 <h4>
@@ -255,14 +254,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (responseDiv && responseDiv.querySelector('.alert')) {
         responseDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         window.scrollBy(0, -100); // Ajusta para não ficar muito grudado no topo
-        
-        // Se houver sucesso, limpa o formulário e reabilita o botão
-        if (responseDiv.querySelector('.alert-success')) {
-            const form = document.getElementById('form-inscricao');
-            if (form) {
-                form.reset();
-            }
-        }
     }
     
     const form = document.getElementById('form-inscricao');
@@ -271,7 +262,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnSpinner = document.getElementById('btn-spinner');
     
     if (form && btn) {
-        // Atualiza o CSRF token antes de enviar
         form.addEventListener('submit', function(e) {
             // Valida campos obrigatórios
             if (!form.checkValidity()) {
@@ -279,10 +269,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
             
-            // Verifica se já não está processando
-            if (btn.disabled) {
-                e.preventDefault();
-                return false;
+            // Atualiza o CSRF token antes de enviar (importante!)
+            const csrfField = document.getElementById('csrf_token_field');
+            if (csrfField) {
+                // Pega o token atualizado do meta tag ou cookie se disponível
+                const metaCsrf = document.querySelector('meta[name="<?= csrf_token() ?>"]');
+                if (metaCsrf) {
+                    csrfField.value = metaCsrf.content;
+                }
             }
             
             // Desabilita o botão e mostra spinner
@@ -290,12 +284,13 @@ document.addEventListener('DOMContentLoaded', function() {
             btnText.textContent = 'Processando...';
             btnSpinner.classList.remove('d-none');
             
-            // Mostra modal de processamento
-            var modalProcessando = new bootstrap.Modal(document.getElementById('modalProcessando'));
-            modalProcessando.show();
+            // Mostra modal de processamento após um pequeno delay
+            setTimeout(function() {
+                var modalProcessando = new bootstrap.Modal(document.getElementById('modalProcessando'));
+                modalProcessando.show();
+            }, 100);
             
-            // Deixa o formulário enviar normalmente (sem preventDefault)
-            // O backend vai fazer redirect com mensagem flash
+            // Deixa o formulário enviar normalmente
             return true;
         });
     }
