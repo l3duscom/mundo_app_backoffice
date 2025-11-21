@@ -103,6 +103,20 @@ $routes->group('api/cronograma-item', ['filter' => 'secureApi'], function ($rout
     $routes->delete('(:num)', 'Api\CronogramaItem::delete/$1', ['filter' => 'jwtAuth']); // Exclui item
 });
 
+// ========================================
+// Rotas da API de Conquistas
+// ========================================
+$routes->group('api/conquistas', ['filter' => 'secureApi'], function ($routes) {
+    // Rotas protegidas (requer JWT token válido)
+    $routes->get('/', 'Api\Conquistas::index', ['filter' => 'jwtAuth']); // Lista todas as conquistas
+    $routes->get('(:num)', 'Api\Conquistas::show/$1', ['filter' => 'jwtAuth']); // Detalhes de uma conquista
+    $routes->get('evento/(:num)', 'Api\Conquistas::porEvento/$1', ['filter' => 'jwtAuth']); // Conquistas por evento
+    $routes->post('/', 'Api\Conquistas::create', ['filter' => 'jwtAuth']); // Cria nova conquista
+    $routes->put('(:num)', 'Api\Conquistas::update/$1', ['filter' => 'jwtAuth']); // Atualiza conquista
+    $routes->patch('(:num)', 'Api\Conquistas::update/$1', ['filter' => 'jwtAuth']); // Atualiza parcialmente
+    $routes->delete('(:num)', 'Api\Conquistas::delete/$1', ['filter' => 'jwtAuth']); // Exclui conquista
+});
+
 $routes->group('assinaturas', ['namespace' => 'App\Controllers'], function($routes) {
     $routes->get('/', 'Assinaturas::index');
     $routes->get('contratar/(:num)', 'Assinaturas::contratar/$1');
