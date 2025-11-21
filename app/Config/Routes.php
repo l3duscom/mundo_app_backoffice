@@ -117,6 +117,18 @@ $routes->group('api/conquistas', ['filter' => 'secureApi'], function ($routes) {
     $routes->delete('(:num)', 'Api\Conquistas::delete/$1', ['filter' => 'jwtAuth']); // Exclui conquista
 });
 
+// ========================================
+// Rotas da API de Atribuição de Conquistas aos Usuários
+// ========================================
+$routes->group('api/usuario-conquistas', ['filter' => 'secureApi'], function ($routes) {
+    // Rotas protegidas (requer JWT token válido)
+    $routes->get('usuario/(:num)', 'Api\UsuarioConquistas::porUsuario/$1', ['filter' => 'jwtAuth']); // Conquistas do usuário
+    $routes->get('extrato/(:num)', 'Api\UsuarioConquistas::extrato/$1', ['filter' => 'jwtAuth']); // Extrato de pontos
+    $routes->get('ranking/(:num)', 'Api\UsuarioConquistas::ranking/$1', ['filter' => 'jwtAuth']); // Ranking por evento
+    $routes->post('atribuir', 'Api\UsuarioConquistas::atribuir', ['filter' => 'jwtAuth']); // Atribui conquista
+    $routes->post('(:num)/revogar', 'Api\UsuarioConquistas::revogar/$1', ['filter' => 'jwtAuth']); // Revoga conquista
+});
+
 $routes->group('assinaturas', ['namespace' => 'App\Controllers'], function($routes) {
     $routes->get('/', 'Assinaturas::index');
     $routes->get('contratar/(:num)', 'Assinaturas::contratar/$1');
