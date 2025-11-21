@@ -64,7 +64,7 @@
                                         <div class="card-body">
                                             <?php echo form_open_multipart('Concursos/registrar_inscricao_cosplay_open', ['id' => 'form-inscricao']) ?>
 
-                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" id="csrf_token">
 
                                             <input type="hidden" name="concurso_id" value="<?= $concurso->id ?>">
                                             <center>
@@ -255,6 +255,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (responseDiv && responseDiv.querySelector('.alert')) {
         responseDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
         window.scrollBy(0, -100); // Ajusta para não ficar muito grudado no topo
+        
+        // Se houver sucesso, limpa o formulário e reabilita o botão
+        if (responseDiv.querySelector('.alert-success')) {
+            const form = document.getElementById('form-inscricao');
+            if (form) {
+                form.reset();
+            }
+        }
     }
     
     const form = document.getElementById('form-inscricao');
@@ -263,10 +271,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnSpinner = document.getElementById('btn-spinner');
     
     if (form && btn) {
+        // Atualiza o CSRF token antes de enviar
         form.addEventListener('submit', function(e) {
             // Valida campos obrigatórios
             if (!form.checkValidity()) {
                 form.reportValidity();
+                return false;
+            }
+            
+            // Verifica se já não está processando
+            if (btn.disabled) {
+                e.preventDefault();
                 return false;
             }
             
