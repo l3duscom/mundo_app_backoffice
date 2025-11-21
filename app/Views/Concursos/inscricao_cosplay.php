@@ -34,7 +34,31 @@
                                 <div class="block-body">
 
                                     <!-- Exibirá os retornos do backend -->
-                                    <div id="response"></div>
+                                    <div id="response">
+                                        <?php if (session()->has('sucesso')): ?>
+                                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                                <i class="bx bx-check-circle me-2"></i>
+                                                <strong>Sucesso!</strong> <?= session('sucesso') ?>
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (session()->has('atencao')): ?>
+                                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                                <i class="bx bx-error-circle me-2"></i>
+                                                <strong>Atenção!</strong> <?= session('atencao') ?>
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (session()->has('erro')): ?>
+                                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                <i class="bx bx-x-circle me-2"></i>
+                                                <strong>Erro!</strong> <?= session('erro') ?>
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
 
                                     <div class="card shadow radius-10">
                                         <div class="card-body">
@@ -220,44 +244,19 @@
   </div>
 </div>
 
-<!-- Modal de Sucesso -->
-<div class="modal fade" id="modalSucesso" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalSucessoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="text-align:center;">
-      <div class="modal-body py-5">
-        <div class="mb-4">
-            <i class="bx bx-check-circle" style="font-size: 5rem; color: #28a745;"></i>
-        </div>
-        <h4 class="mb-3 text-success">Inscrição Realizada com Sucesso!</h4>
-        <p class="text-muted mb-4">Sua inscrição foi registrada com sucesso.<br>Em breve você receberá um e-mail de confirmação.</p>
-        <button type="button" class="btn btn-success" onclick="window.location.href='<?= site_url('/') ?>'">Entendi</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Erro -->
-<div class="modal fade" id="modalErro" tabindex="-1" aria-labelledby="modalErroLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="text-align:center;">
-      <div class="modal-body py-5">
-        <div class="mb-4">
-            <i class="bx bx-error-circle" style="font-size: 5rem; color: #dc3545;"></i>
-        </div>
-        <h4 class="mb-3 text-danger">Erro ao Processar Inscrição</h4>
-        <p class="text-muted mb-4" id="mensagemErro">Ocorreu um erro ao processar sua inscrição. Por favor, tente novamente.</p>
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script src="<?php echo site_url('recursos/vendor/loadingoverlay/loadingoverlay.min.js') ?>"></script>
 <script src="<?php echo site_url('recursos/vendor/mask/jquery.mask.min.js') ?>"></script>
 <script src="<?php echo site_url('recursos/vendor/mask/app.js') ?>"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Se houver mensagem de sucesso ou erro, faz scroll até ela
+    const responseDiv = document.getElementById('response');
+    if (responseDiv && responseDiv.querySelector('.alert')) {
+        responseDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollBy(0, -100); // Ajusta para não ficar muito grudado no topo
+    }
+    
     const form = document.getElementById('form-inscricao');
     const btn = document.getElementById('btn-salvar');
     const btnText = document.getElementById('btn-text');
@@ -265,8 +264,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (form && btn) {
         form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
             // Valida campos obrigatórios
             if (!form.checkValidity()) {
                 form.reportValidity();
@@ -282,72 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
             var modalProcessando = new bootstrap.Modal(document.getElementById('modalProcessando'));
             modalProcessando.show();
             
-            // Envia o formulário via AJAX
-            var formData = new FormData(form);
-            
-            fetch(form.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.text())
-            .then(html => {
-                // Fecha modal de processamento
-                modalProcessando.hide();
-                
-                // Tenta parsear como JSON primeiro
-                try {
-                    const data = JSON.parse(html);
-                    
-                    if (data.success) {
-                        // Mostra modal de sucesso
-                        var modalSucesso = new bootstrap.Modal(document.getElementById('modalSucesso'));
-                        modalSucesso.show();
-                    } else {
-                        // Mostra modal de erro com mensagem específica
-                        document.getElementById('mensagemErro').textContent = data.message || 'Erro ao processar inscrição. Por favor, tente novamente.';
-                        var modalErro = new bootstrap.Modal(document.getElementById('modalErro'));
-                        modalErro.show();
-                        
-                        // Reabilita o botão
-                        btn.disabled = false;
-                        btnText.textContent = 'Realizar Inscrição';
-                        btnSpinner.classList.add('d-none');
-                    }
-                } catch (e) {
-                    // Se não for JSON, trata como HTML (resposta padrão do CodeIgniter)
-                    if (html.includes('sucesso') || html.includes('success')) {
-                        var modalSucesso = new bootstrap.Modal(document.getElementById('modalSucesso'));
-                        modalSucesso.show();
-                    } else {
-                        // Mostra a resposta HTML no div response
-                        document.getElementById('response').innerHTML = html;
-                        
-                        // Scroll até o topo para ver a mensagem
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        
-                        // Reabilita o botão
-                        btn.disabled = false;
-                        btnText.textContent = 'Realizar Inscrição';
-                        btnSpinner.classList.add('d-none');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                modalProcessando.hide();
-                
-                // Mostra modal de erro
-                document.getElementById('mensagemErro').textContent = 'Erro de conexão. Por favor, verifique sua internet e tente novamente.';
-                var modalErro = new bootstrap.Modal(document.getElementById('modalErro'));
-                modalErro.show();
-                
-                // Reabilita o botão
-                btn.disabled = false;
-                btnText.textContent = 'Realizar Inscrição';
-                btnSpinner.classList.add('d-none');
-            });
-            
-            return false;
+            // Deixa o formulário enviar normalmente (sem preventDefault)
+            // O backend vai fazer redirect com mensagem flash
+            return true;
         });
     }
 });
