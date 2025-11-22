@@ -35,9 +35,9 @@ class UsuarioConquistaModel extends Model
         'conquista_id' => 'required|is_natural_no_zero',
         'event_id'     => 'required|is_natural_no_zero',
         'user_id'      => 'required|is_natural_no_zero',
-        'pontos'       => 'required|integer',
-        'admin'        => 'required|in_list[0,1]',
-        'status'       => 'required|string|max_length[50]|in_list[ATIVA,REVOGADA]',
+        'pontos'       => 'permit_empty|integer',
+        'admin'        => 'permit_empty|in_list[0,1]',
+        'status'       => 'permit_empty|string|max_length[50]|in_list[ATIVA,REVOGADA]',
     ];
 
     protected $validationMessages = [
@@ -54,11 +54,12 @@ class UsuarioConquistaModel extends Model
             'is_natural_no_zero'  => 'O campo user_id deve ser um número válido',
         ],
         'pontos' => [
-            'required' => 'Os pontos são obrigatórios',
             'integer'  => 'Os pontos devem ser um número inteiro',
         ],
+        'admin' => [
+            'in_list' => 'O campo admin deve ser 0 ou 1',
+        ],
         'status' => [
-            'required' => 'O status é obrigatório',
             'in_list'  => 'O status deve ser ATIVA ou REVOGADA',
         ],
     ];

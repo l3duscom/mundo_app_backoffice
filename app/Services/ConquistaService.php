@@ -6,8 +6,6 @@ use App\Models\UsuarioConquistaModel;
 use App\Models\ExtratoPontosModel;
 use App\Models\ConquistaModel;
 use App\Models\UsuarioModel;
-use App\Entities\UsuarioConquistaEntity;
-use App\Entities\ExtratoPontosEntity;
 
 class ConquistaService
 {
@@ -91,7 +89,7 @@ class ConquistaService
             $saldoAtual = $saldoAnterior + $pontos;
 
             // 6. Cria registro de usuário conquista
-            $usuarioConquista = new UsuarioConquistaEntity([
+            $usuarioConquistaData = [
                 'conquista_id'  => $conquistaId,
                 'event_id'      => $eventId,
                 'user_id'       => $userId,
@@ -99,9 +97,9 @@ class ConquistaService
                 'admin'         => $isAdmin ? 1 : 0,
                 'status'        => 'ATIVA',
                 'atribuido_por' => $atribuidoPor,
-            ]);
+            ];
 
-            if (!$this->usuarioConquistaModel->save($usuarioConquista)) {
+            if (!$this->usuarioConquistaModel->save($usuarioConquistaData)) {
                 $this->db->transRollback();
                 return [
                     'success' => false,
@@ -116,7 +114,7 @@ class ConquistaService
             $this->usuarioModel->update($userId, ['pontos' => $saldoAtual]);
 
             // 8. Cria entrada no extrato
-            $extrato = new ExtratoPontosEntity([
+            $extratoData = [
                 'user_id'         => $userId,
                 'event_id'        => $eventId,
                 'tipo'            => 'CONQUISTA',
@@ -127,9 +125,9 @@ class ConquistaService
                 'referencia_tipo' => 'usuario_conquista',
                 'referencia_id'   => $usuarioConquistaId,
                 'atribuido_por'   => $atribuidoPor,
-            ]);
+            ];
 
-            if (!$this->extratoPontosModel->save($extrato)) {
+            if (!$this->extratoPontosModel->save($extratoData)) {
                 $this->db->transRollback();
                 return [
                     'success' => false,
@@ -246,7 +244,7 @@ class ConquistaService
                 $descricao .= " - Motivo: {$motivo}";
             }
 
-            $extrato = new ExtratoPontosEntity([
+            $extratoData = [
                 'user_id'         => $usuarioConquista->user_id,
                 'event_id'        => $usuarioConquista->event_id,
                 'tipo'            => 'REVOGACAO',
@@ -257,9 +255,9 @@ class ConquistaService
                 'referencia_tipo' => 'usuario_conquista',
                 'referencia_id'   => $usuarioConquistaId,
                 'atribuido_por'   => $atribuidoPor,
-            ]);
+            ];
 
-            if (!$this->extratoPontosModel->save($extrato)) {
+            if (!$this->extratoPontosModel->save($extratoData)) {
                 $this->db->transRollback();
                 return [
                     'success' => false,
