@@ -19,6 +19,7 @@ class UsuarioModel extends Model
         'reset_hash',
         'reset_expira_em',
         'imagem',
+        'pontos', // Pontos do sistema de conquistas
         // Não colocaremos o campo ativo.... Pois existe a manipulação de formulário
     ];
 

@@ -35,9 +35,12 @@ class ExtratoPontosModel extends Model
 
     // Validation
     protected $validationRules = [
-        'user_id' => 'required|is_natural_no_zero',
-        'tipo'    => 'required|string|max_length[50]',
-        'pontos'  => 'required|integer',
+        'user_id'        => 'required|is_natural_no_zero',
+        'event_id'       => 'permit_empty|is_natural_no_zero',
+        'tipo'           => 'required|string|max_length[50]',
+        'pontos'         => 'required|integer',
+        'saldo_anterior' => 'permit_empty|integer',
+        'saldo_atual'    => 'permit_empty|integer',
     ];
 
     protected $validationMessages = [

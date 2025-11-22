@@ -41,6 +41,8 @@ class ConquistaService
         bool $isAdmin = false, 
         ?int $atribuidoPor = null
     ): array {
+        log_message('info', "Iniciando atribuição de conquista - userId: {$userId}, conquistaId: {$conquistaId}, eventId: {$eventId}, isAdmin: " . ($isAdmin ? 'true' : 'false'));
+        
         // Inicia transação
         $this->db->transStart();
 
@@ -101,10 +103,13 @@ class ConquistaService
 
             if (!$this->usuarioConquistaModel->save($usuarioConquistaData)) {
                 $this->db->transRollback();
+                $errors = $this->usuarioConquistaModel->errors();
+                log_message('error', 'Erro ao salvar usuario_conquista: ' . json_encode($errors));
+                log_message('error', 'Dados enviados: ' . json_encode($usuarioConquistaData));
                 return [
                     'success' => false,
                     'message' => 'Erro ao atribuir conquista',
-                    'errors' => $this->usuarioConquistaModel->errors(),
+                    'errors' => $errors,
                 ];
             }
 
@@ -129,10 +134,13 @@ class ConquistaService
 
             if (!$this->extratoPontosModel->save($extratoData)) {
                 $this->db->transRollback();
+                $errors = $this->extratoPontosModel->errors();
+                log_message('error', 'Erro ao salvar extrato_pontos: ' . json_encode($errors));
+                log_message('error', 'Dados do extrato: ' . json_encode($extratoData));
                 return [
                     'success' => false,
                     'message' => 'Erro ao criar extrato de pontos',
-                    'errors' => $this->extratoPontosModel->errors(),
+                    'errors' => $errors,
                 ];
             }
 
@@ -169,12 +177,14 @@ class ConquistaService
 
         } catch (\Exception $e) {
             $this->db->transRollback();
-            log_message('error', 'Erro ao atribuir conquista: ' . $e->getMessage());
+            log_message('error', 'Exceção ao atribuir conquista: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            log_message('error', 'Dados: userId=' . $userId . ', conquistaId=' . $conquistaId . ', eventId=' . $eventId);
             
             return [
                 'success' => false,
                 'message' => 'Erro ao atribuir conquista',
-                'error' => ENVIRONMENT === 'development' ? $e->getMessage() : 'Erro interno',
+                'error' => $e->getMessage(), // Sempre retorna a mensagem em caso de exceção
             ];
         }
     }
