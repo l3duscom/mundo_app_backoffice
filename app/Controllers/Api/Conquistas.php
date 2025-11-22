@@ -5,7 +5,6 @@ namespace App\Controllers\Api;
 use App\Controllers\BaseController;
 use App\Models\ConquistaModel;
 use App\Models\EventoModel;
-use App\Entities\ConquistaEntity;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class Conquistas extends BaseController
@@ -274,18 +273,18 @@ class Conquistas extends BaseController
                     ->setStatusCode(404);
             }
 
-            // Cria entidade
-            $conquista = new ConquistaEntity([
+            // Prepara dados para salvar
+            $data = [
                 'event_id' => $json['event_id'],
                 'nome_conquista' => $json['nome_conquista'] ?? '',
                 'descricao' => $json['descricao'] ?? null,
                 'pontos' => $json['pontos'] ?? 0,
                 'nivel' => $json['nivel'] ?? 'BRONZE',
                 'status' => $json['status'] ?? 'ATIVA',
-            ]);
+            ];
 
             // Salva no banco
-            if ($this->conquistaModel->save($conquista)) {
+            if ($this->conquistaModel->save($data)) {
                 $id = $this->conquistaModel->getInsertID();
                 $conquistaCriada = $this->conquistaModel->find($id);
 
@@ -407,29 +406,11 @@ class Conquistas extends BaseController
                 }
             }
 
-            // Atualiza campos
-            $conquista->fill($json);
-
-            // Verifica se não houve mudanças
-            if (!$conquista->hasChanged()) {
-                return $this->response
-                    ->setJSON([
-                        'success' => true,
-                        'message' => 'Nenhuma alteração detectada',
-                        'data' => [
-                            'id' => $conquista->id,
-                            'event_id' => $conquista->event_id,
-                            'nome_conquista' => $conquista->nome_conquista,
-                            'pontos' => $conquista->pontos,
-                            'nivel' => $conquista->nivel,
-                            'status' => $conquista->status,
-                        ]
-                    ])
-                    ->setStatusCode(200);
-            }
+            // Prepara dados para atualizar
+            $data = array_merge(['id' => $id], $json);
 
             // Salva alterações
-            if ($this->conquistaModel->save($conquista)) {
+            if ($this->conquistaModel->save($data)) {
                 $conquistaAtualizada = $this->conquistaModel->find($id);
 
                 // Verifica se a conquista foi encontrada

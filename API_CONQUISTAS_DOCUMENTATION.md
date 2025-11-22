@@ -418,3 +418,26 @@ php spark migrate
 - A validação do `event_id` verifica se o evento existe antes de criar/atualizar
 - Os pontos podem ser negativos se necessário (penalidades)
 
+---
+
+## ⚠️ Erros Comuns e Soluções
+
+### Erro 400: Dados não fornecidos
+- **Causa**: JSON vazio ou mal formatado
+- **Solução**: Verifique se o Content-Type é `application/json` e o body está válido
+
+### Erro 404: Evento não encontrado
+- **Causa**: O `event_id` fornecido não existe no banco
+- **Solução**: Verifique se o evento existe antes de criar a conquista
+
+### Erro 422: Erro de validação
+- **Causa**: Dados não atendem às regras de validação
+- **Solução**: Verifique a mensagem de erro no campo `errors` da resposta
+- **Campos obrigatórios**: `event_id`, `nome_conquista`, `pontos`, `nivel`, `status`
+- **Valores válidos para status**: `ATIVA`, `INATIVA`, `BLOQUEADA`
+- **Valores sugeridos para nivel**: `BRONZE`, `PRATA`, `OURO`, `PLATINA`, `DIAMANTE`
+
+### Erro 405: Método não permitido
+- **Causa**: Método HTTP incorreto
+- **Solução**: Verifique se está usando o método correto (GET, POST, PUT, PATCH, DELETE)
+
