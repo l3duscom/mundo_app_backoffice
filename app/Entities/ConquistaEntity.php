@@ -18,6 +18,7 @@ class ConquistaEntity extends Entity
         'id'              => 'integer',
         'event_id'        => 'integer',
         'nome_conquista'  => 'string',
+        'descricao'       => '?string',
         'pontos'          => 'integer',
         'nivel'           => 'string',
         'status'          => 'string',

@@ -16,6 +16,7 @@ class ConquistaModel extends Model
     protected $allowedFields    = [
         'event_id',
         'nome_conquista',
+        'descricao',
         'pontos',
         'nivel',
         'status',
@@ -32,6 +33,7 @@ class ConquistaModel extends Model
     protected $validationRules = [
         'event_id'       => 'required|is_natural_no_zero',
         'nome_conquista' => 'required|string|max_length[255]',
+        'descricao'      => 'permit_empty|string',
         'pontos'         => 'required|integer',
         'nivel'          => 'required|string|max_length[50]',
         'status'         => 'required|string|max_length[50]|in_list[ATIVA,INATIVA,BLOQUEADA]',

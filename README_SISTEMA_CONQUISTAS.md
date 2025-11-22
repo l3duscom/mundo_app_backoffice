@@ -90,9 +90,11 @@ php spark migrate
 ```
 
 Isso criará as tabelas:
-- `conquistas` - Catálogo de conquistas
+- `conquistas` - Catálogo de conquistas (com campo descricao)
 - `usuario_conquistas` - Conquistas atribuídas aos usuários
 - `extrato_pontos` - Histórico de transações de pontos
+
+**Nota:** Se você já tinha a tabela `conquistas` criada anteriormente, a migration adiciona automaticamente a coluna `descricao`.
 
 ### 3. Verificar Rotas
 
@@ -113,6 +115,7 @@ Catálogo de conquistas disponíveis
 | id | INT | ID único |
 | event_id | INT | ID do evento |
 | nome_conquista | VARCHAR(255) | Nome da conquista |
+| descricao | TEXT | Descrição detalhada |
 | pontos | INT | Pontos que vale |
 | nivel | VARCHAR(50) | BRONZE, PRATA, OURO, etc |
 | status | VARCHAR(50) | ATIVA, INATIVA, BLOQUEADA |
@@ -193,6 +196,7 @@ POST /api/conquistas
 {
   "event_id": 1,
   "nome_conquista": "Primeira Participação",
+  "descricao": "Participou do evento pela primeira vez",
   "pontos": 10,
   "nivel": "BRONZE",
   "status": "ATIVA"
@@ -240,15 +244,15 @@ GET /api/usuario-conquistas/ranking/1?limit=10
 
 ```sql
 -- Conquistas para o evento MundoDream 2025
-INSERT INTO `conquistas` (`event_id`, `nome_conquista`, `pontos`, `nivel`, `status`) VALUES
-(1, 'Primeira Participação', 10, 'BRONZE', 'ATIVA'),
-(1, 'Participou de 3 Painéis', 25, 'PRATA', 'ATIVA'),
-(1, 'Conheceu 5 Convidados', 50, 'OURO', 'ATIVA'),
-(1, 'Mestre Cosplayer', 100, 'PLATINA', 'ATIVA'),
-(1, 'Completou Todo o Cronograma', 200, 'DIAMANTE', 'ATIVA'),
-(1, 'Comprou no Meet & Greet', 15, 'BRONZE', 'ATIVA'),
-(1, 'Tirou Foto com Convidado', 20, 'BRONZE', 'ATIVA'),
-(1, 'Participou do Quiz', 30, 'PRATA', 'ATIVA');
+INSERT INTO `conquistas` (`event_id`, `nome_conquista`, `descricao`, `pontos`, `nivel`, `status`) VALUES
+(1, 'Primeira Participação', 'Participou do evento pela primeira vez', 10, 'BRONZE', 'ATIVA'),
+(1, 'Participou de 3 Painéis', 'Assistiu 3 painéis durante o evento', 25, 'PRATA', 'ATIVA'),
+(1, 'Conheceu 5 Convidados', 'Participou de Meet & Greet com 5 convidados', 50, 'OURO', 'ATIVA'),
+(1, 'Mestre Cosplayer', 'Participou do desfile cosplay e ganhou premiação', 100, 'PLATINA', 'ATIVA'),
+(1, 'Completou Todo o Cronograma', 'Participou de todos os itens do cronograma', 200, 'DIAMANTE', 'ATIVA'),
+(1, 'Comprou no Meet & Greet', 'Adquiriu produtos no Meet & Greet', 15, 'BRONZE', 'ATIVA'),
+(1, 'Tirou Foto com Convidado', 'Registrou o momento com um convidado especial', 20, 'BRONZE', 'ATIVA'),
+(1, 'Participou do Quiz', 'Participou e acertou questões no quiz', 30, 'PRATA', 'ATIVA');
 ```
 
 ### Exemplo 2: Atribuição Automática via Sistema

@@ -48,6 +48,7 @@ GET /api/conquistas?event_id=1&status=ATIVA
       "id": 1,
       "event_id": 1,
       "nome_conquista": "Primeira Participação",
+      "descricao": "Participou do evento pela primeira vez",
       "pontos": 10,
       "nivel": "BRONZE",
       "status": "ATIVA",
@@ -57,6 +58,7 @@ GET /api/conquistas?event_id=1&status=ATIVA
       "id": 2,
       "event_id": 1,
       "nome_conquista": "Participou de 3 Painéis",
+      "descricao": "Assistiu 3 painéis durante o evento",
       "pontos": 25,
       "nivel": "PRATA",
       "status": "ATIVA",
@@ -164,6 +166,7 @@ Cria uma nova conquista.
 {
   "event_id": 1,
   "nome_conquista": "Primeira Participação",
+  "descricao": "Participou do evento pela primeira vez",
   "pontos": 10,
   "nivel": "BRONZE",
   "status": "ATIVA"
@@ -173,6 +176,7 @@ Cria uma nova conquista.
 #### Campos:
 - `event_id` (int, obrigatório): ID do evento
 - `nome_conquista` (string, obrigatório): Nome da conquista (max 255 caracteres)
+- `descricao` (string, opcional): Descrição detalhada da conquista
 - `pontos` (int, obrigatório): Pontos da conquista
 - `nivel` (string, obrigatório): Nível da conquista (max 50 caracteres)
 - `status` (string, opcional): Status da conquista. Valores permitidos: ATIVA, INATIVA, BLOQUEADA (padrão: ATIVA)
@@ -185,6 +189,7 @@ Content-Type: application/json
 {
   "event_id": 1,
   "nome_conquista": "Conheceu 5 Convidados",
+  "descricao": "Participou de Meet & Greet com 5 convidados",
   "pontos": 50,
   "nivel": "OURO",
   "status": "ATIVA"
@@ -200,6 +205,7 @@ Content-Type: application/json
     "id": 5,
     "event_id": 1,
     "nome_conquista": "Conheceu 5 Convidados",
+    "descricao": "Participou de Meet & Greet com 5 convidados",
     "pontos": 50,
     "nivel": "OURO",
     "status": "ATIVA",
@@ -262,6 +268,7 @@ Content-Type: application/json
     "id": 1,
     "event_id": 1,
     "nome_conquista": "Primeira Participação",
+    "descricao": "Participou do evento pela primeira vez",
     "pontos": 20,
     "nivel": "PRATA",
     "status": "ATIVA",
@@ -361,33 +368,33 @@ Os níveis são flexíveis e podem ser customizados por evento. Sugestões:
 [
   {
     "nome_conquista": "Primeira Participação",
+    "descricao": "Participou do evento pela primeira vez",
     "pontos": 10,
-    "nivel": "BRONZE",
-    "descricao": "Participou do evento pela primeira vez"
+    "nivel": "BRONZE"
   },
   {
     "nome_conquista": "Participou de 3 Painéis",
+    "descricao": "Assistiu 3 painéis durante o evento",
     "pontos": 25,
-    "nivel": "PRATA",
-    "descricao": "Assistiu 3 painéis durante o evento"
+    "nivel": "PRATA"
   },
   {
     "nome_conquista": "Conheceu 5 Convidados",
+    "descricao": "Participou de Meet & Greet com 5 convidados",
     "pontos": 50,
-    "nivel": "OURO",
-    "descricao": "Participou de Meet & Greet com 5 convidados"
+    "nivel": "OURO"
   },
   {
     "nome_conquista": "Mestre Cosplayer",
+    "descricao": "Participou do desfile cosplay e ganhou premiação",
     "pontos": 100,
-    "nivel": "PLATINA",
-    "descricao": "Participou do desfile cosplay e ganhou premiação"
+    "nivel": "PLATINA"
   },
   {
     "nome_conquista": "Completou Todo o Cronograma",
+    "descricao": "Participou de todos os itens do cronograma",
     "pontos": 200,
-    "nivel": "DIAMANTE",
-    "descricao": "Participou de todos os itens do cronograma"
+    "nivel": "DIAMANTE"
   }
 ]
 ```
