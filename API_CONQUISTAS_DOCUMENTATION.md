@@ -57,6 +57,7 @@ GET /api/conquistas?event_id=1&status=ATIVA
     {
       "id": 2,
       "event_id": 1,
+      "codigo": "E5F6G7H8",
       "nome_conquista": "Participou de 3 Painéis",
       "descricao": "Assistiu 3 painéis durante o evento",
       "pontos": 25,
@@ -93,6 +94,7 @@ GET /api/conquistas/evento/1
     {
       "id": 1,
       "event_id": 1,
+      "codigo": "A1B2C3D4",
       "nome_conquista": "Primeira Participação",
       "descricao": "Participou pela primeira vez do evento",
       "pontos": 10,
@@ -136,7 +138,9 @@ GET /api/conquistas/1
   "data": {
     "id": 1,
     "event_id": 1,
+    "codigo": "A1B2C3D4",
     "nome_conquista": "Primeira Participação",
+    "descricao": "Participou pela primeira vez do evento",
     "pontos": 10,
     "nivel": "BRONZE",
     "status": "ATIVA",
@@ -182,6 +186,11 @@ Cria uma nova conquista.
 - `nivel` (string, obrigatório): Nível da conquista (max 50 caracteres)
 - `status` (string, opcional): Status da conquista. Valores permitidos: ATIVA, INATIVA, BLOQUEADA (padrão: ATIVA)
 
+**⚠️ IMPORTANTE:** 
+- O campo `codigo` é gerado **AUTOMATICAMENTE** pelo sistema com 8 caracteres únicos.
+- **NÃO envie** o campo `codigo` no body da requisição - ele será ignorado se enviado.
+- O código gerado será retornado na resposta após a criação.
+
 #### Exemplo de Requisição:
 ```bash
 POST /api/conquistas
@@ -205,6 +214,7 @@ Content-Type: application/json
   "data": {
     "id": 5,
     "event_id": 1,
+    "codigo": "K9L0M1N2",
     "nome_conquista": "Conheceu 5 Convidados",
     "descricao": "Participou de Meet & Greet com 5 convidados",
     "pontos": 50,
@@ -249,6 +259,8 @@ Atualiza uma conquista existente.
 
 Todos os campos são opcionais. Apenas os campos fornecidos serão atualizados.
 
+**Nota:** O campo `codigo` não pode ser alterado pois é único e gerado automaticamente.
+
 #### Exemplo de Requisição:
 ```bash
 PUT /api/conquistas/1
@@ -268,6 +280,7 @@ Content-Type: application/json
   "data": {
     "id": 1,
     "event_id": 1,
+    "codigo": "A1B2C3D4",
     "nome_conquista": "Primeira Participação",
     "descricao": "Participou do evento pela primeira vez",
     "pontos": 20,
@@ -286,7 +299,9 @@ Content-Type: application/json
   "data": {
     "id": 1,
     "event_id": 1,
+    "codigo": "A1B2C3D4",
     "nome_conquista": "Primeira Participação",
+    "descricao": "Participou do evento pela primeira vez",
     "pontos": 20,
     "nivel": "PRATA",
     "status": "ATIVA"

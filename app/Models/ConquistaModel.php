@@ -15,6 +15,7 @@ class ConquistaModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'event_id',
+        'codigo',
         'nome_conquista',
         'descricao',
         'pontos',
@@ -32,6 +33,7 @@ class ConquistaModel extends Model
     // Validation
     protected $validationRules = [
         'event_id'       => 'required|is_natural_no_zero',
+        'codigo'         => 'permit_empty|string|exact_length[8]|is_unique[conquistas.codigo,id,{id}]',
         'nome_conquista' => 'required|string|max_length[255]',
         'descricao'      => 'permit_empty|string',
         'pontos'         => 'required|integer',
@@ -43,6 +45,10 @@ class ConquistaModel extends Model
         'event_id' => [
             'required'            => 'O campo event_id é obrigatório',
             'is_natural_no_zero'  => 'O campo event_id deve ser um número válido',
+        ],
+        'codigo' => [
+            'exact_length' => 'O código deve ter exatamente 8 caracteres',
+            'is_unique'    => 'Este código já está em uso',
         ],
         'nome_conquista' => [
             'required'   => 'O nome da conquista é obrigatório',
@@ -67,7 +73,7 @@ class ConquistaModel extends Model
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
+    protected $beforeInsert   = ['gerarCodigoAntesDeInserir'];
     protected $afterInsert    = [];
     protected $beforeUpdate   = [];
     protected $afterUpdate    = [];
@@ -75,6 +81,50 @@ class ConquistaModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    /**
+     * Callback: Gera código automaticamente antes de inserir
+     * 
+     * @param array $data
+     * @return array
+     */
+    protected function gerarCodigoAntesDeInserir(array $data)
+    {
+        // Se o código não foi fornecido, gera automaticamente
+        if (empty($data['data']['codigo'])) {
+            $data['data']['codigo'] = $this->gerarCodigoUnico();
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Gera um código único de 8 caracteres
+     * 
+     * @return string
+     */
+    public function gerarCodigoUnico(): string
+    {
+        $tentativas = 0;
+        $maxTentativas = 50;
+        
+        do {
+            // Gera código aleatório de 8 caracteres (letras maiúsculas e números)
+            $codigo = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+            
+            // Verifica se já existe
+            $existe = $this->where('codigo', $codigo)->countAllResults() > 0;
+            
+            $tentativas++;
+            
+            if ($tentativas >= $maxTentativas) {
+                throw new \RuntimeException('Não foi possível gerar um código único após ' . $maxTentativas . ' tentativas');
+            }
+            
+        } while ($existe);
+        
+        return $codigo;
+    }
 
     /**
      * Busca conquistas por evento

@@ -17,6 +17,7 @@ class ConquistaEntity extends Entity
     protected $casts = [
         'id'              => 'integer',
         'event_id'        => 'integer',
+        'codigo'          => 'string',
         'nome_conquista'  => 'string',
         'descricao'       => '?string',
         'pontos'          => 'integer',

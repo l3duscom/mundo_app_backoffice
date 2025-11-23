@@ -58,6 +58,7 @@ class Conquistas extends BaseController
                 $data[] = [
                     'id' => $conquista->id,
                     'event_id' => $conquista->event_id,
+                    'codigo' => $conquista->codigo,
                     'nome_conquista' => $conquista->nome_conquista,
                     'descricao' => $conquista->descricao,
                     'pontos' => $conquista->pontos,
@@ -125,6 +126,7 @@ class Conquistas extends BaseController
                 $data[] = [
                     'id' => $conquista->id,
                     'event_id' => $conquista->event_id,
+                    'codigo' => $conquista->codigo,
                     'nome_conquista' => $conquista->nome_conquista,
                     'descricao' => $conquista->descricao,
                     'pontos' => $conquista->pontos,
@@ -191,6 +193,7 @@ class Conquistas extends BaseController
                     'data' => [
                         'id' => $conquista->id,
                         'event_id' => $conquista->event_id,
+                        'codigo' => $conquista->codigo,
                         'nome_conquista' => $conquista->nome_conquista,
                         'descricao' => $conquista->descricao,
                         'pontos' => $conquista->pontos,
@@ -276,6 +279,7 @@ class Conquistas extends BaseController
             }
 
             // Prepara dados para salvar
+            // Nota: O código será gerado automaticamente pelo Model
             $data = [
                 'event_id' => $json['event_id'],
                 'nome_conquista' => $json['nome_conquista'] ?? '',
@@ -308,6 +312,7 @@ class Conquistas extends BaseController
                         'data' => [
                             'id' => $conquistaCriada->id,
                             'event_id' => $conquistaCriada->event_id,
+                            'codigo' => $conquistaCriada->codigo,
                             'nome_conquista' => $conquistaCriada->nome_conquista,
                             'descricao' => $conquistaCriada->descricao,
                             'pontos' => $conquistaCriada->pontos,
@@ -433,6 +438,7 @@ class Conquistas extends BaseController
                         'data' => [
                             'id' => $conquistaAtualizada->id,
                             'event_id' => $conquistaAtualizada->event_id,
+                            'codigo' => $conquistaAtualizada->codigo,
                             'nome_conquista' => $conquistaAtualizada->nome_conquista,
                             'descricao' => $conquistaAtualizada->descricao,
                             'pontos' => $conquistaAtualizada->pontos,

@@ -103,10 +103,14 @@ Atribui uma conquista a um usuário. O sistema automaticamente:
 
 #### Campos:
 - `user_id` (int, obrigatório): ID do usuário
-- `conquista_id` (int, obrigatório): ID da conquista
+- `conquista_id` (int, obrigatório): ID da conquista (use o **ID numérico**, não o código)
 - `event_id` (int, obrigatório): ID do evento
 - `admin` (bool, opcional): Se foi atribuído manualmente por admin (default: false)
 - `atribuido_por` (int, opcional): ID do admin que atribuiu
+
+**⚠️ IMPORTANTE:** 
+- Use o campo `conquista_id` (ID numérico) para atribuir conquistas.
+- **NÃO use** o campo `codigo` - ele é apenas informativo e para compartilhamento.
 
 #### Exemplo de Requisição:
 ```bash
