@@ -160,7 +160,130 @@ Content-Type: application/json
 
 ---
 
-### 3. Revogar Conquista do Usuário
+### 3. Atribuir Conquista por Código
+
+**POST** `/api/usuario-conquistas/atribuir-por-codigo`
+
+Atribui uma conquista a um usuário usando o **código** da conquista (não o ID). Útil para:
+- 📱 QR Codes em eventos
+- 🎁 Códigos promocionais
+- 🔗 Compartilhamento entre usuários
+- ✨ Links de ativação/gamificação
+
+O sistema automaticamente:
+- Busca a conquista pelo código
+- Valida se está ativa e pertence ao evento
+- Verifica se já foi atribuída
+- Soma os pontos na tabela `usuarios`
+- Cria entrada no extrato de pontos
+
+#### Body JSON (obrigatório):
+```json
+{
+  "user_id": 1,
+  "codigo": "A1B2C3D4",
+  "event_id": 1,
+  "admin": false,
+  "atribuido_por": 2
+}
+```
+
+#### Campos:
+- `user_id` (int, obrigatório): ID do usuário
+- `codigo` (string, obrigatório): Código da conquista (8 caracteres)
+- `event_id` (int, obrigatório): ID do evento
+- `admin` (bool, opcional): Se foi atribuído manualmente por admin (default: false)
+- `atribuido_por` (int, opcional): ID do admin que atribuiu
+
+#### Exemplo de Requisição:
+```bash
+POST /api/usuario-conquistas/atribuir-por-codigo
+Content-Type: application/json
+
+{
+  "user_id": 123,
+  "codigo": "K9L0M1N2",
+  "event_id": 17
+}
+```
+
+#### Resposta de Sucesso (201):
+```json
+{
+  "success": true,
+  "message": "Conquista atribuída com sucesso",
+  "conquista": {
+    "id": 5,
+    "codigo": "K9L0M1N2",
+    "nome_conquista": "Comprou Ingresso",
+    "descricao": "Adquiriu ingresso para o evento",
+    "pontos": 15,
+    "nivel": "BRONZE"
+  },
+  "data": {
+    "usuario_conquista": {
+      "id": 42,
+      "user_id": 123,
+      "conquista_id": 5,
+      "event_id": 17,
+      "pontos": 15,
+      "admin": 0,
+      "status": "ATIVA",
+      "created_at": "2024-11-23 10:00:00"
+    },
+    "extrato": {
+      "id": 84,
+      "user_id": 123,
+      "event_id": 17,
+      "tipo": "CONQUISTA",
+      "pontos": 15,
+      "saldo_anterior": 50,
+      "saldo_atual": 65,
+      "descricao": "Conquista: Comprou Ingresso"
+    },
+    "pontos_atualizados": 65
+  }
+}
+```
+
+#### Resposta de Erro - Código Não Encontrado (404):
+```json
+{
+  "success": false,
+  "message": "Conquista não encontrada com o código fornecido"
+}
+```
+
+#### Resposta de Erro - Conquista Inativa (400):
+```json
+{
+  "success": false,
+  "message": "Conquista não está ativa",
+  "status_conquista": "INATIVA"
+}
+```
+
+#### Resposta de Erro - Evento Incorreto (400):
+```json
+{
+  "success": false,
+  "message": "Conquista não pertence ao evento informado",
+  "event_id_conquista": 15,
+  "event_id_informado": 17
+}
+```
+
+#### Resposta de Erro - Já Atribuída (400):
+```json
+{
+  "success": false,
+  "message": "Usuário já possui esta conquista neste evento"
+}
+```
+
+---
+
+### 4. Revogar Conquista do Usuário
 
 **POST** `/api/usuario-conquistas/{id}/revogar`
 
@@ -219,7 +342,7 @@ Content-Type: application/json
 
 ---
 
-### 4. Extrato de Pontos do Usuário
+### 5. Extrato de Pontos do Usuário
 
 **GET** `/api/usuario-conquistas/extrato/{user_id}`
 
@@ -278,7 +401,7 @@ GET /api/usuario-conquistas/extrato/1?event_id=1&limit=10
 
 ---
 
-### 5. Ranking de Usuários por Evento
+### 6. Ranking de Usuários por Evento
 
 **GET** `/api/usuario-conquistas/ranking/{event_id}`
 

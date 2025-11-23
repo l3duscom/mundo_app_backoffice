@@ -125,7 +125,8 @@ $routes->group('api/usuario-conquistas', ['filter' => 'secureApi'], function ($r
     $routes->get('usuario/(:num)', 'Api\UsuarioConquistas::porUsuario/$1', ['filter' => 'jwtAuth']); // Conquistas do usuário
     $routes->get('extrato/(:num)', 'Api\UsuarioConquistas::extrato/$1', ['filter' => 'jwtAuth']); // Extrato de pontos
     $routes->get('ranking/(:num)', 'Api\UsuarioConquistas::ranking/$1', ['filter' => 'jwtAuth']); // Ranking por evento
-    $routes->post('atribuir', 'Api\UsuarioConquistas::atribuir', ['filter' => 'jwtAuth']); // Atribui conquista
+    $routes->post('atribuir', 'Api\UsuarioConquistas::atribuir', ['filter' => 'jwtAuth']); // Atribui conquista por ID
+    $routes->post('atribuir-por-codigo', 'Api\UsuarioConquistas::atribuirPorCodigo', ['filter' => 'jwtAuth']); // Atribui conquista por código
     $routes->post('(:num)/revogar', 'Api\UsuarioConquistas::revogar/$1', ['filter' => 'jwtAuth']); // Revoga conquista
 });
 

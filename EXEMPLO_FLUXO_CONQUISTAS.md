@@ -58,6 +58,10 @@ Authorization: Bearer {seu_token_jwt}
 
 ### Passo 2: Atribuir Conquista ao Usuário
 
+Existem **duas formas** de atribuir uma conquista:
+
+#### Opção A: Atribuir por ID (mais comum para sistemas internos)
+
 **Requisição:**
 ```bash
 POST /api/usuario-conquistas/atribuir
@@ -74,7 +78,28 @@ Authorization: Bearer {seu_token_jwt}
 
 **⚠️ IMPORTANTE:** 
 - Use o campo `conquista_id` com o **ID numérico** (5)
-- **NÃO use** o campo `codigo` (K9L0M1N2)
+
+#### Opção B: Atribuir por Código (útil para QR codes, links, códigos promocionais)
+
+**Requisição:**
+```bash
+POST /api/usuario-conquistas/atribuir-por-codigo
+Content-Type: application/json
+Authorization: Bearer {seu_token_jwt}
+
+{
+  "user_id": 123,
+  "codigo": "K9L0M1N2",
+  "event_id": 17,
+  "admin": false
+}
+```
+
+**💡 VANTAGENS:**
+- ✅ Usuário pode digitar/escanear apenas o código
+- ✅ Ideal para QR Codes em eventos
+- ✅ Perfeito para códigos promocionais
+- ✅ Facilita compartilhamento entre usuários
 
 **Resposta (201):**
 ```json
@@ -143,6 +168,53 @@ Authorization: Bearer {seu_token_jwt}
   "total_pontos": 15
 }
 ```
+
+---
+
+## 🎯 Casos de Uso do Código
+
+### Caso 1: QR Code em Evento
+
+1. Admin cria conquista via API
+2. Sistema gera código `K9L0M1N2`
+3. Admin gera QR Code com link: `https://app.com/conquista?codigo=K9L0M1N2&event_id=17`
+4. Usuário escaneia QR Code
+5. App chama:
+```bash
+POST /api/usuario-conquistas/atribuir-por-codigo
+{
+  "user_id": 123,
+  "codigo": "K9L0M1N2",
+  "event_id": 17
+}
+```
+
+### Caso 2: Código Promocional
+
+1. Marketing divulga: "Use o código DREAM2024 para ganhar 100 pontos!"
+2. Usuário acessa app e digita código
+3. App valida e atribui conquista:
+```bash
+POST /api/usuario-conquistas/atribuir-por-codigo
+{
+  "user_id": 456,
+  "codigo": "DREAM2024",
+  "event_id": 17
+}
+```
+
+### Caso 3: Compartilhamento entre Usuários
+
+1. Usuário A conquista "Primeiro Check-in"
+2. App mostra: "Compartilhe o código ABC12345 com seus amigos!"
+3. Usuário B recebe o código
+4. Usuário B usa o código para desbloquear conquista especial
+
+### Caso 4: Link de Ativação
+
+1. Admin envia email: "Clique para ativar sua conquista VIP"
+2. Link contém: `https://app.com/ativar/XYZ98765`
+3. Ao clicar, app chama API com o código
 
 ---
 
@@ -235,10 +307,11 @@ O campo `codigo` será **ignorado** se enviado e um novo código será gerado au
 
 ---
 
-### Erro 2: Tentar atribuir conquista usando o `codigo`
+### Erro 2: Confundir as rotas de atribuição
 
-**❌ Errado:**
-```json
+**❌ Errado - Misturar campos:**
+```bash
+POST /api/usuario-conquistas/atribuir
 {
   "user_id": 123,
   "codigo": "K9L0M1N2",
@@ -246,8 +319,9 @@ O campo `codigo` será **ignorado** se enviado e um novo código será gerado au
 }
 ```
 
-**✅ Correto:**
-```json
+**✅ Correto - Por ID:**
+```bash
+POST /api/usuario-conquistas/atribuir
 {
   "user_id": 123,
   "conquista_id": 5,
@@ -255,7 +329,19 @@ O campo `codigo` será **ignorado** se enviado e um novo código será gerado au
 }
 ```
 
-Use sempre o `conquista_id` (ID numérico), **NÃO** o `codigo`.
+**✅ Correto - Por Código:**
+```bash
+POST /api/usuario-conquistas/atribuir-por-codigo
+{
+  "user_id": 123,
+  "codigo": "K9L0M1N2",
+  "event_id": 17
+}
+```
+
+**Regra:** 
+- `/atribuir` = usa `conquista_id` (ID numérico)
+- `/atribuir-por-codigo` = usa `codigo` (8 caracteres)
 
 ---
 
@@ -346,28 +432,44 @@ ORDER BY ep.created_at DESC;
 
 ## 🎯 Resumo das Regras
 
-| Campo | Criação de Conquista | Atribuição ao Usuário |
-|-------|---------------------|----------------------|
-| `codigo` | ❌ NÃO enviar (auto-gerado) | ❌ NÃO usar |
-| `conquista_id` | ✅ Retornado na resposta | ✅ OBRIGATÓRIO |
-| `event_id` | ✅ Obrigatório | ✅ Obrigatório |
-| `user_id` | ❌ Não aplicável | ✅ Obrigatório |
+| Campo | Criação de Conquista | Atribuição por ID | Atribuição por Código |
+|-------|---------------------|-------------------|----------------------|
+| `codigo` | ❌ NÃO enviar (auto-gerado) | ❌ NÃO usar | ✅ OBRIGATÓRIO |
+| `conquista_id` | ✅ Retornado na resposta | ✅ OBRIGATÓRIO | ❌ NÃO usar |
+| `event_id` | ✅ Obrigatório | ✅ Obrigatório | ✅ Obrigatório |
+| `user_id` | ❌ Não aplicável | ✅ Obrigatório | ✅ Obrigatório |
+| **Rota** | `POST /api/conquistas` | `POST /api/usuario-conquistas/atribuir` | `POST /api/usuario-conquistas/atribuir-por-codigo` |
 
 ---
 
 ## 💡 Dicas
 
-1. **Guarde o ID retornado**: Ao criar uma conquista, sempre guarde o `id` retornado para uso posterior.
+1. **Guarde o ID e o Código retornados**: Ao criar uma conquista, guarde tanto o `id` quanto o `codigo` retornado.
 
-2. **Código é para compartilhamento**: O `codigo` é útil para:
-   - Compartilhar conquistas em redes sociais
-   - QR Codes em eventos físicos
-   - Links de compartilhamento
-   - Códigos promocionais
+2. **Escolha a rota certa**:
+   - **Por ID** (`/atribuir`): Para sistemas internos, automações, integrações
+   - **Por Código** (`/atribuir-por-codigo`): Para usuários finais, QR codes, promoções
 
-3. **Use sempre o ID numérico**: Para operações via API, sempre use `conquista_id` (ID numérico), nunca o `codigo`.
+3. **Código é para interação com usuários**: O `codigo` é perfeito para:
+   - 📱 QR Codes em eventos físicos
+   - 🔗 Links de compartilhamento
+   - 🎁 Códigos promocionais
+   - ✨ Gamificação e desafios
+   - 📧 Emails marketing com códigos exclusivos
 
-4. **Uma conquista por usuário/evento**: O sistema previne duplicação automaticamente através de índice único.
+4. **ID é para integrações**: Use `conquista_id` para:
+   - Automações de backend
+   - Webhooks
+   - Integrações com outros sistemas
+   - Scripts SQL em massa
 
-5. **Transações garantem integridade**: O sistema usa transações para garantir que pontos e extratos sejam sempre consistentes.
+5. **Uma conquista por usuário/evento**: O sistema previne duplicação automaticamente através de índice único em ambas as rotas.
+
+6. **Transações garantem integridade**: O sistema usa transações para garantir que pontos e extratos sejam sempre consistentes.
+
+7. **Validações automáticas**: A rota `/atribuir-por-codigo` valida automaticamente:
+   - Se a conquista existe
+   - Se está ativa
+   - Se pertence ao evento informado
+   - Se já foi atribuída ao usuário
 

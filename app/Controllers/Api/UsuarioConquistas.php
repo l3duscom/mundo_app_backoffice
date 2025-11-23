@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\UsuarioConquistaModel;
 use App\Models\ExtratoPontosModel;
 use App\Models\UsuarioModel;
+use App\Models\ConquistaModel;
 use App\Services\ConquistaService;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -14,6 +15,7 @@ class UsuarioConquistas extends BaseController
     protected $usuarioConquistaModel;
     protected $extratoPontosModel;
     protected $usuarioModel;
+    protected $conquistaModel;
     protected $conquistaService;
 
     public function __construct()
@@ -21,6 +23,7 @@ class UsuarioConquistas extends BaseController
         $this->usuarioConquistaModel = new UsuarioConquistaModel();
         $this->extratoPontosModel = new ExtratoPontosModel();
         $this->usuarioModel = new UsuarioModel();
+        $this->conquistaModel = new ConquistaModel();
         $this->conquistaService = new ConquistaService();
     }
 
@@ -177,6 +180,146 @@ class UsuarioConquistas extends BaseController
 
         } catch (\Exception $e) {
             log_message('error', 'Erro ao atribuir conquista API: ' . $e->getMessage());
+            
+            return $this->response
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Erro ao atribuir conquista',
+                    'error' => ENVIRONMENT === 'development' ? $e->getMessage() : 'Erro interno'
+                ])
+                ->setStatusCode(500);
+        }
+    }
+
+    /**
+     * Atribui uma conquista a um usuário usando o código
+     * POST /api/usuario-conquistas/atribuir-por-codigo
+     * 
+     * Body JSON:
+     * {
+     *   "user_id": 1,
+     *   "codigo": "A1B2C3D4",
+     *   "event_id": 1,
+     *   "admin": false (opcional, default false),
+     *   "atribuido_por": 2 (opcional, ID do admin)
+     * }
+     * 
+     * @return \CodeIgniter\HTTP\Response
+     */
+    public function atribuirPorCodigo()
+    {
+        // Valida método
+        if ($this->request->getMethod() !== 'post') {
+            return $this->response
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Método não permitido'
+                ])
+                ->setStatusCode(405);
+        }
+
+        try {
+            // Recupera dados do JSON
+            $json = $this->request->getJSON(true);
+
+            if (!is_array($json) || empty($json)) {
+                return $this->response
+                    ->setJSON([
+                        'success' => false,
+                        'message' => 'Dados não fornecidos ou JSON inválido'
+                    ])
+                    ->setStatusCode(400);
+            }
+
+            // Valida campos obrigatórios
+            $camposObrigatorios = ['user_id', 'codigo', 'event_id'];
+            foreach ($camposObrigatorios as $campo) {
+                if (!isset($json[$campo])) {
+                    return $this->response
+                        ->setJSON([
+                            'success' => false,
+                            'message' => "Campo {$campo} é obrigatório"
+                        ])
+                        ->setStatusCode(400);
+                }
+            }
+
+            $userId = (int) $json['user_id'];
+            $codigo = trim($json['codigo']);
+            $eventId = (int) $json['event_id'];
+            $isAdmin = isset($json['admin']) ? (bool) $json['admin'] : false;
+            $atribuidoPor = isset($json['atribuido_por']) ? (int) $json['atribuido_por'] : null;
+
+            // Busca a conquista pelo código
+            $conquista = $this->conquistaModel->buscarPorCodigo($codigo);
+
+            if (!$conquista) {
+                return $this->response
+                    ->setJSON([
+                        'success' => false,
+                        'message' => 'Conquista não encontrada com o código fornecido'
+                    ])
+                    ->setStatusCode(404);
+            }
+
+            // Valida se a conquista está ativa
+            if ($conquista->status !== 'ATIVA') {
+                return $this->response
+                    ->setJSON([
+                        'success' => false,
+                        'message' => 'Conquista não está ativa',
+                        'status_conquista' => $conquista->status
+                    ])
+                    ->setStatusCode(400);
+            }
+
+            // Valida se a conquista pertence ao evento informado
+            if ($conquista->event_id != $eventId) {
+                return $this->response
+                    ->setJSON([
+                        'success' => false,
+                        'message' => 'Conquista não pertence ao evento informado',
+                        'event_id_conquista' => $conquista->event_id,
+                        'event_id_informado' => $eventId
+                    ])
+                    ->setStatusCode(400);
+            }
+
+            // Chama o serviço para atribuir a conquista
+            $result = $this->conquistaService->atribuirConquista(
+                $userId,
+                $conquista->id,
+                $eventId,
+                $isAdmin,
+                $atribuidoPor
+            );
+
+            if ($result['success']) {
+                // Adiciona informações da conquista na resposta
+                $result['conquista'] = [
+                    'id' => $conquista->id,
+                    'codigo' => $conquista->codigo,
+                    'nome_conquista' => $conquista->nome_conquista,
+                    'descricao' => $conquista->descricao,
+                    'pontos' => $conquista->pontos,
+                    'nivel' => $conquista->nivel,
+                ];
+                
+                return $this->response
+                    ->setJSON($result)
+                    ->setStatusCode(201);
+            } else {
+                $statusCode = 400;
+                if (isset($result['errors'])) {
+                    $statusCode = 422;
+                }
+                return $this->response
+                    ->setJSON($result)
+                    ->setStatusCode($statusCode);
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'Erro ao atribuir conquista por código API: ' . $e->getMessage());
             
             return $this->response
                 ->setJSON([

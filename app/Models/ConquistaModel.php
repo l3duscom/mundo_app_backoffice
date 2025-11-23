@@ -127,6 +127,17 @@ class ConquistaModel extends Model
     }
 
     /**
+     * Busca conquista por código
+     * 
+     * @param string $codigo
+     * @return ConquistaEntity|null
+     */
+    public function buscarPorCodigo(string $codigo)
+    {
+        return $this->where('codigo', strtoupper($codigo))->first();
+    }
+
+    /**
      * Busca conquistas por evento
      * 
      * @param int $eventId
