@@ -94,6 +94,7 @@ GET /api/conquistas/evento/1
       "id": 1,
       "event_id": 1,
       "nome_conquista": "Primeira Participação",
+      "descricao": "Participou pela primeira vez do evento",
       "pontos": 10,
       "nivel": "BRONZE",
       "status": "ATIVA",
