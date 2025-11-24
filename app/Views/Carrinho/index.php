@@ -63,6 +63,61 @@
         box-shadow: 0 2px 4px rgba(86, 81, 229, 0.6);
     }
 
+    /* Instrução visual de scroll */
+    .scroll-instruction {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #f8f7ff 0%, #f0efff 100%);
+        border: 1px solid #e0dfff;
+        border-radius: 8px;
+        color: #5651e5;
+        font-size: 13px;
+        font-weight: 600;
+        animation: pulseInstruction 2s ease-in-out infinite;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .scroll-instruction i {
+        font-size: 18px;
+        animation: slideArrows 1.5s ease-in-out infinite;
+    }
+
+    .scroll-instruction:hover {
+        background: linear-gradient(135deg, #f0efff 0%, #e8e7ff 100%);
+        border-color: #5651e5;
+        transform: scale(1.02);
+    }
+
+    /* Animação de pulse sutil */
+    @keyframes pulseInstruction {
+        0%, 100% {
+            box-shadow: 0 2px 8px rgba(86, 81, 229, 0.2);
+        }
+        50% {
+            box-shadow: 0 4px 16px rgba(86, 81, 229, 0.3);
+        }
+    }
+
+    /* Animação das setas */
+    @keyframes slideArrows {
+        0%, 100% {
+            transform: translateX(0);
+        }
+        50% {
+            transform: translateX(3px);
+        }
+    }
+
+    .scroll-instruction i:first-child {
+        animation-direction: reverse;
+    }
+
     /* Setas de navegação */
     .nav-arrow {
         background: #ffffff;
@@ -240,6 +295,15 @@
             margin-bottom: 10px;
         }
 
+        .scroll-instruction {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+
+        .scroll-instruction i {
+            font-size: 16px;
+        }
+
         .tab-scroll-indicator {
             height: 6px;
         }
@@ -415,6 +479,16 @@
         .tab button:nth-child(n+4) {
             min-width: 105px;
         }
+
+        .scroll-instruction {
+            font-size: 11px;
+            padding: 5px 10px;
+            gap: 6px;
+        }
+
+        .scroll-instruction i {
+            font-size: 14px;
+        }
         
         .col-7, .col-5 {
             width: 100% !important;
@@ -482,6 +556,15 @@
         .nav-arrow.disabled {
             opacity: 0;
             pointer-events: none;
+        }
+
+        .scroll-instruction {
+            font-size: 13px;
+            padding: 8px 20px;
+        }
+
+        .scroll-instruction i {
+            font-size: 18px;
         }
     }
 
@@ -742,8 +825,15 @@ if (isset($event_id)) {
                             <div class="tab-scroll-indicator">
                                 <div class="tab-scroll-thumb" id="scrollThumb"></div>
                             </div>
+                            
+                            <!-- Instrução visual de scroll -->
+                            <div class="scroll-instruction" id="scrollInstruction">
+                                <i class='bx bx-chevrons-left'></i>
+                                <span>Deslize para ver todos os ingressos</span>
+                                <i class='bx bx-chevrons-right'></i>
+                            </div>
                         </div>
-                        <div class="d-grid gap-2 mb-0" ">
+                        <div class="d-grid gap-2 mb-0">
                             <a class="btn btn-light" href="#pagar">
                                 <!-- <i class="bi bi-arrow-down-circle-fill" style="font-size: 25px; color: purple;"></i>-->
                                 <strong><i class='bx bx-down-arrow-circle'></i> Ver detalhes da compra</strong>
@@ -3184,6 +3274,7 @@ function trackInitiateCheckout() {
     function updateScrollBar() {
         const container = document.getElementById('tabContainer');
         const scrollThumb = document.getElementById('scrollThumb');
+        const instruction = document.getElementById('scrollInstruction');
         
         if (!container || !scrollThumb) return;
         
@@ -3204,12 +3295,18 @@ function trackInitiateCheckout() {
         scrollThumb.style.width = thumbWidth + '%';
         scrollThumb.style.left = thumbPosition + '%';
         
-        // Esconde a barra se todo o conteúdo está visível
+        // Controla visibilidade da barra e instrução
         const indicator = document.querySelector('.tab-scroll-indicator');
         if (scrollWidth <= clientWidth) {
             indicator.style.opacity = '0.3';
+            if (instruction) instruction.style.display = 'none';
         } else {
             indicator.style.opacity = '1';
+            if (instruction && scrollLeft === 0) {
+                instruction.style.display = 'flex';
+            } else if (instruction && scrollLeft > 0) {
+                instruction.style.display = 'none';
+            }
         }
     }
 
@@ -3310,6 +3407,30 @@ function trackInitiateCheckout() {
             document.addEventListener('touchend', function() {
                 isDragging = false;
             });
+        }
+
+        // Esconde a instrução ao clicar nela ou após alguns segundos de inatividade
+        const instruction = document.getElementById('scrollInstruction');
+        if (instruction) {
+            instruction.addEventListener('click', function() {
+                this.style.display = 'none';
+            });
+
+            // Auto-esconde após 5 segundos se o usuário não interagir
+            let instructionTimer = setTimeout(function() {
+                if (instruction && container.scrollLeft === 0) {
+                    instruction.style.transition = 'opacity 0.5s ease';
+                    instruction.style.opacity = '0';
+                    setTimeout(function() {
+                        instruction.style.display = 'none';
+                    }, 500);
+                }
+            }, 5000);
+
+            // Reseta o timer se o usuário interagir
+            container.addEventListener('scroll', function() {
+                clearTimeout(instructionTimer);
+            }, { once: true });
         }
         var abaSalva = localStorage.getItem('abaCarrinhoSelecionada');
         if (abaSalva) {
