@@ -8,53 +8,212 @@
 
 <link rel="stylesheet" type="text/css" href="<?php echo site_url('recursos/vendor/datatable/datatables-combinado.min.css') ?>" />
 <style>
+    /* Container do menu de navegação com setas */
+    .tab-navigation-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 30px;
+    }
+
+    .tab-navigation-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    /* Barra de progresso customizada */
+    .tab-scroll-indicator {
+        width: 100%;
+        height: 4px;
+        background: #e8e8e8;
+        border-radius: 10px;
+        position: relative;
+        overflow: visible;
+        cursor: pointer;
+        transition: opacity 0.3s ease, height 0.2s ease;
+    }
+
+    .tab-scroll-indicator:hover {
+        height: 5px;
+        background: #dcdcdc;
+    }
+
+    .tab-scroll-thumb {
+        height: 100%;
+        background: linear-gradient(90deg, #5651e5 0%, #4541d8 100%);
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        position: absolute;
+        left: 0;
+        box-shadow: 0 2px 6px rgba(86, 81, 229, 0.4);
+        cursor: grab;
+        min-width: 40px;
+    }
+
+    .tab-scroll-thumb:hover {
+        background: linear-gradient(90deg, #6b67ff 0%, #5853ed 100%);
+        box-shadow: 0 3px 8px rgba(86, 81, 229, 0.5);
+    }
+
+    .tab-scroll-thumb:active {
+        cursor: grabbing;
+        box-shadow: 0 2px 4px rgba(86, 81, 229, 0.6);
+    }
+
+    /* Setas de navegação */
+    .nav-arrow {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        width: 40px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        flex-shrink: 0;
+        z-index: 10;
+    }
+
+    .nav-arrow:hover:not(.disabled) {
+        background: #f8f8ff;
+        border-color: #5651e5;
+        transform: scale(1.05);
+    }
+
+    .nav-arrow i {
+        font-size: 22px;
+        color: #666;
+        transition: color 0.3s;
+    }
+
+    .nav-arrow:hover:not(.disabled) i {
+        color: #5651e5;
+    }
+
+    .nav-arrow.disabled {
+        opacity: 0.2;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Container scrollável */
+    .tab-container {
+        flex: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+
+    /* Esconde scrollbar nativa em todos os dispositivos */
+    .tab-container {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE e Edge */
+    }
+
+    .tab-container::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+
     /* Style the tab */
     .tab {
-        overflow: hidden;
+        display: flex;
+        gap: 10px;
         padding: 0;
-        border-radius: 5px;
-        border: 1px solid #CCCCCC;
-        background-color: #ffffff;
-        font-size: 20px;
+        background-color: transparent;
+        font-size: 16px;
+        min-width: min-content;
     }
 
     /* Style the buttons that are used to open the tab content */
     .tab button {
         background-color: #ffffff;
         color: #333;
-        float: left;
-        border: none;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
         outline: none;
         cursor: pointer;
-        padding: 14px 16px;
-        transition: 0.3s;
+        padding: 10px 16px;
+        transition: all 0.25s ease;
         font-weight: 500;
+        min-width: 110px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        white-space: nowrap;
+        position: relative;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
 
+    .tab button .day-name {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tab button .day-date {
+        font-size: 11px;
+        font-weight: 400;
+        opacity: 0.65;
+        letter-spacing: 0.1px;
     }
 
     /* Change background color of buttons on hover */
-    .tab button:hover {
-        color: #FFFFFF;
-        background-color: purple;
+    .tab button:hover:not(.active) {
+        color: #5651e5;
+        background-color: #fafafa;
+        border-color: #d0d0d0;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
     /* Create an active/current tablink class */
     .tab button.active {
         color: #FFFFFF;
-        background-color: purple;
+        background: linear-gradient(135deg, #5651e5 0%, #4541d8 100%);
+        border-color: #5651e5;
+        box-shadow: 0 6px 20px rgba(86, 81, 229, 0.4), 0 2px 8px rgba(86, 81, 229, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .tab button.active:hover {
+        box-shadow: 0 6px 24px rgba(86, 81, 229, 0.45), 0 2px 8px rgba(86, 81, 229, 0.25);
+    }
+
+    .tab button.active .day-date {
+        opacity: 0.95;
+    }
+
+    .tab button.active .day-name {
+        font-weight: 700;
+    }
+
+    /* Ajuste para botões específicos com mais texto */
+    .tab button:nth-child(n+4) {
+        min-width: 155px;
     }
 
     /* Style the tab content */
     .tabcontent {
         display: none;
         padding: 6px 12px;
-
-
     }
 
     .tabcontent {
-        animation: fadeEffect 1s;
-        /* Fading effect takes 1 second */
+        animation: fadeEffect 0.5s;
+        /* Fading effect takes 0.5 second */
     }
 
     /* Go from zero to full opacity */
@@ -72,10 +231,54 @@
 
     /* Estilos para dispositivos móveis */
     @media screen and (max-width: 768px) {
+        .tab-navigation-wrapper {
+            margin-bottom: 24px;
+        }
+
+        .tab-navigation-content {
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .tab-scroll-indicator {
+            height: 6px;
+        }
+
+        .tab-scroll-indicator:hover {
+            height: 6px;
+        }
+
+        .tab-scroll-thumb {
+            min-width: 50px;
+        }
+
+        .nav-arrow {
+            width: 36px;
+            height: 54px;
+            border-radius: 12px;
+        }
+
+        .nav-arrow i {
+            font-size: 20px;
+        }
+
+        .tab {
+            gap: 8px;
+        }
+
         .tab button {
-            width: 50%;
-            font-size: 14px;
-            padding: 10px 8px;
+            min-width: 95px;
+            padding: 10px 14px;
+            border-radius: 10px;
+        }
+
+        .tab button .day-name {
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        .tab button .day-date {
+            font-size: 10px;
         }
         
         .card {
@@ -161,15 +364,56 @@
     
     /* Estilos para dispositivos muito pequenos */
     @media screen and (max-width: 480px) {
-        .tab {
-            display: flex;
-            flex-direction: column;
+        .tab-navigation-wrapper {
+            margin-bottom: 20px;
         }
-        
+
+        .tab-navigation-content {
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .tab-scroll-indicator {
+            height: 6px;
+        }
+
+        .tab-scroll-indicator:hover {
+            height: 6px;
+        }
+
+        .tab-scroll-thumb {
+            min-width: 45px;
+        }
+
+        .nav-arrow {
+            width: 32px;
+            height: 50px;
+        }
+
+        .nav-arrow i {
+            font-size: 18px;
+        }
+
+        .tab {
+            gap: 6px;
+        }
+
         .tab button {
-            width: 100%;
+            min-width: 85px;
+            padding: 8px 12px;
+        }
+
+        .tab button .day-name {
+            font-size: 12px;
             margin-bottom: 2px;
-            border-radius: 0;
+        }
+
+        .tab button .day-date {
+            font-size: 9px;
+        }
+
+        .tab button:nth-child(n+4) {
+            min-width: 105px;
         }
         
         .col-7, .col-5 {
@@ -200,6 +444,68 @@
 
     html {
         scroll-behavior: smooth;
+    }
+
+    /* Desktop - experiência limpa e moderna */
+    @media screen and (min-width: 769px) {
+        .tab-navigation-wrapper {
+            margin-bottom: 32px;
+        }
+
+        .tab-navigation-content {
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .tab-scroll-indicator {
+            height: 4px;
+        }
+
+        .tab-scroll-indicator:hover {
+            height: 5px;
+        }
+
+        .tab {
+            gap: 10px;
+        }
+
+        .tab button {
+            min-width: 120px;
+            padding: 10px 18px;
+        }
+
+        .tab button:nth-child(n+4) {
+            min-width: 140px;
+        }
+
+        /* Esconder setas quando não há overflow */
+        .nav-arrow.disabled {
+            opacity: 0;
+            pointer-events: none;
+        }
+    }
+
+    /* Telas muito largas */
+    @media screen and (min-width: 1200px) {
+        .tab button {
+            min-width: 130px;
+            padding: 12px 20px;
+        }
+
+        .tab button:nth-child(n+4) {
+            min-width: 150px;
+        }
+    }
+
+    /* Comportamento das setas no mobile */
+    @media screen and (max-width: 768px) {
+        .nav-arrow {
+            opacity: 1;
+        }
+        
+        .nav-arrow.disabled {
+            opacity: 0.2;
+        }
     }
 </style>
 
@@ -347,64 +653,97 @@ if (isset($event_id)) {
                             }
                         }
                         ?>
-                        <div class="tab">
-                            <button class="tablinks" onclick="openCategoria(event, 'sabado')" id="defaultOpen">Sábado<p class="mb-0" style="font-size: 11px"><?php
-                                if (isset($evento)) {
-                                    $data_inicio = date_create($evento->data_inicio);
-                                    $meses = [
-                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
-                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
-                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
-                                    ];
-                                    $dia_inicio = date_format($data_inicio, 'd');
-                                    $mes = $meses[date_format($data_inicio, 'm')];
-                                    echo "$dia_inicio de $mes";
-                                }
-                            ?></p></button>
-                            <button class="tablinks" onclick="openCategoria(event, 'domingo')">Domingo<p class="mb-0" style="font-size: 11px"><?php
-                                if (isset($evento)) {
-                                    $data_fim = date_create($evento->data_fim);
-                                    $meses = [
-                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
-                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
-                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
-                                    ];
-                                    $dia_fim = date_format($data_fim, 'd');
-                                    $mes = $meses[date_format($data_fim, 'm')];
-                                    echo "$dia_fim de $mes";
-                                }
-                            ?></p></button>
-                            <button class="tablinks" onclick="openCategoria(event, 'passaporte')">2 Dias<p class="mb-0" style="font-size: 11px"><?php
-                                if (isset($evento)) {
-                                    $data_inicio = date_create($evento->data_inicio);
-                                    $data_fim = date_create($evento->data_fim);
-                                    $meses = [
-                                        '01' => 'janeiro', '02' => 'fevereiro', '03' => 'março', '04' => 'abril',
-                                        '05' => 'maio', '06' => 'junho', '07' => 'julho', '08' => 'agosto',
-                                        '09' => 'setembro', '10' => 'outubro', '11' => 'novembro', '12' => 'dezembro'
-                                    ];
-                                    $dia_inicio = date_format($data_inicio, 'd');
-                                    $dia_fim = date_format($data_fim, 'd');
-                                    $mes = $meses[date_format($data_inicio, 'm')];
-                                    echo "$dia_inicio,$dia_fim de $mes";
-                                }
-                            ?></p></button>
-                            <?php if ($tem_camping): ?>
-                                <button class="tablinks" onclick="openCategoria(event, 'camping')">FLORINDA MEZA<p class="mb-0" style="font-size: 11px">Internacional</p></button>
-                            <?php endif; ?>
-                            <?php if ($tem_epic): ?>
-                                <button class="tablinks" onclick="openCategoria(event, 'epic')">EPIC PASS<p class="mb-0" style="font-size: 11px">Experiência Épica</p></button>
-                            <?php endif; ?>
-                            <?php if ($tem_vip): ?>
-                                <button class="tablinks" onclick="openCategoria(event, 'vip')">VIP FULL<p class="mb-0" style="font-size: 11px">Experiência Máxima</p></button>
-                            <?php endif; ?>
-                            <?php if ($tem_super_pack): ?>
-                                <button class="tablinks" onclick="openCategoria(event, 'super_pack')">Super Pack<p class="mb-0" style="font-size: 11px">+ econômico</p></button>
-                            <?php endif; ?>
-                            <button class="tablinks" onclick="openCategoria(event, 'cosplay')">Cosplayer<p class="mb-0" style="font-size: 11px">Promocional</p></button>
-                            <button class="tablinks" onclick="openCategoria(event, 'after')">After Dream<p class="mb-0" style="font-size: 11px">Festa</p></button>
+                        <!-- Tab Navigation com Setas -->
+                        <div class="tab-navigation-wrapper">
+                            <div class="tab-navigation-content">
+                                <button class="nav-arrow left" onclick="scrollTabs('left')" id="scrollLeft" aria-label="Rolar para esquerda">
+                                    <i class='bx bx-chevron-left'></i>
+                                </button>
+                                
+                                <div class="tab-container" id="tabContainer">
+                                    <div class="tab" id="tabMenu">
+                                    <button class="tablinks" onclick="openCategoria(event, 'sabado')" id="defaultOpen">
+                                        <span class="day-name">sáb.</span>
+                                        <span class="day-date"><?php
+                                            if (isset($evento)) {
+                                                $data_inicio = date_create($evento->data_inicio);
+                                                echo date_format($data_inicio, 'd/m');
+                                            }
+                                        ?></span>
+                                    </button>
+                                    
+                                    <button class="tablinks" onclick="openCategoria(event, 'domingo')">
+                                        <span class="day-name">dom.</span>
+                                        <span class="day-date"><?php
+                                            if (isset($evento)) {
+                                                $data_fim = date_create($evento->data_fim);
+                                                echo date_format($data_fim, 'd/m');
+                                            }
+                                        ?></span>
+                                    </button>
+                                    
+                                    <button class="tablinks" onclick="openCategoria(event, 'passaporte')">
+                                        <span class="day-name">2 dias</span>
+                                        <span class="day-date"><?php
+                                            if (isset($evento)) {
+                                                $data_inicio = date_create($evento->data_inicio);
+                                                $data_fim = date_create($evento->data_fim);
+                                                echo date_format($data_inicio, 'd/m') . ' e ' . date_format($data_fim, 'd/m');
+                                            }
+                                        ?></span>
+                                    </button>
+                                    
+                                    <?php if ($tem_camping): ?>
+                                        <button class="tablinks" onclick="openCategoria(event, 'camping')">
+                                            <span class="day-name">Florinda</span>
+                                            <span class="day-date">Internacional</span>
+                                        </button>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($tem_epic): ?>
+                                        <button class="tablinks" onclick="openCategoria(event, 'epic')">
+                                            <span class="day-name">EPIC PASS</span>
+                                            <span class="day-date">Experiência Épica</span>
+                                        </button>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($tem_vip): ?>
+                                        <button class="tablinks" onclick="openCategoria(event, 'vip')">
+                                            <span class="day-name">VIP FULL</span>
+                                            <span class="day-date">Experiência Máxima</span>
+                                        </button>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($tem_super_pack): ?>
+                                        <button class="tablinks" onclick="openCategoria(event, 'super_pack')">
+                                            <span class="day-name">SUPER PACK</span>
+                                            <span class="day-date">+ econômico</span>
+                                        </button>
+                                    <?php endif; ?>
+                                    
+                                    <button class="tablinks" onclick="openCategoria(event, 'cosplay')">
+                                        <span class="day-name">Cosplayer</span>
+                                        <span class="day-date">Promocional</span>
+                                    </button>
+                                    
+                                    <button class="tablinks" onclick="openCategoria(event, 'after')">
+                                        <span class="day-name">After Dream</span>
+                                        <span class="day-date">Festa</span>
+                                    </button>
+                                    </div>
+                                </div>
+                                
+                                <button class="nav-arrow right" onclick="scrollTabs('right')" id="scrollRight" aria-label="Rolar para direita">
+                                    <i class='bx bx-chevron-right'></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Barra de scroll customizada -->
+                            <div class="tab-scroll-indicator">
+                                <div class="tab-scroll-thumb" id="scrollThumb"></div>
+                            </div>
                         </div>
-                        <div class="d-grid gap-2 mb-0" style="padding:10px">
+                        <div class="d-grid gap-2 mb-0" ">
                             <a class="btn btn-light" href="#pagar">
                                 <!-- <i class="bi bi-arrow-down-circle-fill" style="font-size: 25px; color: purple;"></i>-->
                                 <strong><i class='bx bx-down-arrow-circle'></i> Ver detalhes da compra</strong>
@@ -2801,7 +3140,177 @@ function trackInitiateCheckout() {
         localStorage.setItem('abaCarrinhoSelecionada', categoria);
     }
 
+    // Função para controlar o scroll horizontal das tabs
+    function scrollTabs(direction) {
+        const container = document.querySelector('.tab-container');
+        const scrollAmount = 200; // Quantidade de pixels para rolar
+        
+        if (direction === 'left') {
+            container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        } else {
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+        
+        // Atualiza o estado das setas após um pequeno delay
+        setTimeout(updateArrowState, 100);
+    }
+
+    // Função para atualizar o estado (visibilidade) das setas
+    function updateArrowState() {
+        const container = document.querySelector('.tab-container');
+        const scrollLeft = container.scrollLeft;
+        const scrollWidth = container.scrollWidth;
+        const clientWidth = container.clientWidth;
+        
+        const leftArrow = document.getElementById('scrollLeft');
+        const rightArrow = document.getElementById('scrollRight');
+        
+        // Desabilita seta esquerda se estiver no início
+        if (scrollLeft <= 0) {
+            leftArrow.classList.add('disabled');
+        } else {
+            leftArrow.classList.remove('disabled');
+        }
+        
+        // Desabilita seta direita se estiver no fim
+        if (scrollLeft + clientWidth >= scrollWidth - 5) { // -5 para margem de erro
+            rightArrow.classList.add('disabled');
+        } else {
+            rightArrow.classList.remove('disabled');
+        }
+    }
+
+    // Função para atualizar a barra de scroll customizada
+    function updateScrollBar() {
+        const container = document.getElementById('tabContainer');
+        const scrollThumb = document.getElementById('scrollThumb');
+        
+        if (!container || !scrollThumb) return;
+        
+        const scrollLeft = container.scrollLeft;
+        const scrollWidth = container.scrollWidth;
+        const clientWidth = container.clientWidth;
+        
+        // Calcula a porcentagem de scroll
+        const scrollPercentage = scrollLeft / (scrollWidth - clientWidth);
+        
+        // Calcula o tamanho do thumb baseado na proporção visível
+        const thumbWidth = (clientWidth / scrollWidth) * 100;
+        
+        // Calcula a posição do thumb
+        const thumbPosition = scrollPercentage * (100 - thumbWidth);
+        
+        // Aplica os valores
+        scrollThumb.style.width = thumbWidth + '%';
+        scrollThumb.style.left = thumbPosition + '%';
+        
+        // Esconde a barra se todo o conteúdo está visível
+        const indicator = document.querySelector('.tab-scroll-indicator');
+        if (scrollWidth <= clientWidth) {
+            indicator.style.opacity = '0.3';
+        } else {
+            indicator.style.opacity = '1';
+        }
+    }
+
     window.addEventListener('DOMContentLoaded', function() {
+        // Inicializa o estado das setas e da barra
+        updateArrowState();
+        updateScrollBar();
+        
+        // Atualiza as setas e a barra quando o container for rolado
+        const container = document.querySelector('.tab-container');
+        if (container) {
+            container.addEventListener('scroll', function() {
+                updateArrowState();
+                updateScrollBar();
+            });
+        }
+        
+        // Atualiza as setas e a barra quando a janela for redimensionada
+        window.addEventListener('resize', function() {
+            updateArrowState();
+            updateScrollBar();
+        });
+
+        // Permite clicar na barra de scroll para navegar
+        const scrollIndicator = document.querySelector('.tab-scroll-indicator');
+        if (scrollIndicator) {
+            scrollIndicator.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percentage = clickX / rect.width;
+                
+                const container = document.getElementById('tabContainer');
+                const scrollWidth = container.scrollWidth;
+                const clientWidth = container.clientWidth;
+                
+                container.scrollLeft = percentage * (scrollWidth - clientWidth);
+            });
+        }
+
+        // Permite arrastar o thumb da barra
+        const scrollThumb = document.getElementById('scrollThumb');
+        let isDragging = false;
+        let startX = 0;
+        let startScrollLeft = 0;
+
+        if (scrollThumb) {
+            scrollThumb.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                startX = e.clientX;
+                startScrollLeft = container.scrollLeft;
+                scrollThumb.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                
+                const indicator = document.querySelector('.tab-scroll-indicator');
+                const rect = indicator.getBoundingClientRect();
+                const deltaX = e.clientX - startX;
+                const deltaPercentage = deltaX / rect.width;
+                
+                const scrollWidth = container.scrollWidth;
+                const clientWidth = container.clientWidth;
+                
+                container.scrollLeft = startScrollLeft + (deltaPercentage * (scrollWidth - clientWidth));
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    scrollThumb.style.cursor = 'grab';
+                }
+            });
+
+            // Touch support para mobile
+            scrollThumb.addEventListener('touchstart', function(e) {
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                startScrollLeft = container.scrollLeft;
+                e.preventDefault();
+            });
+
+            document.addEventListener('touchmove', function(e) {
+                if (!isDragging) return;
+                
+                const indicator = document.querySelector('.tab-scroll-indicator');
+                const rect = indicator.getBoundingClientRect();
+                const deltaX = e.touches[0].clientX - startX;
+                const deltaPercentage = deltaX / rect.width;
+                
+                const scrollWidth = container.scrollWidth;
+                const clientWidth = container.clientWidth;
+                
+                container.scrollLeft = startScrollLeft + (deltaPercentage * (scrollWidth - clientWidth));
+            });
+
+            document.addEventListener('touchend', function() {
+                isDragging = false;
+            });
+        }
         var abaSalva = localStorage.getItem('abaCarrinhoSelecionada');
         if (abaSalva) {
             var btn = document.querySelector('.tab button[onclick*="' + abaSalva + '"]');
@@ -2814,8 +3323,5 @@ function trackInitiateCheckout() {
         }
     });
 </script>
-
-
-
 
 <?php echo $this->endSection() ?>
