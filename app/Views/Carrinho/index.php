@@ -3416,7 +3416,7 @@ function trackInitiateCheckout() {
                 this.style.display = 'none';
             });
 
-            // Auto-esconde após 5 segundos se o usuário não interagir
+            // Auto-esconde após 15 segundos se o usuário não interagir
             let instructionTimer = setTimeout(function() {
                 if (instruction && container.scrollLeft === 0) {
                     instruction.style.transition = 'opacity 0.5s ease';
@@ -3425,7 +3425,7 @@ function trackInitiateCheckout() {
                         instruction.style.display = 'none';
                     }, 500);
                 }
-            }, 5000);
+            }, 15000);
 
             // Reseta o timer se o usuário interagir
             container.addEventListener('scroll', function() {
