@@ -20,6 +20,7 @@ class Pedidos extends BaseController
 	private $credencialModel;
 	private $eventoModel;
 	private $resendService;
+	private $dadosEnvioModel;
 
 
 
@@ -34,6 +35,7 @@ class Pedidos extends BaseController
 		$this->credencialModel = new \App\Models\CredencialModel();
 		$this->eventoModel = new \App\Models\EventoModel();
 		$this->resendService = new ResendService();
+		$this->dadosEnvioModel = new \App\Models\DadosEnvioModel();
 	}
 
 	public function index()
@@ -815,6 +817,142 @@ class Pedidos extends BaseController
 		} else {
 			return view('Pedidos/receber_cartao', $data);
 		}
+	}
+
+	/**
+	 * Exibe dados de envio para exportação
+	 */
+	public function dadosEnvio($event_id)
+	{
+		if (!$this->usuarioLogado()->temPermissaoPara('editar-clientes')) {
+			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+		}
+
+		// Buscar dados do evento
+		$evento_selecionado = $this->eventoModel->find($event_id);
+
+		if (!$evento_selecionado) {
+			return redirect()->back()->with('erro', 'Evento não encontrado.');
+		}
+
+		// Buscar dados de envio
+		$dadosEnvio = $this->dadosEnvioModel->buscarDadosEnvio($event_id);
+		$totalPedidos = $this->dadosEnvioModel->contarPedidosParaEnvio($event_id);
+
+		$data = [
+			'titulo' => 'Exportar Dados de Envio',
+			'evento' => $event_id,
+			'evento_selecionado' => $evento_selecionado,
+			'dadosEnvio' => $dadosEnvio,
+			'totalPedidos' => $totalPedidos,
+		];
+
+		return view('Pedidos/dados_envio', $data);
+	}
+
+	/**
+	 * Exporta CSV com dados de envio
+	 */
+	public function exportarEnvios($event_id)
+	{
+		if (!$this->usuarioLogado()->temPermissaoPara('editar-clientes')) {
+			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+		}
+
+		// Buscar dados de envio
+		$dadosEnvio = $this->dadosEnvioModel->buscarDadosEnvio($event_id);
+
+		if (empty($dadosEnvio)) {
+			return redirect()->back()->with('atencao', 'Não há pedidos para envio neste evento.');
+		}
+
+		// Nome do arquivo
+		$evento = $this->eventoModel->find($event_id);
+		$nomeEvento = $evento ? preg_replace('/[^a-zA-Z0-9_-]/', '_', $evento->nome) : 'evento_' . $event_id;
+		$filename = 'envios_' . $nomeEvento . '_' . date('Y-m-d_His') . '.csv';
+
+		// Headers para download
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		header('Pragma: no-cache');
+		header('Expires: 0');
+
+		// Abrir output stream
+		$output = fopen('php://output', 'w');
+
+		// BOM para UTF-8 (para Excel reconhecer acentos)
+		fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+		// Cabeçalhos do CSV (excluindo campos internos)
+		$headers = [
+			'Nome',
+			'Empresa',
+			'CPF',
+			'CEP',
+			'Endereco',
+			'Numero',
+			'Complemento',
+			'Bairro',
+			'Cidade',
+			'UF',
+			'Aos Cuidados',
+			'Nota Fiscal',
+			'Servico',
+			'Serv. Adicionais',
+			'Valor Declarado',
+			'Observacoes',
+			'Conteudo',
+			'DDD',
+			'Telefone',
+			'Email',
+			'Chave',
+			'Peso',
+			'Altura',
+			'Largura',
+			'Comprimento',
+			'Entrega Vizinho',
+			'RFID'
+		];
+		
+		fputcsv($output, $headers, ';');
+
+		// Escrever dados
+		foreach ($dadosEnvio as $row) {
+			$linha = [
+				$row['nome'],
+				$row['empresa'],
+				$row['cpf'],
+				$row['cep'],
+				$row['endereco'],
+				$row['numero'],
+				$row['complemento'] ?? '',
+				$row['bairro'],
+				$row['cidade'],
+				$row['uf'],
+				$row['aos_cuidados'],
+				$row['nota_fiscal'],
+				$row['servico'],
+				$row['serv_adicionais'],
+				number_format($row['valor_declarado'], 2, ',', '.'),
+				$row['observacoes'],
+				$row['conteudo'],
+				$row['ddd'],
+				$row['telefone'],
+				$row['email'],
+				$row['chave'],
+				$row['peso'],
+				$row['altura'],
+				$row['largura'],
+				$row['comprimento'],
+				$row['entrega_vizinho'],
+				$row['rfid']
+			];
+			
+			fputcsv($output, $linha, ';');
+		}
+
+		fclose($output);
+		exit;
 	}
 
 

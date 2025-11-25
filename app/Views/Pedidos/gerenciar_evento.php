@@ -49,6 +49,7 @@
     <a href="<?= site_url('pedidos/chargeback/' . $evento); ?>" class="tab orange<?= (current_url() == site_url('pedidos/chargeback/' . $evento)) ? ' active' : ''; ?>">Chargeback</a>
     <a href="<?= site_url('pedidos/vip/' . $evento); ?>" class="tab black<?= (current_url() == site_url('pedidos/vip/' . $evento)) ? ' active' : ''; ?>">VIP - Aguardando</a>
     <a href="<?= site_url('pedidos/vipentregue/' . $evento); ?>" class="tab black<?= (current_url() == site_url('pedidos/vipentregue/' . $evento)) ? ' active' : ''; ?>">VIP - Entregue</a>
+    <a href="<?= site_url('pedidos/dados-envio/' . $evento); ?>" class="tab purple<?= (current_url() == site_url('pedidos/dados-envio/' . $evento)) ? ' active' : ''; ?>">📦 Exportar Envios</a>
 </div>
 <style>
 .tab-menu {
@@ -94,6 +95,8 @@
 .tab-menu .tab.orange { background: #f97316; color: #fff; }
 .tab-menu .tab.orange.active { background: #ea580c; color: #fff; }
 .tab-menu .tab.black { background: #181f2c; color: #fff; }
+.tab-menu .tab.purple { background: #a855f7; color: #fff; }
+.tab-menu .tab.purple.active { background: #9333ea; color: #fff; }
 </style>
 
 <!-- Conteúdo principal da página -->
