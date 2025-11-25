@@ -19,6 +19,7 @@ class DadosEnvioModel extends Model
      */
     public function buscarDadosEnvio(int $evento_id): array
     {
+        // SQL exato fornecido pelo usuário
         $sql = "
         SELECT 
             c.nome,
@@ -58,10 +59,7 @@ class DadosEnvioModel extends Model
             '10' as largura,
             '15' as comprimento,
             '' as entrega_vizinho,
-            '' as rfid,
-            p.id as pedido_id,
-            p.cod_pedido,
-            p.rastreio
+            '' as rfid
 
         FROM pedidos p
 
@@ -83,12 +81,27 @@ class DadosEnvioModel extends Model
             AND (p.rastreio IS NULL OR p.rastreio = '') 
             AND p.evento_id = ?
             AND p.status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH')
-            
-        ORDER BY c.nome ASC
         ";
         
-        $query = $this->db->query($sql, [$evento_id]);
-        return $query ? $query->getResultArray() : [];
+        try {
+            $query = $this->db->query($sql, [$evento_id]);
+            
+            if (!$query) {
+                $error = $this->db->error();
+                log_message('error', 'Erro na query de dados de envio: ' . json_encode($error));
+                return [];
+            }
+            
+            $result = $query->getResultArray();
+            
+            log_message('info', 'Dados de envio encontrados: ' . count($result) . ' registros para evento ' . $evento_id);
+            
+            return $result;
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Exceção ao buscar dados de envio: ' . $e->getMessage());
+            return [];
+        }
     }
     
     /**
