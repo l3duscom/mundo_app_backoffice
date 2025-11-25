@@ -76,7 +76,8 @@
 }
 
 /* Valores menores para cards com números grandes */
-#receitaTotal {
+#receitaTotal,
+#receitaHoje {
     font-size: 1.75rem !important;
 }
 
