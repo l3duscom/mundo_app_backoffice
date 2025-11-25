@@ -59,15 +59,24 @@ class DashboardVendas extends BaseController
             $vendas_recentes = $this->vendasModel->getVendasRecentes($event_id, 20);
             $vendas_por_metodo = $this->vendasModel->getVendasPorMetodo($event_id);
             
+            // Log detalhado
+            log_message('debug', 'Vendas por método: ' . json_encode($vendas_por_metodo));
+            log_message('debug', 'Vendas recentes: ' . json_encode($vendas_recentes));
+            
             return $this->response->setJSON([
                 'success' => true,
+                'event_id' => $event_id,
                 'vendas_recentes' => $vendas_recentes,
-                'vendas_por_metodo' => $vendas_por_metodo
+                'vendas_recentes_count' => count($vendas_recentes),
+                'vendas_por_metodo' => $vendas_por_metodo,
+                'vendas_por_metodo_count' => count($vendas_por_metodo),
+                'vendas_por_metodo_raw' => $vendas_por_metodo
             ]);
         } catch (\Exception $e) {
             return $this->response->setJSON([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
     }

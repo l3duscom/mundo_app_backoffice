@@ -218,6 +218,15 @@
     animation: spin 0.5s linear infinite;
 }
 
+#refreshBtnText {
+    font-weight: 500;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .auto-refresh-toggle {
     display: flex;
     align-items: center;
@@ -252,12 +261,12 @@
             </div>
             <div class="d-flex gap-2 align-items-center">
                 <div class="auto-refresh-toggle">
-                    <input type="checkbox" id="autoRefreshToggle" class="form-check-input">
-                    <label for="autoRefreshToggle">Auto-atualizar (30s)</label>
+                    <input type="checkbox" id="autoRefreshToggle" class="form-check-input" checked>
+                    <label for="autoRefreshToggle">Auto-atualizar</label>
                 </div>
                 <button class="refresh-btn" id="refreshBtn">
                     <i class="bi bi-arrow-clockwise"></i>
-                    Atualizar
+                    <span id="refreshBtnText">Atualizar</span>
                 </button>
             </div>
         </div>
@@ -274,9 +283,9 @@
         <div class="row g-3 mb-4">
             <div class="col-md-6 col-lg-3">
                 <div class="metric-card">
-                    <div class="metric-label">Total de Pedidos</div>
-                    <div class="metric-value" id="totalPedidos">-</div>
-                    <div class="metric-change" id="changePedidos">-</div>
+                    <div class="metric-label">Total de Ingressos</div>
+                    <div class="metric-value" id="totalIngressos">-</div>
+                    <div class="metric-change" id="changeIngressos">-</div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
@@ -419,6 +428,11 @@ async function loadDashboard() {
         alert('Erro ao carregar dashboard. Veja o console para mais detalhes.');
     } finally {
         refreshBtn.classList.remove('refreshing');
+        // Reinicia o countdown após carregar
+        const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+        if (autoRefreshToggle.checked) {
+            startCountdown();
+        }
     }
 }
 
@@ -427,7 +441,7 @@ function updateMetrics(data) {
     const metricas = data.metricas_gerais;
     const conversao = data.taxa_conversao;
     
-    document.getElementById('totalPedidos').textContent = formatNumber(metricas.total_pedidos || 0);
+    document.getElementById('totalIngressos').textContent = formatNumber(metricas.total_ingressos || 0);
     document.getElementById('receitaTotal').textContent = formatCurrency(metricas.receita_total || 0);
     document.getElementById('ticketMedio').textContent = formatCurrency(metricas.ticket_medio || 0);
     document.getElementById('taxaConversao').textContent = (conversao.taxa_conversao || 0) + '%';
@@ -439,10 +453,10 @@ function updateMetrics(data) {
         const anterior = comparacao.find(p => p.periodo === 'periodo_anterior');
         
         if (atual && anterior) {
-            const diffPedidos = calcPercentDiff(atual.pedidos, anterior.pedidos);
+            const diffIngressos = calcPercentDiff(atual.ingressos, anterior.ingressos);
             const diffReceita = calcPercentDiff(atual.receita, anterior.receita);
             
-            updateChange('changePedidos', diffPedidos);
+            updateChange('changeIngressos', diffIngressos);
             updateChange('changeReceita', diffReceita);
         }
     }
@@ -476,9 +490,9 @@ function updateCharts(data) {
     
     const labels = evolucaoData.map(d => formatDate(d.data));
     const receitas = evolucaoData.map(d => parseFloat(d.receita || 0));
-    const pedidos = evolucaoData.map(d => parseInt(d.pedidos || 0));
+    const ingressos = evolucaoData.map(d => parseInt(d.ingressos || 0));
     
-    console.log('Dados do gráfico:', { labels, receitas, pedidos });
+    console.log('Dados do gráfico:', { labels, receitas, ingressos });
     
     // Destruir gráfico anterior se existir
     if (charts.evolucao) {
@@ -511,8 +525,8 @@ function updateCharts(data) {
                     yAxisID: 'y'
                 },
                 {
-                    label: 'Pedidos',
-                    data: pedidos,
+                    label: 'Ingressos',
+                    data: ingressos,
                     borderColor: '#0d652d',
                     backgroundColor: 'rgba(13, 101, 45, 0.1)',
                     tension: 0.4,
@@ -561,8 +575,10 @@ function updateCharts(data) {
     const metodosData = data.vendas_por_metodo || [];
     
     console.log('Métodos de pagamento recebidos:', metodosData);
+    console.log('Tipo de vendas_por_metodo:', typeof data.vendas_por_metodo);
+    console.log('É array?', Array.isArray(data.vendas_por_metodo));
     
-    if (metodosData.length === 0) {
+    if (!metodosData || metodosData.length === 0) {
         console.warn('Sem dados de métodos de pagamento');
         // Mostrar mensagem no card
         const canvasMetodos = document.getElementById('chartMetodos');
@@ -574,11 +590,17 @@ function updateCharts(data) {
     }
     
     const metodosLabels = metodosData.map(m => {
-        if (m.metodo === 'pix') return 'PIX';
-        if (m.metodo === 'credit_card') return 'Cartão';
+        console.log('Processando método:', m.metodo);
+        const metodo = m.metodo ? m.metodo.toLowerCase() : '';
+        if (metodo === 'pix') return 'PIX';
+        if (metodo === 'credit_card' || metodo === 'credito' || metodo === 'cartão') return 'Cartão';
+        if (metodo === 'boleto') return 'Boleto';
         return m.metodo || 'Outro';
     });
     const metodosValues = metodosData.map(m => parseFloat(m.receita || 0));
+    
+    console.log('Labels processados:', metodosLabels);
+    console.log('Values processados:', metodosValues);
     
     if (charts.metodos) {
         try {
@@ -652,9 +674,9 @@ function updateTables(data) {
         vendasBody.innerHTML = vendasRecentes.map(venda => {
             let metodo = '<span class="badge-status" style="background: #666; color: white;">Outro</span>';
             
-            if (venda.payment_type === 'pix' || venda.payment_type === 'PIX') {
+            if (venda.forma_pagamento === 'pix' || venda.forma_pagamento === 'PIX') {
                 metodo = '<span class="badge-status badge-pix">PIX</span>';
-            } else if (venda.payment_type === 'credit_card' || venda.payment_type === 'CREDIT_CARD') {
+            } else if (venda.forma_pagamento === 'credit_card' || venda.forma_pagamento === 'CREDIT_CARD' || venda.forma_pagamento === 'credito') {
                 metodo = '<span class="badge-status badge-credit">Cartão</span>';
             }
             
@@ -680,18 +702,63 @@ document.querySelectorAll('.period-btn').forEach(btn => {
     });
 });
 
+// Timer de countdown
+let countdownInterval = null;
+let secondsRemaining = 30;
+
+function updateRefreshButton() {
+    const refreshBtnText = document.getElementById('refreshBtnText');
+    const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+    
+    if (autoRefreshToggle.checked) {
+        refreshBtnText.textContent = `Atualizar (${secondsRemaining}s)`;
+    } else {
+        refreshBtnText.textContent = 'Atualizar';
+    }
+}
+
+function startCountdown() {
+    secondsRemaining = 30;
+    updateRefreshButton();
+    
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+    
+    const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+    if (autoRefreshToggle.checked) {
+        countdownInterval = setInterval(() => {
+            secondsRemaining--;
+            updateRefreshButton();
+            
+            if (secondsRemaining <= 0) {
+                secondsRemaining = 30;
+            }
+        }, 1000);
+    }
+}
+
 // Botão de refresh
-document.getElementById('refreshBtn').addEventListener('click', loadDashboard);
+document.getElementById('refreshBtn').addEventListener('click', function() {
+    loadDashboard();
+    startCountdown();
+});
 
 // Auto-refresh
 document.getElementById('autoRefreshToggle').addEventListener('change', function() {
     if (this.checked) {
         autoRefreshInterval = setInterval(loadDashboard, 30000); // 30 segundos
+        startCountdown();
     } else {
         if (autoRefreshInterval) {
             clearInterval(autoRefreshInterval);
             autoRefreshInterval = null;
         }
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        updateRefreshButton();
     }
 });
 
@@ -719,6 +786,13 @@ function formatTime(dateTimeStr) {
 
 // Carregar ao iniciar
 loadDashboard();
+
+// Iniciar auto-refresh automaticamente
+const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+if (autoRefreshToggle.checked) {
+    autoRefreshInterval = setInterval(loadDashboard, 30000); // 30 segundos
+    startCountdown();
+}
 </script>
 
 <?php echo $this->endSection() ?>
