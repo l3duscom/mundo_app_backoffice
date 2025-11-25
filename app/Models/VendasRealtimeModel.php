@@ -255,6 +255,41 @@ class VendasRealtimeModel extends Model
     }
     
     /**
+     * Vendas por dia da semana
+     * Ingressos tipo 'combo' contam como 2
+     */
+    public function getVendasPorDiaSemana(int $evento_id): array
+    {
+        $sql = "
+        SELECT 
+            DAYOFWEEK(p.created_at) as dia_numero,
+            CASE DAYOFWEEK(p.created_at)
+                WHEN 1 THEN 'Domingo'
+                WHEN 2 THEN 'Segunda'
+                WHEN 3 THEN 'Terça'
+                WHEN 4 THEN 'Quarta'
+                WHEN 5 THEN 'Quinta'
+                WHEN 6 THEN 'Sexta'
+                WHEN 7 THEN 'Sábado'
+            END as dia_semana,
+            SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as ingressos,
+            SUM(i.valor) as receita,
+            COUNT(DISTINCT p.id) as pedidos
+        FROM pedidos p
+        INNER JOIN ingressos i ON i.pedido_id = p.id
+        WHERE p.evento_id = ?
+        AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+        AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+        AND i.ticket_id != 608
+        GROUP BY DAYOFWEEK(p.created_at), dia_semana
+        ORDER BY dia_numero
+        ";
+        
+        $query = $this->db->query($sql, [$evento_id]);
+        return $query ? $query->getResultArray() : [];
+    }
+    
+    /**
      * Comparação com período anterior
      * Ingressos tipo 'combo' contam como 2
      */

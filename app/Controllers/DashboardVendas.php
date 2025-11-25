@@ -198,6 +198,14 @@ class DashboardVendas extends BaseController
                 $dados['comparacao_periodo'] = [];
             }
             
+            try {
+                log_message('info', 'Buscando vendas por dia da semana...');
+                $dados['vendas_dia_semana'] = $this->vendasModel->getVendasPorDiaSemana($event_id);
+            } catch (\Exception $e) {
+                log_message('error', 'Erro em getVendasPorDiaSemana: ' . $e->getMessage());
+                $dados['vendas_dia_semana'] = [];
+            }
+            
             return $this->response->setJSON([
                 'success' => true,
                 'data' => $dados,

@@ -480,7 +480,7 @@
         <!-- Gráficos -->
         <div class="row">
             <!-- Evolução de Vendas -->
-            <div class="col-lg-8 mb-4">
+            <div class="col-lg-6 mb-4">
                 <div class="chart-card">
                     <div class="chart-card-title">
                         <span>Evolução de Vendas</span>
@@ -495,23 +495,34 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Vendas por Método -->
-            <div class="col-lg-4 mb-4">
+            
+            <!-- Vendas por Dia da Semana -->
+            <div class="col-lg-6 mb-4">
                 <div class="chart-card">
                     <div class="chart-card-title">
-                        <span>Métodos de Pagamento</span>
+                        <span>📅 Vendas por Dia da Semana</span>
                     </div>
-                    <div style="position: relative; height: 300px;">
+                    <div style="position: relative; height: 350px;">
+                        <canvas id="chartDiaSemana"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <!-- Métodos de Pagamento -->
+            <div class="col-lg-4 mb-4">
+                <div class="table-card">
+                    <div class="table-card-header">💳 Métodos de Pagamento</div>
+                    <div style="position: relative; height: 350px; padding: 1rem;">
                         <canvas id="chartMetodos"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="row">
+            
             <!-- Top Ingressos -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-4 mb-4">
                 <div class="table-card">
                     <div class="table-card-header">🎫 Ingressos Mais Vendidos</div>
                     <div style="max-height: 400px; overflow-y: auto;">
@@ -532,7 +543,7 @@
             </div>
 
             <!-- Vendas Recentes -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-4 mb-4">
                 <div class="table-card">
                     <div class="table-card-header">⚡ Vendas Recentes</div>
                     <div style="max-height: 400px; overflow-y: auto;">
@@ -742,16 +753,100 @@ function updateCharts(data) {
         }
     });
     
+    // Gráfico de Vendas por Dia da Semana
+    const diaSemanaData = data.vendas_dia_semana || [];
+    
+    if (diaSemanaData.length > 0) {
+        const diasLabels = diaSemanaData.map(d => d.dia_semana);
+        const diasIngressos = diaSemanaData.map(d => parseInt(d.ingressos || 0));
+        const diasReceita = diaSemanaData.map(d => parseFloat(d.receita || 0));
+        
+        if (charts.diaSemana) {
+            try {
+                charts.diaSemana.destroy();
+            } catch (e) {
+                console.warn('Erro ao destruir gráfico dia semana:', e);
+            }
+        }
+        
+        const canvasDiaSemana = document.getElementById('chartDiaSemana');
+        if (canvasDiaSemana) {
+            const ctxDiaSemana = canvasDiaSemana.getContext('2d');
+            charts.diaSemana = new Chart(ctxDiaSemana, {
+                type: 'bar',
+                data: {
+                    labels: diasLabels,
+                    datasets: [
+                        {
+                            label: 'Ingressos',
+                            data: diasIngressos,
+                            backgroundColor: 'rgba(26, 115, 232, 0.8)',
+                            borderColor: '#1a73e8',
+                            borderWidth: 2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Receita (R$)',
+                            data: diasReceita,
+                            backgroundColor: 'rgba(13, 101, 45, 0.8)',
+                            borderColor: '#0d652d',
+                            borderWidth: 2,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Ingressos'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Receita'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
     // Gráfico de Métodos
     const metodosData = data.vendas_por_metodo || [];
     
-    console.log('Métodos de pagamento recebidos:', metodosData);
-    console.log('Tipo de vendas_por_metodo:', typeof data.vendas_por_metodo);
-    console.log('É array?', Array.isArray(data.vendas_por_metodo));
-    
     if (!metodosData || metodosData.length === 0) {
-        console.warn('Sem dados de métodos de pagamento');
-        // Mostrar mensagem no card
         const canvasMetodos = document.getElementById('chartMetodos');
         if (canvasMetodos) {
             const parent = canvasMetodos.parentElement;
@@ -761,7 +856,6 @@ function updateCharts(data) {
     }
     
     const metodosLabels = metodosData.map(m => {
-        console.log('Processando método:', m.metodo);
         const metodo = m.metodo ? m.metodo.toLowerCase() : '';
         if (metodo === 'pix') return 'PIX';
         if (metodo === 'credit_card' || metodo === 'credito' || metodo === 'cartão') return 'Cartão';
@@ -769,9 +863,6 @@ function updateCharts(data) {
         return m.metodo || 'Outro';
     });
     const metodosValues = metodosData.map(m => parseFloat(m.receita || 0));
-    
-    console.log('Labels processados:', metodosLabels);
-    console.log('Values processados:', metodosValues);
     
     if (charts.metodos) {
         try {
@@ -783,7 +874,6 @@ function updateCharts(data) {
     
     const canvasMetodos = document.getElementById('chartMetodos');
     if (!canvasMetodos) {
-        console.error('Canvas chartMetodos não encontrado!');
         return;
     }
     
@@ -794,16 +884,38 @@ function updateCharts(data) {
             labels: metodosLabels,
             datasets: [{
                 data: metodosValues,
-                backgroundColor: ['#32bcad', '#9334e6', '#e37400', '#1a73e8']
+                backgroundColor: ['#32bcad', '#9334e6', '#e37400', '#1a73e8', '#d93025']
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 1,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += 'R$ ' + context.parsed.toLocaleString('pt-BR', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                });
+                            }
+                            return label;
+                        }
+                    }
                 }
             }
         }
