@@ -42,45 +42,117 @@ class VendasComparativasModel extends Model
             ORDER BY e.id
         ";
         
-        return $this->db->query($sql)->getResultArray();
+        $result = $this->db->query($sql);
+        return $result ? $result->getResultArray() : [];
     }
     
     /**
      * Busca evolução diária comparativa entre dois eventos
+     * VERSÃO COMPATÍVEL COM MYSQL 5.7 (SEM CTEs)
      */
     public function getEvolucaoDiariaComparativa(int $evento1Id, int $evento2Id, array $status = ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH'], int $ticketCortesia = 608)
     {
         $statusStr = "'" . implode("','", $status) . "'";
         
-        // Vendas diárias
-        $sql = "
-            WITH vendas_diarias AS (
-                SELECT 
-                    p.evento_id,
-                    DATE(p.created_at) AS data_venda,
-                    COUNT(DISTINCT p.id) AS pedidos_dia,
-                    COUNT(i.id) AS ingressos_dia,
-                    SUM(p.total) AS receita_dia
-                FROM pedidos p
-                LEFT JOIN ingressos i ON p.id = i.pedido_id 
-                    AND i.ticket_id <> {$ticketCortesia}
-                WHERE p.evento_id IN ({$evento1Id}, {$evento2Id})
-                    AND p.status IN ({$statusStr})
-                GROUP BY p.evento_id, DATE(p.created_at)
-            ),
-            vendas_acumuladas AS (
-                SELECT 
-                    vd.evento_id,
-                    vd.data_venda,
-                    vd.pedidos_dia,
-                    vd.ingressos_dia,
-                    vd.receita_dia,
-                    SUM(vd.pedidos_dia) OVER (PARTITION BY vd.evento_id ORDER BY vd.data_venda) AS pedidos_acumulados,
-                    SUM(vd.ingressos_dia) OVER (PARTITION BY vd.evento_id ORDER BY vd.data_venda) AS ingressos_acumulados,
-                    SUM(vd.receita_dia) OVER (PARTITION BY vd.evento_id ORDER BY vd.data_venda) AS receita_acumulada,
-                    ROW_NUMBER() OVER (PARTITION BY vd.evento_id ORDER BY vd.data_venda) AS dia_venda
-                FROM vendas_diarias vd
-            )
+        // Criar tabelas temporárias (compatível com MySQL 5.7)
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_diarias_temp");
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_numeradas_ev1");
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_numeradas_ev2");
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_acum_ev1");
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_acum_ev2");
+        
+        // 1. Criar tabela com vendas diárias
+        $this->db->query("
+            CREATE TEMPORARY TABLE vendas_diarias_temp AS
+            SELECT 
+                p.evento_id,
+                DATE(p.created_at) AS data_venda,
+                COUNT(DISTINCT p.id) AS pedidos_dia,
+                COUNT(i.id) AS ingressos_dia,
+                SUM(p.total) AS receita_dia
+            FROM pedidos p
+            LEFT JOIN ingressos i ON p.id = i.pedido_id 
+                AND i.ticket_id <> {$ticketCortesia}
+            WHERE p.evento_id IN ({$evento1Id}, {$evento2Id})
+                AND p.status IN ({$statusStr})
+            GROUP BY p.evento_id, DATE(p.created_at)
+            ORDER BY p.evento_id, DATE(p.created_at)
+        ");
+        
+        // 2. Numerar dias para evento 1
+        $this->db->query("SET @row_ev1 = 0");
+        $this->db->query("
+            CREATE TEMPORARY TABLE vendas_numeradas_ev1 AS
+            SELECT 
+                (@row_ev1 := @row_ev1 + 1) AS dia_venda,
+                data_venda,
+                pedidos_dia,
+                ingressos_dia,
+                receita_dia
+            FROM vendas_diarias_temp
+            WHERE evento_id = {$evento1Id}
+            ORDER BY data_venda
+        ");
+        
+        // 3. Numerar dias para evento 2
+        $this->db->query("SET @row_ev2 = 0");
+        $this->db->query("
+            CREATE TEMPORARY TABLE vendas_numeradas_ev2 AS
+            SELECT 
+                (@row_ev2 := @row_ev2 + 1) AS dia_venda,
+                data_venda,
+                pedidos_dia,
+                ingressos_dia,
+                receita_dia
+            FROM vendas_diarias_temp
+            WHERE evento_id = {$evento2Id}
+            ORDER BY data_venda
+        ");
+        
+        // 4. Calcular acumulados para evento 1
+        $this->db->query("
+            CREATE TEMPORARY TABLE vendas_acum_ev1 AS
+            SELECT 
+                v1.dia_venda,
+                v1.data_venda,
+                v1.pedidos_dia,
+                v1.ingressos_dia,
+                v1.receita_dia,
+                (SELECT SUM(v2.pedidos_dia) 
+                 FROM vendas_numeradas_ev1 v2 
+                 WHERE v2.dia_venda <= v1.dia_venda) AS pedidos_acumulados,
+                (SELECT SUM(v2.ingressos_dia) 
+                 FROM vendas_numeradas_ev1 v2 
+                 WHERE v2.dia_venda <= v1.dia_venda) AS ingressos_acumulados,
+                (SELECT SUM(v2.receita_dia) 
+                 FROM vendas_numeradas_ev1 v2 
+                 WHERE v2.dia_venda <= v1.dia_venda) AS receita_acumulada
+            FROM vendas_numeradas_ev1 v1
+        ");
+        
+        // 5. Calcular acumulados para evento 2
+        $this->db->query("
+            CREATE TEMPORARY TABLE vendas_acum_ev2 AS
+            SELECT 
+                v1.dia_venda,
+                v1.data_venda,
+                v1.pedidos_dia,
+                v1.ingressos_dia,
+                v1.receita_dia,
+                (SELECT SUM(v2.pedidos_dia) 
+                 FROM vendas_numeradas_ev2 v2 
+                 WHERE v2.dia_venda <= v1.dia_venda) AS pedidos_acumulados,
+                (SELECT SUM(v2.ingressos_dia) 
+                 FROM vendas_numeradas_ev2 v2 
+                 WHERE v2.dia_venda <= v1.dia_venda) AS ingressos_acumulados,
+                (SELECT SUM(v2.receita_dia) 
+                 FROM vendas_numeradas_ev2 v2 
+                 WHERE v2.dia_venda <= v1.dia_venda) AS receita_acumulada
+            FROM vendas_numeradas_ev2 v1
+        ");
+        
+        // 6. Query final
+        $result = $this->db->query("
             SELECT 
                 va1.dia_venda,
                 DATE_FORMAT(va1.data_venda, '%d/%m/%Y') AS data_evento1,
@@ -101,33 +173,33 @@ class VendasComparativasModel extends Model
                 (va1.receita_acumulada - COALESCE(va2.receita_acumulada, 0)) AS diff_receita,
                 ROUND((va1.ingressos_acumulados / NULLIF(va2.ingressos_acumulados, 0) * 100) - 100, 2) AS perc_evolucao_ingressos,
                 ROUND((va1.receita_acumulada / NULLIF(va2.receita_acumulada, 0) * 100) - 100, 2) AS perc_evolucao_receita
-            FROM vendas_acumuladas va1
-            LEFT JOIN vendas_acumuladas va2 ON va1.dia_venda = va2.dia_venda 
-                AND va2.evento_id = {$evento2Id}
-            WHERE va1.evento_id = {$evento1Id}
+            FROM vendas_acum_ev1 va1
+            LEFT JOIN vendas_acum_ev2 va2 ON va1.dia_venda = va2.dia_venda
             ORDER BY va1.dia_venda
-        ";
+        ");
         
-        return $this->db->query($sql)->getResultArray();
+        $data = $result ? $result->getResultArray() : [];
+        
+        // Limpar tabelas temporárias
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_diarias_temp");
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_numeradas_ev1");
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_numeradas_ev2");
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_acum_ev1");
+        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_acum_ev2");
+        
+        return $data;
     }
     
     /**
      * Busca comparação por períodos (semanas/meses)
+     * VERSÃO COMPATÍVEL COM MYSQL 5.7 (SEM CTEs)
      */
     public function getComparacaoPorPeriodos(int $evento1Id, int $evento2Id, array $status = ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH'], int $ticketCortesia = 608)
     {
         $statusStr = "'" . implode("','", $status) . "'";
         
+        // Sem CTEs - usar subquery
         $sql = "
-            WITH primeira_venda AS (
-                SELECT 
-                    evento_id,
-                    MIN(created_at) AS inicio
-                FROM pedidos
-                WHERE evento_id IN ({$evento1Id}, {$evento2Id})
-                    AND status IN ({$statusStr})
-                GROUP BY evento_id
-            )
             SELECT 
                 periodo,
                 SUM(CASE WHEN evento_id = {$evento1Id} THEN pedidos ELSE 0 END) AS pedidos_ev1,
@@ -144,18 +216,42 @@ class VendasComparativasModel extends Model
                 SELECT 
                     p.evento_id,
                     CASE 
-                        WHEN DATEDIFF(p.created_at, pv.inicio) <= 7 THEN '1. Primeira Semana'
-                        WHEN DATEDIFF(p.created_at, pv.inicio) <= 14 THEN '2. Segunda Semana'
-                        WHEN DATEDIFF(p.created_at, pv.inicio) <= 21 THEN '3. Terceira Semana'
-                        WHEN DATEDIFF(p.created_at, pv.inicio) <= 30 THEN '4. Primeiro Mês'
-                        WHEN DATEDIFF(p.created_at, pv.inicio) <= 60 THEN '5. Segundo Mês'
+                        WHEN DATEDIFF(p.created_at, (
+                            SELECT MIN(created_at) 
+                            FROM pedidos 
+                            WHERE evento_id = p.evento_id 
+                                AND status IN ({$statusStr})
+                        )) <= 7 THEN '1. Primeira Semana'
+                        WHEN DATEDIFF(p.created_at, (
+                            SELECT MIN(created_at) 
+                            FROM pedidos 
+                            WHERE evento_id = p.evento_id 
+                                AND status IN ({$statusStr})
+                        )) <= 14 THEN '2. Segunda Semana'
+                        WHEN DATEDIFF(p.created_at, (
+                            SELECT MIN(created_at) 
+                            FROM pedidos 
+                            WHERE evento_id = p.evento_id 
+                                AND status IN ({$statusStr})
+                        )) <= 21 THEN '3. Terceira Semana'
+                        WHEN DATEDIFF(p.created_at, (
+                            SELECT MIN(created_at) 
+                            FROM pedidos 
+                            WHERE evento_id = p.evento_id 
+                                AND status IN ({$statusStr})
+                        )) <= 30 THEN '4. Primeiro Mês'
+                        WHEN DATEDIFF(p.created_at, (
+                            SELECT MIN(created_at) 
+                            FROM pedidos 
+                            WHERE evento_id = p.evento_id 
+                                AND status IN ({$statusStr})
+                        )) <= 60 THEN '5. Segundo Mês'
                         ELSE '6. Demais Períodos'
                     END AS periodo,
                     COUNT(DISTINCT p.id) AS pedidos,
                     COUNT(i.id) AS ingressos,
                     SUM(p.total) AS receita
                 FROM pedidos p
-                INNER JOIN primeira_venda pv ON p.evento_id = pv.evento_id
                 LEFT JOIN ingressos i ON p.id = i.pedido_id 
                     AND i.ticket_id <> {$ticketCortesia}
                 WHERE p.evento_id IN ({$evento1Id}, {$evento2Id})
@@ -166,7 +262,8 @@ class VendasComparativasModel extends Model
             ORDER BY periodo
         ";
         
-        return $this->db->query($sql)->getResultArray();
+        $result = $this->db->query($sql);
+        return $result ? $result->getResultArray() : [];
     }
     
     /**
@@ -249,8 +346,8 @@ class VendasComparativasModel extends Model
                 ) - 100, 2) AS perc_evolucao_receita
         ";
         
-        $result = $this->db->query($sql)->getRowArray();
-        return $result ?: [];
+        $result = $this->db->query($sql);
+        return $result ? $result->getRowArray() : [];
     }
     
     /**
@@ -271,7 +368,8 @@ class VendasComparativasModel extends Model
             ORDER BY e.data_inicio DESC
         ";
         
-        return $this->db->query($sql)->getResultArray();
+        $result = $this->db->query($sql);
+        return $result ? $result->getResultArray() : [];
     }
 }
 
