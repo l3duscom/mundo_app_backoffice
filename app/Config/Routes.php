@@ -256,6 +256,15 @@ $routes->get('pedidos/dados-envio/(:num)', 'Pedidos::dadosEnvio/$1');
 $routes->get('pedidos/exportar-envios/(:num)', 'Pedidos::exportarEnvios/$1');
 
 // ========================================
+// DASHBOARD DE VENDAS EM TEMPO REAL
+// ========================================
+$routes->group('dashboard-vendas', function ($routes) {
+    $routes->get('/', 'DashboardVendas::index');
+    $routes->get('get-dados', 'DashboardVendas::getDados');
+    $routes->get('teste-simples', 'DashboardVendas::testeSimples'); // TESTE
+});
+
+// ========================================
 // Rotas da API de Autenticação
 // COM SEGURANÇA APRIMORADA
 // ========================================
