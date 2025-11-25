@@ -24,6 +24,7 @@ class VendasRealtimeModel extends Model
              WHERE p2.evento_id = ?
              AND p2.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
              AND i2.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+             AND i2.ticket_id != 608
             ) as total_ingressos,
             (SELECT SUM(p3.total) 
              FROM pedidos p3 
@@ -63,6 +64,7 @@ class VendasRealtimeModel extends Model
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+        AND i.ticket_id != 608
         AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
         GROUP BY DATE(p.created_at)
         ORDER BY data ASC
@@ -88,6 +90,7 @@ class VendasRealtimeModel extends Model
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+        AND i.ticket_id != 608
         AND p.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
         GROUP BY HOUR(p.created_at)
         ORDER BY hora ASC
@@ -114,6 +117,7 @@ class VendasRealtimeModel extends Model
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+        AND i.ticket_id != 608
         GROUP BY i.nome
         ORDER BY quantidade DESC
         LIMIT ?
@@ -170,7 +174,7 @@ class VendasRealtimeModel extends Model
         $sql = "
         SELECT 
             p.id,
-            p.cod_pedido,
+            p.codigo,
             p.created_at,
             p.total,
             p.forma_pagamento,
@@ -178,7 +182,9 @@ class VendasRealtimeModel extends Model
             COUNT(i.id) as qtd_ingressos
         FROM pedidos p
         LEFT JOIN clientes c ON c.usuario_id = p.user_id
-        LEFT JOIN ingressos i ON i.pedido_id = p.id AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+        LEFT JOIN ingressos i ON i.pedido_id = p.id 
+            AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+            AND i.ticket_id != 608
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         GROUP BY p.id
@@ -229,6 +235,7 @@ class VendasRealtimeModel extends Model
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+        AND i.ticket_id != 608
         AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
         
         UNION ALL
@@ -242,6 +249,7 @@ class VendasRealtimeModel extends Model
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+        AND i.ticket_id != 608
         AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
         AND p.created_at < DATE_SUB(CURDATE(), INTERVAL ? DAY)
         ";
