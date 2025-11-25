@@ -244,6 +244,7 @@ $routes->group('admin-dashboard-vendas', function ($routes) {
     $routes->get('/', 'AdminDashboardVendas::index');
     $routes->get('dados-comparativos', 'AdminDashboardVendas::getDadosComparativos');
     $routes->get('exportar-csv', 'AdminDashboardVendas::exportarCSV');
+    $routes->get('test-api', 'AdminDashboardVendas::testApi'); // REMOVER EM PRODUÇÃO
     $routes->get('debug-usuario', 'AdminDashboardVendas::debugUsuario'); // REMOVER EM PRODUÇÃO
 });
 

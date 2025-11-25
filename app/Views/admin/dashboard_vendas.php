@@ -445,20 +445,53 @@ function carregarDadosComparativos(evento1Id, evento2Id) {
     document.getElementById('loadingOverlay').classList.add('active');
     
     fetch(`<?= base_url('admin-dashboard-vendas/dados-comparativos') ?>?evento1_id=${evento1Id}&evento2_id=${evento2Id}`)
-        .then(response => response.json())
+        .then(response => {
+            // Debug: Log do status
+            console.log('Response Status:', response.status);
+            console.log('Response OK:', response.ok);
+            
+            // Se não for 200, tenta ler como texto para ver o erro
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.error('Response Text:', text);
+                    throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
+                });
+            }
+            
+            // Tenta ler como texto primeiro para debug
+            return response.text().then(text => {
+                console.log('Response Text:', text.substring(0, 500));
+                
+                // Verifica se é vazio
+                if (!text || text.trim() === '') {
+                    throw new Error('Resposta vazia do servidor');
+                }
+                
+                // Tenta fazer parse do JSON
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON Parse Error:', e);
+                    console.error('Text received:', text);
+                    throw new Error('Resposta não é um JSON válido: ' + e.message);
+                }
+            });
+        })
         .then(result => {
+            console.log('Result:', result);
+            
             if (result.success) {
                 dadosAtuais = result.data;
                 renderizarDashboard(result.data);
                 document.getElementById('resultadosSection').classList.add('active');
                 document.getElementById('btnExportar').style.display = 'inline-block';
             } else {
-                alert('Erro ao carregar dados: ' + result.message);
+                alert('Erro ao carregar dados: ' + (result.message || 'Erro desconhecido'));
             }
         })
         .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro ao carregar dados. Verifique o console.');
+            console.error('Erro completo:', error);
+            alert('Erro ao carregar dados:\n\n' + error.message + '\n\nVerifique o console (F12) para mais detalhes.');
         })
         .finally(() => {
             document.getElementById('loadingOverlay').classList.remove('active');

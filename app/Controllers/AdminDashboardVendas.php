@@ -66,18 +66,38 @@ class AdminDashboardVendas extends BaseController
      */
     public function getDadosComparativos()
     {
-        // Verificar se usuário é admin
-        if (!$this->isAdmin()) {
+        // Garantir que sempre retorna JSON
+        $this->response->setHeader('Content-Type', 'application/json');
+        
+        log_message('info', 'getDadosComparativos: Início da requisição');
+        
+        // Verificar se o usuário está logado
+        $usuario = usuario_logado();
+        
+        if ($usuario === null) {
+            log_message('warning', 'getDadosComparativos: Usuário não está logado');
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Acesso negado'
+                'message' => 'Usuário não autenticado'
+            ])->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
+        }
+        
+        // Verificar se usuário é admin
+        if (!$this->isAdmin()) {
+            log_message('warning', 'getDadosComparativos: Acesso negado para usuário ID ' . $usuario->id);
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Acesso negado. Apenas administradores.'
             ])->setStatusCode(ResponseInterface::HTTP_FORBIDDEN);
         }
         
         $evento1Id = (int) $this->request->getGet('evento1_id');
         $evento2Id = (int) $this->request->getGet('evento2_id');
         
+        log_message('info', "getDadosComparativos: Evento1={$evento1Id}, Evento2={$evento2Id}");
+        
         if (!$evento1Id || !$evento2Id) {
+            log_message('error', 'getDadosComparativos: IDs dos eventos inválidos');
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'IDs dos eventos são obrigatórios'
@@ -85,11 +105,19 @@ class AdminDashboardVendas extends BaseController
         }
         
         try {
-            // Buscar todos os dados
+            log_message('info', 'getDadosComparativos: Buscando visão geral...');
             $visaoGeral = $this->vendasModel->getVisaoGeralEventos([$evento1Id, $evento2Id]);
+            
+            log_message('info', 'getDadosComparativos: Buscando evolução diária...');
             $evolucaoDiaria = $this->vendasModel->getEvolucaoDiariaComparativa($evento1Id, $evento2Id);
+            
+            log_message('info', 'getDadosComparativos: Buscando comparação por períodos...');
             $comparacaoPeriodos = $this->vendasModel->getComparacaoPorPeriodos($evento1Id, $evento2Id);
+            
+            log_message('info', 'getDadosComparativos: Buscando resumo executivo...');
             $resumoExecutivo = $this->vendasModel->getResumoExecutivo($evento1Id, $evento2Id);
+            
+            log_message('info', 'getDadosComparativos: Dados carregados com sucesso');
             
             return $this->response->setJSON([
                 'success' => true,
@@ -102,11 +130,24 @@ class AdminDashboardVendas extends BaseController
             ]);
             
         } catch (\Exception $e) {
-            log_message('error', 'Erro ao buscar dados comparativos: ' . $e->getMessage());
+            log_message('error', 'getDadosComparativos: Erro - ' . $e->getMessage());
+            log_message('error', 'getDadosComparativos: Stack trace - ' . $e->getTraceAsString());
+            
+            // Retornar mensagem detalhada em ambiente de desenvolvimento
+            $message = 'Erro ao buscar dados';
+            if (ENVIRONMENT === 'development') {
+                $message .= ': ' . $e->getMessage() . ' (Linha ' . $e->getLine() . ' em ' . basename($e->getFile()) . ')';
+            }
             
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Erro ao buscar dados: ' . $e->getMessage()
+                'message' => $message,
+                'error_detail' => ENVIRONMENT === 'development' ? [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => explode("\n", $e->getTraceAsString())
+                ] : null
             ])->setStatusCode(ResponseInterface::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -211,6 +252,31 @@ class AdminDashboardVendas extends BaseController
         // O atributo is_admin é definido pela biblioteca Autenticacao
         // verificando se o usuário está no grupo_id = 1 (admin)
         return isset($usuario->is_admin) && $usuario->is_admin === true;
+    }
+    
+    /**
+     * MÉTODO DE DEBUG - REMOVER EM PRODUÇÃO
+     * Testa se a API está retornando JSON corretamente
+     */
+    public function testApi()
+    {
+        // Garantir que retorna JSON
+        $this->response->setHeader('Content-Type', 'application/json');
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'API funcionando corretamente!',
+            'timestamp' => date('Y-m-d H:i:s'),
+            'user' => [
+                'logged_in' => usuario_logado() !== null,
+                'is_admin' => $this->isAdmin(),
+                'id' => usuario_logado() ? usuario_logado()->id : null
+            ],
+            'server' => [
+                'php_version' => PHP_VERSION,
+                'environment' => ENVIRONMENT
+            ]
+        ]);
     }
     
     /**
