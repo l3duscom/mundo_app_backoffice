@@ -48,22 +48,14 @@ class VendasComparativasModel extends Model
     
     /**
      * Busca evolução diária comparativa entre dois eventos
-     * VERSÃO COMPATÍVEL COM MYSQL 5.7 (SEM CTEs)
+     * VERSÃO OTIMIZADA: 1 query + processamento em PHP
      */
     public function getEvolucaoDiariaComparativa(int $evento1Id, int $evento2Id, array $status = ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH'], int $ticketCortesia = 608)
     {
         $statusStr = "'" . implode("','", $status) . "'";
         
-        // Criar tabelas temporárias (compatível com MySQL 5.7)
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_diarias_temp");
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_numeradas_ev1");
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_numeradas_ev2");
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_acum_ev1");
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_acum_ev2");
-        
-        // 1. Criar tabela com vendas diárias
-        $this->db->query("
-            CREATE TEMPORARY TABLE vendas_diarias_temp AS
+        // UMA query simples para buscar vendas diárias
+        $sql = "
             SELECT 
                 p.evento_id,
                 DATE(p.created_at) AS data_venda,
@@ -77,185 +69,203 @@ class VendasComparativasModel extends Model
                 AND p.status IN ({$statusStr})
             GROUP BY p.evento_id, DATE(p.created_at)
             ORDER BY p.evento_id, DATE(p.created_at)
-        ");
+        ";
         
-        // 2. Numerar dias para evento 1
-        $this->db->query("SET @row_ev1 = 0");
-        $this->db->query("
-            CREATE TEMPORARY TABLE vendas_numeradas_ev1 AS
-            SELECT 
-                (@row_ev1 := @row_ev1 + 1) AS dia_venda,
-                data_venda,
-                pedidos_dia,
-                ingressos_dia,
-                receita_dia
-            FROM vendas_diarias_temp
-            WHERE evento_id = {$evento1Id}
-            ORDER BY data_venda
-        ");
+        $result = $this->db->query($sql);
+        if (!$result) {
+            return [];
+        }
         
-        // 3. Numerar dias para evento 2
-        $this->db->query("SET @row_ev2 = 0");
-        $this->db->query("
-            CREATE TEMPORARY TABLE vendas_numeradas_ev2 AS
-            SELECT 
-                (@row_ev2 := @row_ev2 + 1) AS dia_venda,
-                data_venda,
-                pedidos_dia,
-                ingressos_dia,
-                receita_dia
-            FROM vendas_diarias_temp
-            WHERE evento_id = {$evento2Id}
-            ORDER BY data_venda
-        ");
+        $vendas = $result->getResultArray();
         
-        // 4. Calcular acumulados para evento 1 usando variáveis
-        $this->db->query("SET @pedidos_acum = 0, @ingressos_acum = 0, @receita_acum = 0");
-        $this->db->query("
-            CREATE TEMPORARY TABLE vendas_acum_ev1 AS
-            SELECT 
-                dia_venda,
-                data_venda,
-                pedidos_dia,
-                ingressos_dia,
-                receita_dia,
-                @pedidos_acum := @pedidos_acum + pedidos_dia AS pedidos_acumulados,
-                @ingressos_acum := @ingressos_acum + ingressos_dia AS ingressos_acumulados,
-                @receita_acum := @receita_acum + receita_dia AS receita_acumulada
-            FROM vendas_numeradas_ev1
-            ORDER BY dia_venda
-        ");
+        // Separar por evento
+        $evento1 = [];
+        $evento2 = [];
         
-        // 5. Calcular acumulados para evento 2 usando variáveis
-        $this->db->query("SET @pedidos_acum = 0, @ingressos_acum = 0, @receita_acum = 0");
-        $this->db->query("
-            CREATE TEMPORARY TABLE vendas_acum_ev2 AS
-            SELECT 
-                dia_venda,
-                data_venda,
-                pedidos_dia,
-                ingressos_dia,
-                receita_dia,
-                @pedidos_acum := @pedidos_acum + pedidos_dia AS pedidos_acumulados,
-                @ingressos_acum := @ingressos_acum + ingressos_dia AS ingressos_acumulados,
-                @receita_acum := @receita_acum + receita_dia AS receita_acumulada
-            FROM vendas_numeradas_ev2
-            ORDER BY dia_venda
-        ");
+        foreach ($vendas as $venda) {
+            if ($venda['evento_id'] == $evento1Id) {
+                $evento1[] = $venda;
+            } else {
+                $evento2[] = $venda;
+            }
+        }
         
-        // 6. Query final
-        $result = $this->db->query("
-            SELECT 
-                va1.dia_venda,
-                DATE_FORMAT(va1.data_venda, '%d/%m/%Y') AS data_evento1,
-                va1.pedidos_dia AS pedidos_dia_ev1,
-                va1.ingressos_dia AS ingressos_dia_ev1,
-                va1.receita_dia AS receita_dia_ev1,
-                va1.pedidos_acumulados AS pedidos_acum_ev1,
-                va1.ingressos_acumulados AS ingressos_acum_ev1,
-                va1.receita_acumulada AS receita_acum_ev1,
-                DATE_FORMAT(va2.data_venda, '%d/%m/%Y') AS data_evento2,
-                COALESCE(va2.pedidos_dia, 0) AS pedidos_dia_ev2,
-                COALESCE(va2.ingressos_dia, 0) AS ingressos_dia_ev2,
-                COALESCE(va2.receita_dia, 0) AS receita_dia_ev2,
-                COALESCE(va2.pedidos_acumulados, 0) AS pedidos_acum_ev2,
-                COALESCE(va2.ingressos_acumulados, 0) AS ingressos_acum_ev2,
-                COALESCE(va2.receita_acumulada, 0) AS receita_acum_ev2,
-                (va1.ingressos_acumulados - COALESCE(va2.ingressos_acumulados, 0)) AS diff_ingressos,
-                (va1.receita_acumulada - COALESCE(va2.receita_acumulada, 0)) AS diff_receita,
-                ROUND((va1.ingressos_acumulados / NULLIF(va2.ingressos_acumulados, 0) * 100) - 100, 2) AS perc_evolucao_ingressos,
-                ROUND((va1.receita_acumulada / NULLIF(va2.receita_acumulada, 0) * 100) - 100, 2) AS perc_evolucao_receita
-            FROM vendas_acum_ev1 va1
-            LEFT JOIN vendas_acum_ev2 va2 ON va1.dia_venda = va2.dia_venda
-            ORDER BY va1.dia_venda
-        ");
+        // Calcular acumulados em PHP (muito mais rápido!)
+        $acumEv1 = $this->calcularAcumulados($evento1);
+        $acumEv2 = $this->calcularAcumulados($evento2);
         
-        $data = $result ? $result->getResultArray() : [];
+        // Mesclar resultados
+        $resultado = [];
+        $maxDias = max(count($acumEv1), count($acumEv2));
         
-        // Limpar tabelas temporárias
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_diarias_temp");
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_numeradas_ev1");
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_numeradas_ev2");
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_acum_ev1");
-        $this->db->query("DROP TEMPORARY TABLE IF EXISTS vendas_acum_ev2");
+        for ($i = 0; $i < $maxDias; $i++) {
+            $dia = $i + 1;
+            $ev1 = $acumEv1[$i] ?? null;
+            $ev2 = $acumEv2[$i] ?? null;
+            
+            $ingressosAcumEv1 = $ev1['ingressos_acumulados'] ?? 0;
+            $ingressosAcumEv2 = $ev2['ingressos_acumulados'] ?? 0;
+            $receitaAcumEv1 = $ev1['receita_acumulada'] ?? 0;
+            $receitaAcumEv2 = $ev2['receita_acumulada'] ?? 0;
+            
+            $resultado[] = [
+                'dia_venda' => $dia,
+                'data_evento1' => $ev1 ? date('d/m/Y', strtotime($ev1['data_venda'])) : null,
+                'pedidos_dia_ev1' => $ev1['pedidos_dia'] ?? 0,
+                'ingressos_dia_ev1' => $ev1['ingressos_dia'] ?? 0,
+                'receita_dia_ev1' => $ev1['receita_dia'] ?? 0,
+                'pedidos_acum_ev1' => $ev1['pedidos_acumulados'] ?? 0,
+                'ingressos_acum_ev1' => $ingressosAcumEv1,
+                'receita_acum_ev1' => $receitaAcumEv1,
+                'data_evento2' => $ev2 ? date('d/m/Y', strtotime($ev2['data_venda'])) : null,
+                'pedidos_dia_ev2' => $ev2['pedidos_dia'] ?? 0,
+                'ingressos_dia_ev2' => $ev2['ingressos_dia'] ?? 0,
+                'receita_dia_ev2' => $ev2['receita_dia'] ?? 0,
+                'pedidos_acum_ev2' => $ev2['pedidos_acumulados'] ?? 0,
+                'ingressos_acum_ev2' => $ingressosAcumEv2,
+                'receita_acum_ev2' => $receitaAcumEv2,
+                'diff_ingressos' => $ingressosAcumEv1 - $ingressosAcumEv2,
+                'diff_receita' => $receitaAcumEv1 - $receitaAcumEv2,
+                'perc_evolucao_ingressos' => $ingressosAcumEv2 > 0 ? round((($ingressosAcumEv1 / $ingressosAcumEv2) * 100) - 100, 2) : null,
+                'perc_evolucao_receita' => $receitaAcumEv2 > 0 ? round((($receitaAcumEv1 / $receitaAcumEv2) * 100) - 100, 2) : null
+            ];
+        }
         
-        return $data;
+        return $resultado;
+    }
+    
+    /**
+     * Calcula acumulados em PHP (helper privado)
+     */
+    private function calcularAcumulados(array $vendas): array
+    {
+        $acumulados = [];
+        $pedidosAcum = 0;
+        $ingressosAcum = 0;
+        $receitaAcum = 0;
+        
+        foreach ($vendas as $venda) {
+            $pedidosAcum += $venda['pedidos_dia'];
+            $ingressosAcum += $venda['ingressos_dia'];
+            $receitaAcum += $venda['receita_dia'];
+            
+            $acumulados[] = [
+                'data_venda' => $venda['data_venda'],
+                'pedidos_dia' => $venda['pedidos_dia'],
+                'ingressos_dia' => $venda['ingressos_dia'],
+                'receita_dia' => $venda['receita_dia'],
+                'pedidos_acumulados' => $pedidosAcum,
+                'ingressos_acumulados' => $ingressosAcum,
+                'receita_acumulada' => $receitaAcum
+            ];
+        }
+        
+        return $acumulados;
     }
     
     /**
      * Busca comparação por períodos (semanas/meses)
-     * VERSÃO COMPATÍVEL COM MYSQL 5.7 (SEM CTEs)
+     * VERSÃO OTIMIZADA: Query simples + processamento em PHP
      */
     public function getComparacaoPorPeriodos(int $evento1Id, int $evento2Id, array $status = ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH'], int $ticketCortesia = 608)
     {
         $statusStr = "'" . implode("','", $status) . "'";
         
-        // Sem CTEs - usar subquery
+        // Buscar primeira venda de cada evento
+        $sqlPrimeiraVenda = "
+            SELECT evento_id, MIN(created_at) AS primeira_venda
+            FROM pedidos
+            WHERE evento_id IN ({$evento1Id}, {$evento2Id})
+                AND status IN ({$statusStr})
+            GROUP BY evento_id
+        ";
+        
+        $result = $this->db->query($sqlPrimeiraVenda);
+        if (!$result) {
+            return [];
+        }
+        
+        $primeiraVenda = [];
+        foreach ($result->getResultArray() as $row) {
+            $primeiraVenda[$row['evento_id']] = $row['primeira_venda'];
+        }
+        
+        // Buscar dados de vendas
         $sql = "
             SELECT 
-                periodo,
-                SUM(CASE WHEN evento_id = {$evento1Id} THEN pedidos ELSE 0 END) AS pedidos_ev1,
-                SUM(CASE WHEN evento_id = {$evento1Id} THEN ingressos ELSE 0 END) AS ingressos_ev1,
-                SUM(CASE WHEN evento_id = {$evento1Id} THEN receita ELSE 0 END) AS receita_ev1,
-                SUM(CASE WHEN evento_id = {$evento2Id} THEN pedidos ELSE 0 END) AS pedidos_ev2,
-                SUM(CASE WHEN evento_id = {$evento2Id} THEN ingressos ELSE 0 END) AS ingressos_ev2,
-                SUM(CASE WHEN evento_id = {$evento2Id} THEN receita ELSE 0 END) AS receita_ev2,
-                (SUM(CASE WHEN evento_id = {$evento1Id} THEN ingressos ELSE 0 END) - 
-                 SUM(CASE WHEN evento_id = {$evento2Id} THEN ingressos ELSE 0 END)) AS diff_ingressos,
-                (SUM(CASE WHEN evento_id = {$evento1Id} THEN receita ELSE 0 END) - 
-                 SUM(CASE WHEN evento_id = {$evento2Id} THEN receita ELSE 0 END)) AS diff_receita
-            FROM (
-                SELECT 
-                    p.evento_id,
-                    CASE 
-                        WHEN DATEDIFF(p.created_at, (
-                            SELECT MIN(created_at) 
-                            FROM pedidos 
-                            WHERE evento_id = p.evento_id 
-                                AND status IN ({$statusStr})
-                        )) <= 7 THEN '1. Primeira Semana'
-                        WHEN DATEDIFF(p.created_at, (
-                            SELECT MIN(created_at) 
-                            FROM pedidos 
-                            WHERE evento_id = p.evento_id 
-                                AND status IN ({$statusStr})
-                        )) <= 14 THEN '2. Segunda Semana'
-                        WHEN DATEDIFF(p.created_at, (
-                            SELECT MIN(created_at) 
-                            FROM pedidos 
-                            WHERE evento_id = p.evento_id 
-                                AND status IN ({$statusStr})
-                        )) <= 21 THEN '3. Terceira Semana'
-                        WHEN DATEDIFF(p.created_at, (
-                            SELECT MIN(created_at) 
-                            FROM pedidos 
-                            WHERE evento_id = p.evento_id 
-                                AND status IN ({$statusStr})
-                        )) <= 30 THEN '4. Primeiro Mês'
-                        WHEN DATEDIFF(p.created_at, (
-                            SELECT MIN(created_at) 
-                            FROM pedidos 
-                            WHERE evento_id = p.evento_id 
-                                AND status IN ({$statusStr})
-                        )) <= 60 THEN '5. Segundo Mês'
-                        ELSE '6. Demais Períodos'
-                    END AS periodo,
-                    COUNT(DISTINCT p.id) AS pedidos,
-                    COUNT(i.id) AS ingressos,
-                    SUM(p.total) AS receita
-                FROM pedidos p
-                LEFT JOIN ingressos i ON p.id = i.pedido_id 
-                    AND i.ticket_id <> {$ticketCortesia}
-                WHERE p.evento_id IN ({$evento1Id}, {$evento2Id})
-                    AND p.status IN ({$statusStr})
-                GROUP BY p.evento_id, periodo
-            ) periodos
-            GROUP BY periodo
-            ORDER BY periodo
+                p.evento_id,
+                DATE(p.created_at) AS created_at,
+                COUNT(DISTINCT p.id) AS pedidos,
+                COUNT(i.id) AS ingressos,
+                SUM(p.total) AS receita
+            FROM pedidos p
+            LEFT JOIN ingressos i ON p.id = i.pedido_id 
+                AND i.ticket_id <> {$ticketCortesia}
+            WHERE p.evento_id IN ({$evento1Id}, {$evento2Id})
+                AND p.status IN ({$statusStr})
+            GROUP BY p.evento_id, DATE(p.created_at)
         ";
         
         $result = $this->db->query($sql);
-        return $result ? $result->getResultArray() : [];
+        if (!$result) {
+            return [];
+        }
+        
+        // Agrupar por períodos em PHP
+        $periodos = [
+            '1. Primeira Semana' => ['pedidos_ev1' => 0, 'ingressos_ev1' => 0, 'receita_ev1' => 0, 'pedidos_ev2' => 0, 'ingressos_ev2' => 0, 'receita_ev2' => 0],
+            '2. Segunda Semana' => ['pedidos_ev1' => 0, 'ingressos_ev1' => 0, 'receita_ev1' => 0, 'pedidos_ev2' => 0, 'ingressos_ev2' => 0, 'receita_ev2' => 0],
+            '3. Terceira Semana' => ['pedidos_ev1' => 0, 'ingressos_ev1' => 0, 'receita_ev1' => 0, 'pedidos_ev2' => 0, 'ingressos_ev2' => 0, 'receita_ev2' => 0],
+            '4. Primeiro Mês' => ['pedidos_ev1' => 0, 'ingressos_ev1' => 0, 'receita_ev1' => 0, 'pedidos_ev2' => 0, 'ingressos_ev2' => 0, 'receita_ev2' => 0],
+            '5. Segundo Mês' => ['pedidos_ev1' => 0, 'ingressos_ev1' => 0, 'receita_ev1' => 0, 'pedidos_ev2' => 0, 'ingressos_ev2' => 0, 'receita_ev2' => 0],
+            '6. Demais Períodos' => ['pedidos_ev1' => 0, 'ingressos_ev1' => 0, 'receita_ev1' => 0, 'pedidos_ev2' => 0, 'ingressos_ev2' => 0, 'receita_ev2' => 0]
+        ];
+        
+        foreach ($result->getResultArray() as $row) {
+            $eventoId = $row['evento_id'];
+            $primeiraVendaEvento = $primeiraVenda[$eventoId] ?? null;
+            
+            if (!$primeiraVendaEvento) continue;
+            
+            $diffDias = (strtotime($row['created_at']) - strtotime($primeiraVendaEvento)) / 86400;
+            
+            if ($diffDias <= 7) {
+                $periodo = '1. Primeira Semana';
+            } elseif ($diffDias <= 14) {
+                $periodo = '2. Segunda Semana';
+            } elseif ($diffDias <= 21) {
+                $periodo = '3. Terceira Semana';
+            } elseif ($diffDias <= 30) {
+                $periodo = '4. Primeiro Mês';
+            } elseif ($diffDias <= 60) {
+                $periodo = '5. Segundo Mês';
+            } else {
+                $periodo = '6. Demais Períodos';
+            }
+            
+            $sufixo = $eventoId == $evento1Id ? '_ev1' : '_ev2';
+            $periodos[$periodo]['pedidos' . $sufixo] += $row['pedidos'];
+            $periodos[$periodo]['ingressos' . $sufixo] += $row['ingressos'];
+            $periodos[$periodo]['receita' . $sufixo] += $row['receita'];
+        }
+        
+        // Formatar resultado
+        $resultado = [];
+        foreach ($periodos as $nome => $dados) {
+            $resultado[] = [
+                'periodo' => $nome,
+                'pedidos_ev1' => $dados['pedidos_ev1'],
+                'ingressos_ev1' => $dados['ingressos_ev1'],
+                'receita_ev1' => $dados['receita_ev1'],
+                'pedidos_ev2' => $dados['pedidos_ev2'],
+                'ingressos_ev2' => $dados['ingressos_ev2'],
+                'receita_ev2' => $dados['receita_ev2'],
+                'diff_ingressos' => $dados['ingressos_ev1'] - $dados['ingressos_ev2'],
+                'diff_receita' => $dados['receita_ev1'] - $dados['receita_ev2']
+            ];
+        }
+        
+        return $resultado;
     }
     
     /**
