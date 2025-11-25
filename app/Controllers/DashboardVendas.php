@@ -49,6 +49,30 @@ class DashboardVendas extends BaseController
     }
     
     /**
+     * Debug - Ver dados brutos
+     */
+    public function debugDados()
+    {
+        $event_id = $this->request->getGet('evento_id') ?? session()->get('event_id');
+        
+        try {
+            $vendas_recentes = $this->vendasModel->getVendasRecentes($event_id, 20);
+            $vendas_por_metodo = $this->vendasModel->getVendasPorMetodo($event_id);
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'vendas_recentes' => $vendas_recentes,
+                'vendas_por_metodo' => $vendas_por_metodo
+            ]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
      * Teste simples - apenas métricas gerais
      */
     public function testeSimples()
@@ -127,7 +151,7 @@ class DashboardVendas extends BaseController
             
             try {
                 log_message('info', 'Buscando top ingressos...');
-                $dados['top_ingressos'] = $this->vendasModel->getTopIngressos($event_id, 10);
+                $dados['top_ingressos'] = $this->vendasModel->getTopIngressos($event_id, 999);
             } catch (\Exception $e) {
                 log_message('error', 'Erro em getTopIngressos: ' . $e->getMessage());
                 $dados['top_ingressos'] = [];

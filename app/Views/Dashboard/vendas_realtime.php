@@ -315,7 +315,7 @@
                             <button class="period-btn" data-period="90">90 dias</button>
                         </div>
                     </div>
-                    <div style="position: relative; height: 300px;">
+                    <div style="position: relative; height: 350px;">
                         <canvas id="chartEvolucao"></canvas>
                     </div>
                 </div>
@@ -339,18 +339,20 @@
             <div class="col-lg-6 mb-4">
                 <div class="table-card">
                     <div class="table-card-header">🎫 Ingressos Mais Vendidos</div>
-                    <table class="ga-table">
-                        <thead>
-                            <tr>
-                                <th>Ingresso</th>
-                                <th style="text-align: right;">Qtd.</th>
-                                <th style="text-align: right;">Receita</th>
-                            </tr>
-                        </thead>
-                        <tbody id="topIngressosBody">
-                            <tr><td colspan="3" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
-                        </tbody>
-                    </table>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <table class="ga-table">
+                            <thead>
+                                <tr>
+                                    <th>Ingresso</th>
+                                    <th style="text-align: right;">Qtd.</th>
+                                    <th style="text-align: right;">Receita</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topIngressosBody">
+                                <tr><td colspan="3" style="text-align: center; padding: 2rem;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -521,8 +523,7 @@ function updateCharts(data) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 2.5,
+            maintainAspectRatio: false,
             interaction: {
                 mode: 'index',
                 intersect: false
@@ -559,8 +560,16 @@ function updateCharts(data) {
     // Gráfico de Métodos
     const metodosData = data.vendas_por_metodo || [];
     
+    console.log('Métodos de pagamento recebidos:', metodosData);
+    
     if (metodosData.length === 0) {
         console.warn('Sem dados de métodos de pagamento');
+        // Mostrar mensagem no card
+        const canvasMetodos = document.getElementById('chartMetodos');
+        if (canvasMetodos) {
+            const parent = canvasMetodos.parentElement;
+            parent.innerHTML = '<div style="text-align: center; padding: 3rem; color: #999;">Sem dados de métodos de pagamento</div>';
+        }
         return;
     }
     
@@ -627,20 +636,31 @@ function updateTables(data) {
     }
     
     // Vendas Recentes
-    const vendasRecentes = data.vendas_recentes;
+    const vendasRecentes = data.vendas_recentes || [];
     const vendasBody = document.getElementById('vendasRecentesBody');
     
+    console.log('Vendas recentes recebidas:', vendasRecentes);
+    
+    if (!vendasBody) {
+        console.error('Elemento vendasRecentesBody não encontrado!');
+        return;
+    }
+    
     if (vendasRecentes.length === 0) {
-        vendasBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;">Nenhum dado disponível</td></tr>';
+        vendasBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #999;">Nenhuma venda recente</td></tr>';
     } else {
         vendasBody.innerHTML = vendasRecentes.map(venda => {
-            const metodo = venda.payment_type === 'pix' ? 
-                '<span class="badge-status badge-pix">PIX</span>' : 
-                '<span class="badge-status badge-credit">Cartão</span>';
+            let metodo = '<span class="badge-status" style="background: #666; color: white;">Outro</span>';
+            
+            if (venda.payment_type === 'pix' || venda.payment_type === 'PIX') {
+                metodo = '<span class="badge-status badge-pix">PIX</span>';
+            } else if (venda.payment_type === 'credit_card' || venda.payment_type === 'CREDIT_CARD') {
+                metodo = '<span class="badge-status badge-credit">Cartão</span>';
+            }
             
             return `
                 <tr>
-                    <td>${venda.cliente_nome || 'Anônimo'}</td>
+                    <td>${venda.cliente_nome || 'Cliente'}</td>
                     <td><strong>${formatCurrency(venda.total)}</strong></td>
                     <td>${metodo}</td>
                     <td>${formatTime(venda.created_at)}</td>

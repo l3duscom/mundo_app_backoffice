@@ -82,9 +82,9 @@ class VendasRealtimeModel extends Model
     }
     
     /**
-     * Top 10 ingressos mais vendidos
+     * Todos os ingressos vendidos (sem limite)
      */
-    public function getTopIngressos(int $evento_id, int $limit = 10): array
+    public function getTopIngressos(int $evento_id, int $limit = 999): array
     {
         $sql = "
         SELECT 

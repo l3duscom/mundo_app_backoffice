@@ -262,6 +262,7 @@ $routes->group('dashboard-vendas', function ($routes) {
     $routes->get('/', 'DashboardVendas::index');
     $routes->get('get-dados', 'DashboardVendas::getDados');
     $routes->get('teste-simples', 'DashboardVendas::testeSimples'); // TESTE
+    $routes->get('debug-dados', 'DashboardVendas::debugDados'); // DEBUG
 });
 
 // ========================================
