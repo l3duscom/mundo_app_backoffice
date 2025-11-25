@@ -16,10 +16,13 @@ class AdminDashboardVendas extends BaseController
     
     public function __construct()
     {
-        $this->vendasModel = new VendasComparativasModel();
+        // Desabilitar logs de deprecated temporariamente
+        error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE);
         
         // Garante que o helper de autenticação está carregado
         helper('autenticacao');
+        
+        $this->vendasModel = new VendasComparativasModel();
     }
     
     /**
@@ -66,15 +69,30 @@ class AdminDashboardVendas extends BaseController
      */
     public function getDadosComparativos()
     {
-        // Limpar qualquer output anterior (importante em produção)
-        if (ob_get_level() > 0) {
-            ob_clean();
+        // Capturar TODOS os erros possíveis
+        try {
+            // Limpar qualquer output anterior (importante em produção)
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            ob_start();
+            
+            // Garantir que sempre retorna JSON
+            $this->response->setHeader('Content-Type', 'application/json');
+            
+            log_message('info', 'getDadosComparativos: Início da requisição');
+        } catch (\Throwable $e) {
+            // Erro antes mesmo de começar
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erro fatal: ' . $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            exit;
         }
-        
-        // Garantir que sempre retorna JSON
-        $this->response->setHeader('Content-Type', 'application/json');
-        
-        log_message('info', 'getDadosComparativos: Início da requisição');
         
         // Verificar se o usuário está logado
         $usuario = usuario_logado();
@@ -134,25 +152,39 @@ class AdminDashboardVendas extends BaseController
                 ]
             ]);
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // Captura Exception e Error (PHP 7+)
             log_message('error', 'getDadosComparativos: Erro - ' . $e->getMessage());
             log_message('error', 'getDadosComparativos: Stack trace - ' . $e->getTraceAsString());
+            
+            // Limpar buffer novamente
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
             
             // TEMPORÁRIO: Sempre retornar erro detalhado para debug em produção
             // TODO: Remover após identificar o problema
             $message = 'Erro ao buscar dados: ' . $e->getMessage() . ' (Linha ' . $e->getLine() . ' em ' . basename($e->getFile()) . ')';
             
-            return $this->response->setJSON([
+            // Forçar header JSON
+            http_response_code(500);
+            header('Content-Type: application/json');
+            
+            $response = [
                 'success' => false,
                 'message' => $message,
                 'error_detail' => [
+                    'type' => get_class($e),
                     'message' => $e->getMessage(),
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                     'code' => $e->getCode(),
                     'trace' => array_slice(explode("\n", $e->getTraceAsString()), 0, 5) // Primeiras 5 linhas
                 ]
-            ])->setStatusCode(ResponseInterface::HTTP_INTERNAL_SERVER_ERROR);
+            ];
+            
+            echo json_encode($response);
+            exit;
         }
     }
     
@@ -294,12 +326,27 @@ class AdminDashboardVendas extends BaseController
      */
     public function testQueries()
     {
-        // Limpar buffer
-        if (ob_get_level() > 0) {
-            ob_clean();
+        // Capturar TODOS os erros
+        try {
+            // Limpar buffer
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            ob_start();
+            
+            // Forçar JSON sempre
+            http_response_code(200);
+            header('Content-Type: application/json');
+            
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erro ao inicializar: ' . $e->getMessage()
+            ]);
+            exit;
         }
-        
-        $this->response->setHeader('Content-Type', 'application/json');
         
         if (!$this->isAdmin()) {
             return $this->response->setJSON([
@@ -394,7 +441,14 @@ class AdminDashboardVendas extends BaseController
         $results['success'] = true;
         $results['message'] = 'Testes concluídos';
         
-        return $this->response->setJSON($results);
+        // Forçar output JSON
+        $json = json_encode($results);
+        
+        ob_end_clean();
+        http_response_code(200);
+        header('Content-Type: application/json');
+        echo $json;
+        exit;
     }
     
     /**
