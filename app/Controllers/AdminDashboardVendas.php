@@ -66,6 +66,11 @@ class AdminDashboardVendas extends BaseController
      */
     public function getDadosComparativos()
     {
+        // Limpar qualquer output anterior (importante em produção)
+        if (ob_get_level() > 0) {
+            ob_clean();
+        }
+        
         // Garantir que sempre retorna JSON
         $this->response->setHeader('Content-Type', 'application/json');
         
@@ -133,21 +138,20 @@ class AdminDashboardVendas extends BaseController
             log_message('error', 'getDadosComparativos: Erro - ' . $e->getMessage());
             log_message('error', 'getDadosComparativos: Stack trace - ' . $e->getTraceAsString());
             
-            // Retornar mensagem detalhada em ambiente de desenvolvimento
-            $message = 'Erro ao buscar dados';
-            if (ENVIRONMENT === 'development') {
-                $message .= ': ' . $e->getMessage() . ' (Linha ' . $e->getLine() . ' em ' . basename($e->getFile()) . ')';
-            }
+            // TEMPORÁRIO: Sempre retornar erro detalhado para debug em produção
+            // TODO: Remover após identificar o problema
+            $message = 'Erro ao buscar dados: ' . $e->getMessage() . ' (Linha ' . $e->getLine() . ' em ' . basename($e->getFile()) . ')';
             
             return $this->response->setJSON([
                 'success' => false,
                 'message' => $message,
-                'error_detail' => ENVIRONMENT === 'development' ? [
+                'error_detail' => [
                     'message' => $e->getMessage(),
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
-                    'trace' => explode("\n", $e->getTraceAsString())
-                ] : null
+                    'code' => $e->getCode(),
+                    'trace' => array_slice(explode("\n", $e->getTraceAsString()), 0, 5) // Primeiras 5 linhas
+                ]
             ])->setStatusCode(ResponseInterface::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -260,6 +264,11 @@ class AdminDashboardVendas extends BaseController
      */
     public function testApi()
     {
+        // Limpar buffer
+        if (ob_get_level() > 0) {
+            ob_clean();
+        }
+        
         // Garantir que retorna JSON
         $this->response->setHeader('Content-Type', 'application/json');
         
@@ -277,6 +286,115 @@ class AdminDashboardVendas extends BaseController
                 'environment' => ENVIRONMENT
             ]
         ]);
+    }
+    
+    /**
+     * MÉTODO DE DEBUG - REMOVER EM PRODUÇÃO
+     * Testa cada query separadamente
+     */
+    public function testQueries()
+    {
+        // Limpar buffer
+        if (ob_get_level() > 0) {
+            ob_clean();
+        }
+        
+        $this->response->setHeader('Content-Type', 'application/json');
+        
+        if (!$this->isAdmin()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Acesso negado'
+            ]);
+        }
+        
+        $evento1Id = (int) $this->request->getGet('evento1_id');
+        $evento2Id = (int) $this->request->getGet('evento2_id');
+        
+        if (!$evento1Id || !$evento2Id) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'IDs dos eventos são obrigatórios'
+            ]);
+        }
+        
+        $results = [
+            'evento1_id' => $evento1Id,
+            'evento2_id' => $evento2Id,
+            'tests' => []
+        ];
+        
+        // Teste 1: Visão Geral
+        try {
+            $visaoGeral = $this->vendasModel->getVisaoGeralEventos([$evento1Id, $evento2Id]);
+            $results['tests']['visao_geral'] = [
+                'status' => 'OK',
+                'count' => count($visaoGeral),
+                'data' => $visaoGeral
+            ];
+        } catch (\Exception $e) {
+            $results['tests']['visao_geral'] = [
+                'status' => 'ERRO',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => basename($e->getFile())
+            ];
+        }
+        
+        // Teste 2: Evolução Diária
+        try {
+            $evolucaoDiaria = $this->vendasModel->getEvolucaoDiariaComparativa($evento1Id, $evento2Id);
+            $results['tests']['evolucao_diaria'] = [
+                'status' => 'OK',
+                'count' => count($evolucaoDiaria),
+                'sample' => array_slice($evolucaoDiaria, 0, 2) // Primeiras 2 linhas
+            ];
+        } catch (\Exception $e) {
+            $results['tests']['evolucao_diaria'] = [
+                'status' => 'ERRO',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => basename($e->getFile())
+            ];
+        }
+        
+        // Teste 3: Comparação por Períodos
+        try {
+            $comparacaoPeriodos = $this->vendasModel->getComparacaoPorPeriodos($evento1Id, $evento2Id);
+            $results['tests']['comparacao_periodos'] = [
+                'status' => 'OK',
+                'count' => count($comparacaoPeriodos),
+                'data' => $comparacaoPeriodos
+            ];
+        } catch (\Exception $e) {
+            $results['tests']['comparacao_periodos'] = [
+                'status' => 'ERRO',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => basename($e->getFile())
+            ];
+        }
+        
+        // Teste 4: Resumo Executivo
+        try {
+            $resumoExecutivo = $this->vendasModel->getResumoExecutivo($evento1Id, $evento2Id);
+            $results['tests']['resumo_executivo'] = [
+                'status' => 'OK',
+                'data' => $resumoExecutivo
+            ];
+        } catch (\Exception $e) {
+            $results['tests']['resumo_executivo'] = [
+                'status' => 'ERRO',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => basename($e->getFile())
+            ];
+        }
+        
+        $results['success'] = true;
+        $results['message'] = 'Testes concluídos';
+        
+        return $this->response->setJSON($results);
     }
     
     /**
