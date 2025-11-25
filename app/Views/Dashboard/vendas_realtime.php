@@ -32,10 +32,16 @@
 .metric-card {
     background: var(--ga-card);
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 1rem;
     border: 1px solid var(--ga-border);
     transition: box-shadow 0.3s ease;
-    height: 100%;
+}
+
+.metric-card-compact {
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .metric-card:hover {
@@ -51,18 +57,51 @@
     letter-spacing: 0.5px;
 }
 
+.metric-card-compact .metric-label {
+    margin-bottom: 0.25rem;
+}
+
 .metric-value {
     font-size: 2rem;
     font-weight: 400;
     color: #202124;
     margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.metric-card-compact .metric-value {
+    font-size: 2.5rem;
+    margin-bottom: 0;
+    line-height: 1;
+}
+
+/* Valores menores para cards com números grandes */
+#receitaTotal {
+    font-size: 1.75rem !important;
+}
+
+#ticketMedio {
+    font-size: 2rem !important;
+}
+
+.metric-card-ingressos {
+    height: 303px;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 991px) {
+    .metric-card-ingressos {
+        height: auto;
+    }
 }
 
 .metric-change {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    margin-top: 0.25rem;
 }
 
 .metric-change.positive {
@@ -71,6 +110,100 @@
 
 .metric-change.negative {
     color: var(--ga-red);
+}
+
+.sub-metric-card-main {
+    background: var(--ga-card);
+    border: 2px solid var(--ga-blue);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: #202124;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100px;
+}
+
+.sub-metric-card {
+    background: var(--ga-bg);
+    border-radius: 6px;
+    padding: 0.4rem 0.5rem;
+    text-align: center;
+    border: 1px solid var(--ga-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 70px;
+}
+
+.sub-metric-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #5f6368;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sub-metric-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 0.15rem;
+}
+
+.sub-metric-label-small {
+    font-size: 0.65rem;
+    color: #5f6368;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+}
+
+.sub-metric-value-small {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #202124;
+}
+
+.metric-card-today {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 2px solid #2196f3;
+}
+
+.metric-card-today .metric-label {
+    color: #1565c0;
+}
+
+.metric-card-today .metric-value {
+    color: #0d47a1;
+}
+
+.metric-card-revenue {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 2px solid #4caf50;
+}
+
+.metric-card-revenue .metric-label {
+    color: #2e7d32;
+}
+
+.metric-card-revenue .metric-value {
+    color: #1b5e20;
+}
+
+.metric-card-pending {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border: 2px solid #ff9800;
+}
+
+.metric-card-pending .metric-label {
+    color: #e65100;
+}
+
+.metric-card-pending .metric-value {
+    color: #e65100;
 }
 
 .chart-card {
@@ -281,29 +414,61 @@
     <div id="dashboardContent" style="display: none;">
         <!-- Métricas Principais -->
         <div class="row g-3 mb-4">
-            <div class="col-md-6 col-lg-3">
-                <div class="metric-card">
-                    <div class="metric-label">Total de Ingressos</div>
-                    <div class="metric-value" id="totalIngressos">-</div>
-                    <div class="metric-change" id="changeIngressos">-</div>
+            <!-- Card de Ingressos com 3 subcards -->
+            <div class="col-lg-6">
+                <div class="metric-card metric-card-ingressos">
+                    <div class="metric-label mb-2">📊 Ingressos</div>
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <div class="sub-metric-card-main">
+                                <div class="sub-metric-label">Ingressos Vendidos</div>
+                                <div class="sub-metric-value" id="totalIngressos">-</div>
+                                <div class="metric-change" id="changeIngressos">-</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="sub-metric-card">
+                                <div class="sub-metric-label-small">🎁 Cortesias</div>
+                                <div class="sub-metric-value-small" id="totalCortesias">-</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="sub-metric-card">
+                                <div class="sub-metric-label-small">📝 Total Geral</div>
+                                <div class="sub-metric-value-small" id="totalComCortesias">-</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="metric-card">
-                    <div class="metric-label">Receita Total</div>
-                    <div class="metric-value" id="receitaTotal">-</div>
-                    <div class="metric-change" id="changeReceita">-</div>
+            <div class="col-md-6 col-lg-2">
+                <div class="metric-card metric-card-today metric-card-compact mb-3">
+                    <div class="metric-label">📅 Ingressos Hoje</div>
+                    <div class="metric-value" id="ingressosHoje">-</div>
                 </div>
-            </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="metric-card">
+                <div class="metric-card metric-card-compact">
                     <div class="metric-label">Ticket Médio</div>
                     <div class="metric-value" id="ticketMedio">-</div>
                     <div class="metric-change" id="changeTicket">-</div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-3">
-                <div class="metric-card">
+            <div class="col-md-6 col-lg-2">
+                <div class="metric-card metric-card-revenue metric-card-compact mb-3">
+                    <div class="metric-label">💰 Receita Hoje</div>
+                    <div class="metric-value" id="receitaHoje">-</div>
+                </div>
+                <div class="metric-card metric-card-compact">
+                    <div class="metric-label">Receita Total</div>
+                    <div class="metric-value" id="receitaTotal">-</div>
+                    <div class="metric-change" id="changeReceita">-</div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-2">
+                <div class="metric-card metric-card-pending metric-card-compact mb-3">
+                    <div class="metric-label">⏳ Pendentes</div>
+                    <div class="metric-value" id="pedidosPendentes">-</div>
+                </div>
+                <div class="metric-card metric-card-compact">
                     <div class="metric-label">Taxa de Conversão</div>
                     <div class="metric-value" id="taxaConversao">-</div>
                     <div class="metric-change" id="changeConversao">-</div>
@@ -442,6 +607,11 @@ function updateMetrics(data) {
     const conversao = data.taxa_conversao;
     
     document.getElementById('totalIngressos').textContent = formatNumber(metricas.total_ingressos || 0);
+    document.getElementById('totalCortesias').textContent = formatNumber(metricas.total_cortesias || 0);
+    document.getElementById('totalComCortesias').textContent = formatNumber(metricas.total_com_cortesias || 0);
+    document.getElementById('ingressosHoje').textContent = formatNumber(metricas.ingressos_hoje || 0);
+    document.getElementById('receitaHoje').textContent = formatCurrency(metricas.receita_hoje || 0);
+    document.getElementById('pedidosPendentes').textContent = formatNumber(metricas.pedidos_pendentes || 0);
     document.getElementById('receitaTotal').textContent = formatCurrency(metricas.receita_total || 0);
     document.getElementById('ticketMedio').textContent = formatCurrency(metricas.ticket_medio || 0);
     document.getElementById('taxaConversao').textContent = (conversao.taxa_conversao || 0) + '%';

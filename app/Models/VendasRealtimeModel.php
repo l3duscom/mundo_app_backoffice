@@ -26,6 +26,21 @@ class VendasRealtimeModel extends Model
              AND i2.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
              AND i2.ticket_id != 608
             ) as total_ingressos,
+            (SELECT SUM(CASE WHEN i6.tipo = 'combo' THEN 2 ELSE 1 END)
+             FROM ingressos i6
+             INNER JOIN pedidos p6 ON p6.id = i6.pedido_id
+             WHERE p6.evento_id = ?
+             AND p6.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+             AND i6.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+             AND i6.ticket_id = 608
+            ) as total_cortesias,
+            (SELECT SUM(CASE WHEN i7.tipo = 'combo' THEN 2 ELSE 1 END)
+             FROM ingressos i7
+             INNER JOIN pedidos p7 ON p7.id = i7.pedido_id
+             WHERE p7.evento_id = ?
+             AND p7.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+             AND i7.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+            ) as total_com_cortesias,
             (SELECT SUM(p3.total) 
              FROM pedidos p3 
              WHERE p3.evento_id = ? 
@@ -40,10 +55,30 @@ class VendasRealtimeModel extends Model
              FROM pedidos p5
              WHERE p5.evento_id = ?
              AND p5.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
-            ) as clientes_unicos
+            ) as clientes_unicos,
+            (SELECT SUM(CASE WHEN i8.tipo = 'combo' THEN 2 ELSE 1 END)
+             FROM ingressos i8
+             INNER JOIN pedidos p8 ON p8.id = i8.pedido_id
+             WHERE p8.evento_id = ?
+             AND p8.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+             AND i8.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+             AND i8.ticket_id != 608
+             AND DATE(p8.created_at) = CURDATE()
+            ) as ingressos_hoje,
+            (SELECT SUM(p9.total)
+             FROM pedidos p9
+             WHERE p9.evento_id = ?
+             AND p9.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+             AND DATE(p9.created_at) = CURDATE()
+            ) as receita_hoje,
+            (SELECT COUNT(DISTINCT p10.id)
+             FROM pedidos p10
+             WHERE p10.evento_id = ?
+             AND p10.status = 'PENDING'
+            ) as pedidos_pendentes
         ";
         
-        $query = $this->db->query($sql, [$evento_id, $evento_id, $evento_id, $evento_id]);
+        $query = $this->db->query($sql, [$evento_id, $evento_id, $evento_id, $evento_id, $evento_id, $evento_id, $evento_id, $evento_id, $evento_id]);
         return $query ? $query->getRowArray() : [];
     }
     
