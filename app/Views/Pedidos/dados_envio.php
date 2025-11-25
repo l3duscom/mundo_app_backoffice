@@ -248,7 +248,12 @@
                 <tbody>
                     <?php foreach ($dadosEnvio as $item) : ?>
                     <tr>
-                        <td><strong><?= esc($item['nome']) ?></strong></td>
+                        <td>
+                            <a href="<?= site_url('pedidos/ingressos/' . $item['pedido_id']) ?>" target="_blank" style="text-decoration: none;">
+                                <strong><?= esc($item['nome']) ?></strong>
+                                <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.8rem;"></i>
+                            </a>
+                        </td>
                         <td><small><?= esc($item['cpf']) ?></small></td>
                         <td><?= esc($item['cep']) ?></td>
                         <td><?= esc($item['endereco']) ?></td>

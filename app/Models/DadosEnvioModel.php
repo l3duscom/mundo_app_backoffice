@@ -59,7 +59,8 @@ class DadosEnvioModel extends Model
             '10' as largura,
             '15' as comprimento,
             '' as entrega_vizinho,
-            '' as rfid
+            '' as rfid,
+            p.id as pedido_id
 
         FROM pedidos p
 
