@@ -54,17 +54,17 @@ class VendasRealtimeModel extends Model
     {
         $sql = "
         SELECT 
-            DATE(i.created_at) as data,
+            DATE(p.created_at) as data,
             SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as ingressos,
             SUM(i.valor) as receita,
             COUNT(DISTINCT p.user_id) as clientes
-        FROM ingressos i
-        INNER JOIN pedidos p ON p.id = i.pedido_id
+        FROM pedidos p
+        INNER JOIN ingressos i ON i.pedido_id = p.id
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
-        AND i.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-        GROUP BY DATE(i.created_at)
+        AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        GROUP BY DATE(p.created_at)
         ORDER BY data ASC
         ";
         
@@ -80,16 +80,16 @@ class VendasRealtimeModel extends Model
     {
         $sql = "
         SELECT 
-            HOUR(i.created_at) as hora,
+            HOUR(p.created_at) as hora,
             SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as ingressos,
             SUM(i.valor) as receita
-        FROM ingressos i
-        INNER JOIN pedidos p ON p.id = i.pedido_id
+        FROM pedidos p
+        INNER JOIN ingressos i ON i.pedido_id = p.id
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
-        AND i.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-        GROUP BY HOUR(i.created_at)
+        AND p.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        GROUP BY HOUR(p.created_at)
         ORDER BY hora ASC
         ";
         
@@ -224,12 +224,12 @@ class VendasRealtimeModel extends Model
             'periodo_atual' as periodo,
             SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as ingressos,
             SUM(i.valor) as receita
-        FROM ingressos i
-        INNER JOIN pedidos p ON p.id = i.pedido_id
+        FROM pedidos p
+        INNER JOIN ingressos i ON i.pedido_id = p.id
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
-        AND i.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
         
         UNION ALL
         
@@ -237,13 +237,13 @@ class VendasRealtimeModel extends Model
             'periodo_anterior' as periodo,
             SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as ingressos,
             SUM(i.valor) as receita
-        FROM ingressos i
-        INNER JOIN pedidos p ON p.id = i.pedido_id
+        FROM pedidos p
+        INNER JOIN ingressos i ON i.pedido_id = p.id
         WHERE p.evento_id = ?
         AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
         AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
-        AND i.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-        AND i.created_at < DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        AND p.created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        AND p.created_at < DATE_SUB(CURDATE(), INTERVAL ? DAY)
         ";
         
         $query = $this->db->query($sql, [$evento_id, $dias, $evento_id, $dias * 2, $dias]);
