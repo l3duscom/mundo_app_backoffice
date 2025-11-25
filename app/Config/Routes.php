@@ -250,6 +250,12 @@ $routes->group('admin-dashboard-vendas', function ($routes) {
 });
 
 // ========================================
+// ROTAS DE EXPORTAÇÃO DE DADOS DE ENVIO
+// ========================================
+$routes->get('pedidos/dados-envio/(:num)', 'Pedidos::dadosEnvio/$1');
+$routes->get('pedidos/exportar-envios/(:num)', 'Pedidos::exportarEnvios/$1');
+
+// ========================================
 // Rotas da API de Autenticação
 // COM SEGURANÇA APRIMORADA
 // ========================================
