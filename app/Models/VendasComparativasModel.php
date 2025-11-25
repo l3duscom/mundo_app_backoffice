@@ -109,46 +109,38 @@ class VendasComparativasModel extends Model
             ORDER BY data_venda
         ");
         
-        // 4. Calcular acumulados para evento 1
+        // 4. Calcular acumulados para evento 1 usando variáveis
+        $this->db->query("SET @pedidos_acum = 0, @ingressos_acum = 0, @receita_acum = 0");
         $this->db->query("
             CREATE TEMPORARY TABLE vendas_acum_ev1 AS
             SELECT 
-                v1.dia_venda,
-                v1.data_venda,
-                v1.pedidos_dia,
-                v1.ingressos_dia,
-                v1.receita_dia,
-                (SELECT SUM(v2.pedidos_dia) 
-                 FROM vendas_numeradas_ev1 v2 
-                 WHERE v2.dia_venda <= v1.dia_venda) AS pedidos_acumulados,
-                (SELECT SUM(v2.ingressos_dia) 
-                 FROM vendas_numeradas_ev1 v2 
-                 WHERE v2.dia_venda <= v1.dia_venda) AS ingressos_acumulados,
-                (SELECT SUM(v2.receita_dia) 
-                 FROM vendas_numeradas_ev1 v2 
-                 WHERE v2.dia_venda <= v1.dia_venda) AS receita_acumulada
-            FROM vendas_numeradas_ev1 v1
+                dia_venda,
+                data_venda,
+                pedidos_dia,
+                ingressos_dia,
+                receita_dia,
+                @pedidos_acum := @pedidos_acum + pedidos_dia AS pedidos_acumulados,
+                @ingressos_acum := @ingressos_acum + ingressos_dia AS ingressos_acumulados,
+                @receita_acum := @receita_acum + receita_dia AS receita_acumulada
+            FROM vendas_numeradas_ev1
+            ORDER BY dia_venda
         ");
         
-        // 5. Calcular acumulados para evento 2
+        // 5. Calcular acumulados para evento 2 usando variáveis
+        $this->db->query("SET @pedidos_acum = 0, @ingressos_acum = 0, @receita_acum = 0");
         $this->db->query("
             CREATE TEMPORARY TABLE vendas_acum_ev2 AS
             SELECT 
-                v1.dia_venda,
-                v1.data_venda,
-                v1.pedidos_dia,
-                v1.ingressos_dia,
-                v1.receita_dia,
-                (SELECT SUM(v2.pedidos_dia) 
-                 FROM vendas_numeradas_ev2 v2 
-                 WHERE v2.dia_venda <= v1.dia_venda) AS pedidos_acumulados,
-                (SELECT SUM(v2.ingressos_dia) 
-                 FROM vendas_numeradas_ev2 v2 
-                 WHERE v2.dia_venda <= v1.dia_venda) AS ingressos_acumulados,
-                (SELECT SUM(v2.receita_dia) 
-                 FROM vendas_numeradas_ev2 v2 
-                 WHERE v2.dia_venda <= v1.dia_venda) AS receita_acumulada
-            FROM vendas_numeradas_ev2 v1
+                dia_venda,
+                data_venda,
+                pedidos_dia,
+                ingressos_dia,
+                receita_dia,
+                @pedidos_acum := @pedidos_acum + pedidos_dia AS pedidos_acumulados,
+                @ingressos_acum := @ingressos_acum + ingressos_dia AS ingressos_acumulados,
+                @receita_acum := @receita_acum + receita_dia AS receita_acumulada
+            FROM vendas_numeradas_ev2
+            ORDER BY dia_venda
         ");
         
         // 6. Query final
