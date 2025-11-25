@@ -266,6 +266,13 @@
                         </a>
                     </li>
                     <li>
+                        <a href="<?php echo site_url('admin-dashboard-vendas'); ?>">
+                            <div class="parent-icon"><i class="bx bx-line-chart"></i>
+                            </div>
+                            <div class="menu-title">Dashboard de Vendas</div>
+                        </a>
+                    </li>
+                    <li>
                         <a href="<?php echo site_url('/clientes'); ?>">
                             <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
                             </div>

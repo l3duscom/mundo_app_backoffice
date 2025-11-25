@@ -238,6 +238,16 @@ $routes->get('usuarios/perfil', 'Usuarios::perfil');
 $routes->post('usuarios/atualizarperfil', 'Usuarios::atualizarPerfil');
 
 // ========================================
+// DASHBOARD ADMINISTRATIVO DE VENDAS
+// ========================================
+$routes->group('admin-dashboard-vendas', function ($routes) {
+    $routes->get('/', 'AdminDashboardVendas::index');
+    $routes->get('dados-comparativos', 'AdminDashboardVendas::getDadosComparativos');
+    $routes->get('exportar-csv', 'AdminDashboardVendas::exportarCSV');
+    $routes->get('debug-usuario', 'AdminDashboardVendas::debugUsuario'); // REMOVER EM PRODUÇÃO
+});
+
+// ========================================
 // Rotas da API de Autenticação
 // COM SEGURANÇA APRIMORADA
 // ========================================
