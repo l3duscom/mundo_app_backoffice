@@ -7,7 +7,6 @@ API para retirar pontos de um usuário, gerando extrato da transação e atualiz
 Todas as rotas requerem:
 - Token JWT válido
 - Usuário autenticado
-- Permissão de administrador (apenas para retirar pontos)
 
 ## 📍 Endpoints
 
@@ -82,14 +81,6 @@ Content-Type: application/json
 {
   "success": false,
   "message": "Usuário não autenticado"
-}
-```
-
-##### 403 - Forbidden
-```json
-{
-  "success": false,
-  "message": "Acesso negado. Apenas administradores podem retirar pontos."
 }
 ```
 
@@ -174,7 +165,6 @@ Authorization: Bearer {JWT_TOKEN}
 ```
 1. Validação
    ├─> Token JWT válido?
-   ├─> Usuário é admin?
    ├─> Dados obrigatórios presentes?
    └─> Pontos > 0?
 
@@ -226,11 +216,10 @@ INSERT INTO extrato_pontos (
 ### Validações Implementadas
 
 1. **Autenticação:** Token JWT obrigatório
-2. **Autorização:** Apenas admins podem retirar pontos
-3. **Saldo:** Verifica se o usuário tem pontos suficientes
-4. **Transação:** Uso de DB transaction para garantir atomicidade
-5. **Log:** Todas as operações são registradas
-6. **Sanitização:** Dados são validados e sanitizados
+2. **Saldo:** Verifica se o usuário tem pontos suficientes
+3. **Transação:** Uso de DB transaction para garantir atomicidade
+4. **Log:** Todas as operações são registradas
+5. **Sanitização:** Dados são validados e sanitizados
 
 ### Rollback Automático
 
@@ -360,7 +349,6 @@ LIMIT 1;
 | 200 | OK | Operação bem-sucedida |
 | 400 | Bad Request | Dados inválidos ou saldo insuficiente |
 | 401 | Unauthorized | Token inválido ou ausente |
-| 403 | Forbidden | Usuário sem permissão de admin |
 | 404 | Not Found | Usuário não encontrado |
 | 500 | Internal Server Error | Erro no servidor |
 
@@ -379,9 +367,9 @@ log_message('error', 'Erro ao retirar pontos: Usuario 123, Pontos 100. Erro: Sal
 ## ⚠️ Notas Importantes
 
 1. **Transações Atômicas:** A retirada de pontos e criação do extrato são atômicas
-2. **Apenas Admin:** Somente administradores podem retirar pontos
+2. **Autenticação Obrigatória:** Usuário precisa estar autenticado
 3. **Sem Saldo Negativo:** Sistema impede retirada se saldo < pontos
-4. **Auditoria:** Todas as operações registram o admin responsável
+4. **Auditoria:** Todas as operações registram o usuário responsável
 5. **Event ID Opcional:** Pode ser null se não relacionado a um evento
 6. **Tipo de Transação:** Sempre será 'DEBITO' para retiradas
 
@@ -389,7 +377,7 @@ log_message('error', 'Erro ao retirar pontos: Usuario 123, Pontos 100. Erro: Sal
 - **Data:** 26/11/2025
 - **Endpoint:** `/api/usuarios/retirar-pontos`
 - **Método:** POST
-- **Autenticação:** JWT + Admin
+- **Autenticação:** JWT (qualquer usuário autenticado)
 - **Controller:** `App\Controllers\Api\Usuarios`
 - **Transação:** Sim (DB Transaction)
 - **Status:** ✅ Implementado e documentado

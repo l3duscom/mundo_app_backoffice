@@ -8,7 +8,7 @@
 **Pré-condição:**
 - Usuário existe (ID: 123)
 - Saldo atual: 1000 pontos
-- Admin autenticado
+- Usuário autenticado
 
 **Request:**
 ```json
@@ -164,26 +164,7 @@ curl -X POST /api/usuarios/retirar-pontos \
 
 ---
 
-### Teste 7: Usuário Não Admin
-**Cenário:** Usuário comum tentando retirar pontos
-
-**Request:**
-```json
-POST /api/usuarios/retirar-pontos
-{
-  "usuario_id": 123,
-  "pontos": 100,
-  "motivo": "Teste"
-}
-```
-
-**Resultado Esperado:**
-- ✅ Status: 403
-- ✅ `message: "Acesso negado. Apenas administradores podem retirar pontos."`
-
----
-
-### Teste 8: Dados Inválidos - Pontos Zero
+### Teste 7: Dados Inválidos - Pontos Zero
 **Request:**
 ```json
 POST /api/usuarios/retirar-pontos
@@ -200,7 +181,7 @@ POST /api/usuarios/retirar-pontos
 
 ---
 
-### Teste 9: Dados Inválidos - Pontos Negativos
+### Teste 8: Dados Inválidos - Pontos Negativos
 **Request:**
 ```json
 POST /api/usuarios/retirar-pontos
@@ -217,7 +198,7 @@ POST /api/usuarios/retirar-pontos
 
 ---
 
-### Teste 10: Campo Obrigatório Faltando
+### Teste 9: Campo Obrigatório Faltando
 **Request:**
 ```json
 POST /api/usuarios/retirar-pontos
@@ -235,7 +216,7 @@ POST /api/usuarios/retirar-pontos
 
 ## 🔄 Teste de Transação (Atomicidade)
 
-### Teste 11: Rollback em Caso de Erro
+### Teste 10: Rollback em Caso de Erro
 
 **Objetivo:** Garantir que se houver erro, nenhuma alteração é feita
 
@@ -267,7 +248,7 @@ SELECT pontos FROM usuarios WHERE id = 123;
 
 ## 📊 Testes de Performance
 
-### Teste 12: Múltiplas Retiradas Simultâneas
+### Teste 11: Múltiplas Retiradas Simultâneas
 
 **JavaScript:**
 ```javascript
@@ -297,7 +278,6 @@ console.log('Processadas:', resultados.length);
 ### Validações
 - [ ] Token JWT ausente → 401
 - [ ] Token JWT inválido → 401
-- [ ] Usuário não admin → 403
 - [ ] usuario_id ausente → 400
 - [ ] pontos ausente → 400
 - [ ] pontos = 0 → 400

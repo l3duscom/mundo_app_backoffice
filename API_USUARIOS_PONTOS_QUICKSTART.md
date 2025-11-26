@@ -6,7 +6,7 @@ Nova API para **retirar pontos** de usuários com registro no extrato e validaç
 
 ## 📍 Endpoints Criados
 
-### 1️⃣ **Retirar Pontos** (Admin)
+### 1️⃣ **Retirar Pontos** (Autenticado)
 ```
 POST /api/usuarios/retirar-pontos
 ```
@@ -102,11 +102,6 @@ curl -X POST https://mundodream.com.br/api/usuarios/retirar-pontos \
            ▼
 ┌─────────────────────┐
 │ Validar Autenticação│ → 401 se falhar
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Validar Admin       │ → 403 se não for admin
 └──────────┬──────────┘
            │
            ▼
@@ -230,7 +225,7 @@ GET /api/usuarios/saldo/123
 **URL Base:** `https://mundodream.com.br/api/usuarios`
 
 **Rotas:**
-- `POST /retirar-pontos` - Retirar pontos (admin)
+- `POST /retirar-pontos` - Retirar pontos (autenticado)
 - `GET /saldo/{id}` - Consultar saldo (autenticado)
 
 **Status:** ✅ Implementado, testado e documentado

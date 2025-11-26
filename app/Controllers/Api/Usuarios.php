@@ -27,8 +27,7 @@ class Usuarios extends BaseController
      *   "usuario_id": 123,
      *   "pontos": 100,
      *   "motivo": "Resgate de prêmio",
-     *   "event_id": 17,
-     *   "admin": 1  // ID do admin que está fazendo a operação
+     *   "event_id": 17
      * }
      */
     public function retirarPontos()
@@ -41,16 +40,6 @@ class Usuarios extends BaseController
                     'message' => 'Usuário não autenticado'
                 ])
                 ->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
-        }
-        
-        // Validar permissão de admin
-        if (!$this->usuarioLogado()->is_admin) {
-            return $this->response
-                ->setJSON([
-                    'success' => false,
-                    'message' => 'Acesso negado. Apenas administradores podem retirar pontos.'
-                ])
-                ->setStatusCode(ResponseInterface::HTTP_FORBIDDEN);
         }
         
         // Obter dados do POST
