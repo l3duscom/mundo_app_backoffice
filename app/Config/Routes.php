@@ -130,6 +130,17 @@ $routes->group('api/usuario-conquistas', ['filter' => 'secureApi'], function ($r
     $routes->post('(:num)/revogar', 'Api\UsuarioConquistas::revogar/$1', ['filter' => 'jwtAuth']); // Revoga conquista
 });
 
+// ========================================
+// Rotas da API de Usuários (Pontos)
+// ========================================
+$routes->group('api/usuarios', ['filter' => 'secureApi'], function ($routes) {
+    // Retirar pontos de um usuário (apenas admin)
+    $routes->post('retirar-pontos', 'Api\Usuarios::retirarPontos', ['filter' => 'jwtAuth']);
+    
+    // Consultar saldo de pontos
+    $routes->get('saldo/(:num)', 'Api\Usuarios::consultarSaldo/$1', ['filter' => 'jwtAuth']);
+});
+
 $routes->group('assinaturas', ['namespace' => 'App\Controllers'], function($routes) {
     $routes->get('/', 'Assinaturas::index');
     $routes->get('contratar/(:num)', 'Assinaturas::contratar/$1');
