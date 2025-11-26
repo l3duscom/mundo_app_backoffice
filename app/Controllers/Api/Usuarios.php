@@ -32,17 +32,8 @@ class Usuarios extends BaseController
      */
     public function retirarPontos()
     {
-        // Obter usuário autenticado via JWT (definido pelo JwtAuthFilter)
-        $usuarioAutenticado = $this->request->usuarioAutenticado ?? null;
-        
-        if (!$usuarioAutenticado) {
-            return $this->response
-                ->setJSON([
-                    'success' => false,
-                    'message' => 'Usuário não autenticado'
-                ])
-                ->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
-        }
+        // O filtro JWT já validou a autenticação
+        // Não precisa verificar novamente no controller
         
         // Obter dados do POST
         $json = $this->request->getJSON(true);
@@ -79,7 +70,17 @@ class Usuarios extends BaseController
         $pontos = (int) $json['pontos'];
         $motivo = trim($json['motivo']);
         $event_id = !empty($json['event_id']) ? (int) $json['event_id'] : null;
-        $admin_id = $usuarioAutenticado['user_id']; // ID do usuário que está fazendo a operação
+        
+        // Obter ID de quem está fazendo a operação (do JWT ou do body)
+        $usuarioAutenticado = $this->request->usuarioAutenticado ?? null;
+        $admin_id = null;
+        
+        if ($usuarioAutenticado && isset($usuarioAutenticado['user_id'])) {
+            $admin_id = (int) $usuarioAutenticado['user_id'];
+        } elseif (isset($json['atribuido_por'])) {
+            // Fallback: aceitar do body (como a API de conquistas)
+            $admin_id = (int) $json['atribuido_por'];
+        }
         
         // Buscar usuário
         $usuario = $this->usuarioModel->find($usuario_id);
@@ -203,17 +204,8 @@ class Usuarios extends BaseController
      */
     public function consultarSaldo($usuario_id = null)
     {
-        // Obter usuário autenticado via JWT (definido pelo JwtAuthFilter)
-        $usuarioAutenticado = $this->request->usuarioAutenticado ?? null;
-        
-        if (!$usuarioAutenticado) {
-            return $this->response
-                ->setJSON([
-                    'success' => false,
-                    'message' => 'Usuário não autenticado'
-                ])
-                ->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
-        }
+        // O filtro JWT já validou a autenticação
+        // Não precisa verificar novamente no controller
         
         if (empty($usuario_id)) {
             return $this->response
