@@ -73,13 +73,15 @@ class Usuarios extends BaseController
         
         // Obter ID de quem está fazendo a operação (do JWT ou do body)
         $usuarioAutenticado = $this->request->usuarioAutenticado ?? null;
-        $admin_id = null;
         
         if ($usuarioAutenticado && isset($usuarioAutenticado['user_id'])) {
             $admin_id = (int) $usuarioAutenticado['user_id'];
         } elseif (isset($json['atribuido_por'])) {
             // Fallback: aceitar do body (como a API de conquistas)
             $admin_id = (int) $json['atribuido_por'];
+        } else {
+            // Se não conseguiu obter de nenhum lugar, usa o próprio usuario_id
+            $admin_id = $usuario_id;
         }
         
         // Buscar usuário
@@ -108,6 +110,9 @@ class Usuarios extends BaseController
                 ->setStatusCode(ResponseInterface::HTTP_BAD_REQUEST);
         }
         
+        // Log para debug
+        log_message('debug', "admin_id definido como: {$admin_id}");
+        
         // Iniciar transação
         $this->db->transStart();
         
@@ -125,22 +130,24 @@ class Usuarios extends BaseController
             }
             
             // Criar registro no extrato
+            // IMPORTANTE: O modelo usa 'user_id', 'tipo' e 'atribuido_por'
             $extratoData = [
-                'usuario_id' => $usuario_id,
+                'user_id' => $usuario_id,  // não 'usuario_id'
                 'event_id' => $event_id,
-                'tipo_transacao' => 'DEBITO',
+                'tipo' => 'DEBITO',  // não 'tipo_transacao'
                 'pontos' => $pontos,
                 'saldo_anterior' => $saldoAtual,
                 'saldo_atual' => $novoSaldo,
                 'descricao' => $motivo,
-                'admin' => $admin_id,
-                'created_at' => date('Y-m-d H:i:s')
+                'atribuido_por' => $admin_id,  // não 'admin'
             ];
             
             $extratoId = $this->extratoPontosModel->insert($extratoData);
             
             if (!$extratoId) {
-                throw new \Exception('Erro ao criar registro no extrato de pontos');
+                $errors = $this->extratoPontosModel->errors();
+                log_message('error', 'Erros de validação do extrato: ' . json_encode($errors));
+                throw new \Exception('Erro ao criar registro no extrato de pontos: ' . json_encode($errors));
             }
             
             // Completar transação
