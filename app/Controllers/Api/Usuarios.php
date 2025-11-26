@@ -32,8 +32,10 @@ class Usuarios extends BaseController
      */
     public function retirarPontos()
     {
-        // Validar autenticação
-        if (!$this->usuarioLogado()) {
+        // Obter usuário autenticado via JWT (definido pelo JwtAuthFilter)
+        $usuarioAutenticado = $this->request->usuarioAutenticado ?? null;
+        
+        if (!$usuarioAutenticado) {
             return $this->response
                 ->setJSON([
                     'success' => false,
@@ -77,7 +79,7 @@ class Usuarios extends BaseController
         $pontos = (int) $json['pontos'];
         $motivo = trim($json['motivo']);
         $event_id = !empty($json['event_id']) ? (int) $json['event_id'] : null;
-        $admin_id = $this->usuarioLogado()->id;
+        $admin_id = $usuarioAutenticado['user_id']; // ID do usuário que está fazendo a operação
         
         // Buscar usuário
         $usuario = $this->usuarioModel->find($usuario_id);
@@ -201,7 +203,10 @@ class Usuarios extends BaseController
      */
     public function consultarSaldo($usuario_id = null)
     {
-        if (!$this->usuarioLogado()) {
+        // Obter usuário autenticado via JWT (definido pelo JwtAuthFilter)
+        $usuarioAutenticado = $this->request->usuarioAutenticado ?? null;
+        
+        if (!$usuarioAutenticado) {
             return $this->response
                 ->setJSON([
                     'success' => false,
