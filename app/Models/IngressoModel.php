@@ -142,8 +142,6 @@ class IngressoModel extends Model
             'ingressos.ticket_id',
             'ingressos.created_at',
             'ingressos.nome',
-            'ingressos.email',
-            'ingressos.cpf',
             'ingressos.valor_unitario',
             'ingressos.valor',
             'ingressos.quantidade',

@@ -119,8 +119,6 @@ class Ingressos extends BaseController
                     'id' => $ingresso->id,
                     'codigo' => $ingresso->codigo,
                     'nome' => $ingresso->nome ?? null,
-                    'email' => $ingresso->email ?? null,
-                    'cpf' => $ingresso->cpf ?? null,
                     'status' => $ingresso->status ?? null,
                     'ticket_id' => $ingresso->ticket_id ?? null,
                     'pedido_id' => $ingresso->pedido_id ?? null,
@@ -208,11 +206,7 @@ class Ingressos extends BaseController
                         'convite' => $convite,
                     ]
                 ])
-                ->setStatusCode(200)
-                // Headers para prevenir cache
-                ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-                ->setHeader('Pragma', 'no-cache')
-                ->setHeader('Expires', '0');
+                ->setStatusCode(200);
 
         } catch (\Exception $e) {
             log_message('error', sprintf(
@@ -294,8 +288,6 @@ class Ingressos extends BaseController
                 'id' => $ingresso->id,
                 'codigo' => $ingresso->codigo,
                 'nome' => $ingresso->nome ?? null,
-                'email' => $ingresso->email ?? null,
-                'cpf' => $ingresso->cpf ?? null,
                 'status' => $ingresso->status ?? null,
                 'ticket_id' => $ingresso->ticket_id ?? null,
                 'pedido_id' => $ingresso->pedido_id ?? null,
@@ -415,8 +407,6 @@ class Ingressos extends BaseController
                         'id' => $ingresso->id,
                         'codigo' => $ingresso->codigo,
                         'nome' => $ingresso->nome ?? null,
-                        'email' => $ingresso->email ?? null,
-                        'cpf' => $ingresso->cpf ?? null,
                         'status' => $ingresso->status ?? null,
                         'qr_code' => $qrCodeBase64,
                     ];
@@ -449,11 +439,7 @@ class Ingressos extends BaseController
                         'total' => count($ingressos_atuais),
                     ]
                 ])
-                ->setStatusCode(200)
-                // Headers para prevenir cache
-                ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-                ->setHeader('Pragma', 'no-cache')
-                ->setHeader('Expires', '0');
+                ->setStatusCode(200);
 
         } catch (\Exception $e) {
             log_message('error', 'Erro ao buscar ingressos atuais API: ' . $e->getMessage());
