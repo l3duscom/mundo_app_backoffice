@@ -47,6 +47,14 @@ class Ingressos extends BaseController
         }
         
         $userId = $usuarioAutenticado['user_id'];
+        
+        // Log de quem está fazendo a requisição
+        log_message('info', sprintf(
+            "API Ingressos::index - Usuario %d (%s) requisitou lista completa de ingressos. IP: %s",
+            $userId,
+            $usuarioAutenticado['email'] ?? 'sem-email',
+            $this->request->getIPAddress()
+        ));
 
         try {
             // Busca o cliente vinculado ao usuário
@@ -65,6 +73,27 @@ class Ingressos extends BaseController
 
             // Recupera ingressos do usuário
             $ingressos = $this->ingressoModel->recuperaIngressosPorUsuario($userId);
+            
+            // VALIDAÇÃO DE SEGURANÇA CRÍTICA: Verificar se todos os ingressos pertencem ao usuário
+            foreach ($ingressos as $ingresso) {
+                if (isset($ingresso->user_id) && (int)$ingresso->user_id !== (int)$userId) {
+                    log_message('critical', sprintf(
+                        "🚨 VAZAMENTO DE DADOS DETECTADO! Usuario %d recebeu ingresso %d que pertence ao usuario %d. IP: %s",
+                        $userId,
+                        $ingresso->id,
+                        $ingresso->user_id,
+                        $this->request->getIPAddress()
+                    ));
+                    
+                    // Retornar erro em vez de dados de outro usuário
+                    return $this->response
+                        ->setJSON([
+                            'success' => false,
+                            'message' => 'Erro de segurança detectado. A requisição foi registrada.'
+                        ])
+                        ->setStatusCode(500);
+                }
+            }
 
             // Separa ingressos em atuais e anteriores
             $ingressos_atuais = [];
@@ -179,10 +208,18 @@ class Ingressos extends BaseController
                         'convite' => $convite,
                     ]
                 ])
-                ->setStatusCode(200);
+                ->setStatusCode(200)
+                // Headers para prevenir cache
+                ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+                ->setHeader('Pragma', 'no-cache')
+                ->setHeader('Expires', '0');
 
         } catch (\Exception $e) {
-            log_message('error', 'Erro ao buscar ingressos API: ' . $e->getMessage());
+            log_message('error', sprintf(
+                "Erro ao buscar ingressos API - Usuario %d: %s",
+                $userId ?? 0,
+                $e->getMessage()
+            ));
             
             return $this->response
                 ->setJSON([
@@ -319,9 +356,40 @@ class Ingressos extends BaseController
         }
         
         $userId = $usuarioAutenticado['user_id'];
+        
+        // Log de quem está fazendo a requisição
+        log_message('info', sprintf(
+            "API Ingressos::atuais - Usuario %d (%s) requisitou ingressos. IP: %s, User-Agent: %s",
+            $userId,
+            $usuarioAutenticado['email'] ?? 'sem-email',
+            $this->request->getIPAddress(),
+            substr($this->request->getUserAgent()->getAgentString(), 0, 100)
+        ));
 
         try {
             $ingressos = $this->ingressoModel->recuperaIngressosPorUsuario($userId);
+            
+            // VALIDAÇÃO DE SEGURANÇA CRÍTICA: Verificar se todos os ingressos pertencem ao usuário
+            foreach ($ingressos as $ingresso) {
+                if (isset($ingresso->user_id) && (int)$ingresso->user_id !== (int)$userId) {
+                    log_message('critical', sprintf(
+                        "🚨 VAZAMENTO DE DADOS DETECTADO! Usuario %d recebeu ingresso %d que pertence ao usuario %d. IP: %s",
+                        $userId,
+                        $ingresso->id,
+                        $ingresso->user_id,
+                        $this->request->getIPAddress()
+                    ));
+                    
+                    // Retornar erro em vez de dados de outro usuário
+                    return $this->response
+                        ->setJSON([
+                            'success' => false,
+                            'message' => 'Erro de segurança detectado. A requisição foi registrada.'
+                        ])
+                        ->setStatusCode(500);
+                }
+            }
+            
             $ingressos_atuais = [];
             $hoje = date('Y-m-d');
 
@@ -347,6 +415,8 @@ class Ingressos extends BaseController
                         'id' => $ingresso->id,
                         'codigo' => $ingresso->codigo,
                         'nome' => $ingresso->nome ?? null,
+                        'email' => $ingresso->email ?? null,
+                        'cpf' => $ingresso->cpf ?? null,
                         'status' => $ingresso->status ?? null,
                         'qr_code' => $qrCodeBase64,
                     ];
@@ -363,6 +433,13 @@ class Ingressos extends BaseController
                     $ingressos_atuais[] = $ingressoData;
                 }
             }
+            
+            log_message('info', sprintf(
+                "API Ingressos::atuais - Usuario %d - Retornando %d ingressos atuais de %d totais",
+                $userId,
+                count($ingressos_atuais),
+                count($ingressos)
+            ));
 
             return $this->response
                 ->setJSON([
@@ -372,7 +449,11 @@ class Ingressos extends BaseController
                         'total' => count($ingressos_atuais),
                     ]
                 ])
-                ->setStatusCode(200);
+                ->setStatusCode(200)
+                // Headers para prevenir cache
+                ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+                ->setHeader('Pragma', 'no-cache')
+                ->setHeader('Expires', '0');
 
         } catch (\Exception $e) {
             log_message('error', 'Erro ao buscar ingressos atuais API: ' . $e->getMessage());
