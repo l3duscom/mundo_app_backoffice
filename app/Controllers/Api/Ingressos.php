@@ -72,7 +72,7 @@ class Ingressos extends BaseController
             $hoje = date('Y-m-d');
 
             foreach ($ingressos as $ingresso) {
-                // Busca ticket vinculado
+                // Busca ticket vinculado (para informações adicionais)
                 $ticket = $this->ticketModel->find($ingresso->ticket_id ?? null);
                 
                 // Gera QR Code
@@ -109,21 +109,20 @@ class Ingressos extends BaseController
                         'data_fim' => $ticket->data_fim ?? null,
                         'valor' => $ticket->valor ?? null,
                     ];
+                }
 
-                    // Determina se é atual ou anterior
-                    $data_fim = $ticket->data_fim ?? null;
-                    if ($data_fim) {
-                        $limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
-                        if ($data_fim < $limite) {
-                            $ingressos_anteriores[] = $ingressoData;
-                        } else {
-                            $ingressos_atuais[] = $ingressoData;
-                        }
+                // Determina se é atual ou anterior baseado na data_fim do EVENTO
+                // (recuperaIngressosPorUsuario já traz eventos.data_fim no JOIN)
+                $data_fim = $ingresso->data_fim ?? null;
+                if ($data_fim) {
+                    $limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
+                    if ($data_fim < $limite) {
+                        $ingressos_anteriores[] = $ingressoData;
                     } else {
                         $ingressos_atuais[] = $ingressoData;
                     }
                 } else {
-                    // Sem ticket, considera como atual
+                    // Sem data_fim do evento, considera como atual
                     $ingressos_atuais[] = $ingressoData;
                 }
             }
@@ -326,13 +325,15 @@ class Ingressos extends BaseController
             $hoje = date('Y-m-d');
 
             foreach ($ingressos as $ingresso) {
-                $ticket = $this->ticketModel->find($ingresso->ticket_id ?? null);
-                
-                $data_fim = $ticket->data_fim ?? null;
+                // Usa data_fim do EVENTO (vem do JOIN em recuperaIngressosPorUsuario)
+                $data_fim = $ingresso->data_fim ?? null;
                 $limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
                 
                 // Só adiciona se for atual (não expirado há mais de 2 dias)
                 if (!$data_fim || $data_fim >= $limite) {
+                    // Busca ticket vinculado para informações adicionais
+                    $ticket = $this->ticketModel->find($ingresso->ticket_id ?? null);
+                    
                     // Gera QR Code
                     $qrCodeBase64 = null;
                     if ($ingresso->codigo) {

@@ -68,9 +68,8 @@ class Console extends BaseController
 		$ingressos_anteriores = [];
 		$hoje = date('Y-m-d');
 		foreach ($ingressos as $key => $ingresso) {
-			// Buscar ticket vinculado
-			$ticket = $this->ticketModel->find($ingresso->ticket_id ?? null);
-			$data_fim = $ticket->data_fim ?? null;
+			// Usa data_fim do EVENTO (vem do JOIN em recuperaIngressosPorUsuario)
+			$data_fim = $ingresso->data_fim ?? null;
 			if ($data_fim) {
 				// Se data_fim passou de 2 dias atrás, é anterior
 				$limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
@@ -80,7 +79,7 @@ class Console extends BaseController
 					$ingressos_atuais[] = $ingresso;
 				}
 			} else {
-				// Se não tem ticket/data_fim, considerar como atual
+				// Se não tem data_fim do evento, considerar como atual
 				$ingressos_atuais[] = $ingresso;
 			}
 			$ingressos[$key]->qr = (new QRCode)->render($ingressos[$key]->codigo);
