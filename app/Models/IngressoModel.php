@@ -130,15 +130,8 @@ class IngressoModel extends Model
 
     public function recuperaIngressosPorUsuario(int $usuario_id)
     {
-        // IMPORTANTE: Resetar query builder para prevenir state leaking entre requisições
-        $this->builder()->resetQuery();
-        
-        // Log para debug
-        log_message('debug', "IngressoModel::recuperaIngressosPorUsuario - Buscando ingressos do usuario ID: {$usuario_id}");
-        
         $atributos = [
             'ingressos.id',
-            'ingressos.user_id',  // ← ADICIONADO para validação de segurança
             'ingressos.ticket_id',
             'ingressos.created_at',
             'ingressos.nome',
@@ -171,21 +164,10 @@ class IngressoModel extends Model
             ->join('usuarios', 'usuarios.id = ingressos.user_id')
             ->join('eventos', 'eventos.id = pedidos.evento_id')
             ->where('usuarios.id', $usuario_id)
-            ->where('ingressos.user_id', $usuario_id)  // ← FILTRO DUPLO para segurança
             //->where('eventos.data_fim >= NOW()')
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
             ->orderBy('pedidos.id', 'DESC')
             ->findAll();
-        
-        // Log do resultado
-        $total = is_array($retorno) ? count($retorno) : 0;
-        log_message('debug', "IngressoModel::recuperaIngressosPorUsuario - Usuario {$usuario_id} possui {$total} ingressos");
-        
-        // Log dos IDs para debug (apenas se houver ingressos)
-        if ($total > 0) {
-            $ids = array_map(function($i) { return $i->id ?? 'null'; }, $retorno);
-            log_message('debug', "IngressoModel - IDs dos ingressos: " . implode(', ', $ids));
-        }
 
         return $retorno;
     }
