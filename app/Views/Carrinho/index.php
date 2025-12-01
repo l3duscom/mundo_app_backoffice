@@ -875,6 +875,17 @@ if (isset($event_id)) {
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
+                            <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
+                                        <div class="form-check mt-3 mb-3">
+                                            <div class="row">
+                                                <div class="col-7">
+                                                <strong class="item-name" style="color: #6C038F; font-size: 16px">Ingresso Basic Sábado - Solidário | Lote 3</strong><br>
+                                                <span class="text-muted ticket-info" style="font-size: 10px"> individual - 3º lote</strong></span>
+                                                <br><span style="color: red; font-size: 14px" class="item-name">ESGOTADO </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                            </div>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'sab' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
@@ -962,6 +973,18 @@ if (isset($event_id)) {
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
+                            
+                            <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
+                                        <div class="form-check mt-3 mb-3">
+                                            <div class="row">
+                                                <div class="col-7">
+                                                <strong class="item-name" style="color: #6C038F; font-size: 16px">Ingresso Basic Domingo - Solidário | Lote 3</strong><br>
+                                                <span class="text-muted ticket-info" style="font-size: 10px"> individual - 3º lote</strong></span>
+                                                <br><span style="color: red; font-size: 14px" class="item-name">ESGOTADO </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                            </div>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'individual' && $value['dia'] == 'dom' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
@@ -1053,6 +1076,18 @@ if (isset($event_id)) {
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
+                            
+                            <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
+                                        <div class="form-check mt-3 mb-3">
+                                            <div class="row">
+                                                <div class="col-7">
+                                                <strong class="item-name" style="color: #6C038F; font-size: 16px">Passaporte Basic - Solidário | Lote 3</strong><br>
+                                                <span class="text-muted ticket-info" style="font-size: 10px"> individual - 3º lote</strong></span>
+                                                <br><span style="color: red; font-size: 14px" class="item-name">ESGOTADO </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                            </div>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if ((($value['categoria'] == 'comum' || $value['categoria'] == 'premium') && $value['tipo'] == 'combo' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
@@ -1127,6 +1162,17 @@ if (isset($event_id)) {
                             <hr>
                             <div class="mb-0 mt-3 font-24" style="color: #333;">Selecione seu ingresso </div>
                             <p>Apenas a promoção de maior desconto será aplicada ao final do carrinho.</p>
+                            <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
+                                        <div class="form-check mt-3 mb-3">
+                                            <div class="row">
+                                                <div class="col-7">
+                                                <strong class="item-name" style="color: #6C038F; font-size: 16px">Platéia - Solidário | FLORINDA MEZA 2025 - DOMINGO</strong><br>
+                                                <span class="text-muted ticket-info" style="font-size: 10px"> individual - 3º lote</strong></span>
+                                                <br><span style="color: red; font-size: 14px" class="item-name">ESGOTADO </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                            </div>
                             <?php foreach ($items as $key => $value) : ?>
                                 <?php if (($value['categoria'] == 'camping' && empty($value['parent_ticket_id']))) : ?>
                                     <div class="card border border-muted px-3" data-item-id="<?= $key ?>">
