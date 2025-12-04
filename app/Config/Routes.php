@@ -141,6 +141,21 @@ $routes->group('api/usuarios', ['filter' => 'secureApi'], function ($routes) {
     $routes->get('saldo/(:num)', 'Api\Usuarios::consultarSaldo/$1', ['filter' => 'jwtAuth']);
 });
 
+// ========================================
+// Rotas da API de Produtos
+// ========================================
+$routes->group('api/produtos', ['filter' => 'secureApi'], function ($routes) {
+    // Rotas protegidas (requer JWT token válido)
+    $routes->get('/', 'Api\Produtos::index', ['filter' => 'jwtAuth']); // Lista todos os produtos
+    $routes->get('(:num)', 'Api\Produtos::show/$1', ['filter' => 'jwtAuth']); // Detalhes de um produto
+    $routes->get('evento/(:num)', 'Api\Produtos::porEvento/$1', ['filter' => 'jwtAuth']); // Produtos por evento
+    $routes->get('categorias/(:num)', 'Api\Produtos::categorias/$1', ['filter' => 'jwtAuth']); // Categorias por evento
+    $routes->post('/', 'Api\Produtos::create', ['filter' => 'jwtAuth']); // Cria novo produto
+    $routes->put('(:num)', 'Api\Produtos::update/$1', ['filter' => 'jwtAuth']); // Atualiza produto
+    $routes->patch('(:num)', 'Api\Produtos::update/$1', ['filter' => 'jwtAuth']); // Atualiza parcialmente
+    $routes->delete('(:num)', 'Api\Produtos::delete/$1', ['filter' => 'jwtAuth']); // Exclui produto
+});
+
 $routes->group('assinaturas', ['namespace' => 'App\Controllers'], function($routes) {
     $routes->get('/', 'Assinaturas::index');
     $routes->get('contratar/(:num)', 'Assinaturas::contratar/$1');
