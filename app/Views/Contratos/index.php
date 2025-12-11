@@ -65,7 +65,7 @@
                     </div>
                     <div>
                         <h2 class="mb-0" id="totalContratos">-</h2>
-                        <small class="text-muted">Contratos</small>
+                        <span class="text-muted fw-semibold">Total de Contratos</span>
                     </div>
                 </div>
             </div>
@@ -82,7 +82,7 @@
                     </div>
                     <div>
                         <h5 class="mb-0" id="valorTotal">-</h5>
-                        <small class="text-muted">Valor Total</small>
+                        <span class="text-muted fw-semibold">Valor Total Contratado</span>
                     </div>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                     </div>
                     <div>
                         <h5 class="mb-0" id="valorPago">-</h5>
-                        <small class="text-muted">Valor Pago</small>
+                        <span class="text-muted fw-semibold">Valor Recebido</span>
                     </div>
                 </div>
             </div>
@@ -116,7 +116,7 @@
                     </div>
                     <div>
                         <h5 class="mb-0" id="valorEmAberto">-</h5>
-                        <small class="text-muted">Em Aberto</small>
+                        <span class="text-muted fw-semibold">Valor a Receber</span>
                     </div>
                 </div>
             </div>

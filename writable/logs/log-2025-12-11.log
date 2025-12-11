@@ -1659,3 +1659,58 @@ INFO - 11-12-2025 16:21:03 --> CSRF cookie sent.
 INFO - 11-12-2025 16:21:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
 INFO - 11-12-2025 16:21:03 --> CSRF cookie sent.
 INFO - 11-12-2025 16:21:03 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:26 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:10:27 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:29 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:10:29 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:29 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:29 --> CSRF cookie sent.
+ERROR - 11-12-2025 17:10:30 --> Unknown column 'contrato_itens.item_catalogo_id' in 'on clause'
+INFO - 11-12-2025 17:10:33 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:36 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:10:37 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:37 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:38 --> CSRF cookie sent.
+ERROR - 11-12-2025 17:10:38 --> Unknown column 'contrato_itens.item_catalogo_id' in 'on clause'
+INFO - 11-12-2025 17:10:49 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:10:49 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:10:49 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:50 --> CSRF cookie sent.
+INFO - 11-12-2025 17:10:50 --> CSRF cookie sent.
+ERROR - 11-12-2025 17:10:50 --> Unknown column 'contrato_itens.item_catalogo_id' in 'on clause'
+INFO - 11-12-2025 17:14:07 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:14:07 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:08 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:08 --> CSRF cookie sent.
+ERROR - 11-12-2025 17:14:08 --> Unknown column 'ci.item_catalogo_id' in 'on clause'
+INFO - 11-12-2025 17:14:14 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:14:15 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:15 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:15 --> CSRF cookie sent.
+ERROR - 11-12-2025 17:14:15 --> Unknown column 'ci.item_catalogo_id' in 'on clause'
+INFO - 11-12-2025 17:14:26 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:14:26 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:27 --> CSRF cookie sent.
+INFO - 11-12-2025 17:14:27 --> CSRF cookie sent.
+ERROR - 11-12-2025 17:14:27 --> Unknown column 'ci.item_catalogo_id' in 'on clause'
+INFO - 11-12-2025 17:16:32 --> CSRF cookie sent.
+INFO - 11-12-2025 17:16:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:16:33 --> CSRF cookie sent.
+INFO - 11-12-2025 17:16:34 --> CSRF cookie sent.
+INFO - 11-12-2025 17:16:34 --> CSRF cookie sent.
+INFO - 11-12-2025 17:16:55 --> CSRF cookie sent.
+INFO - 11-12-2025 17:16:58 --> CSRF cookie sent.
+INFO - 11-12-2025 17:17:09 --> CSRF cookie sent.
+INFO - 11-12-2025 17:19:00 --> CSRF cookie sent.
+INFO - 11-12-2025 17:19:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 11-12-2025 17:19:00 --> CSRF cookie sent.
+INFO - 11-12-2025 17:19:01 --> CSRF cookie sent.
+INFO - 11-12-2025 17:19:01 --> CSRF cookie sent.
