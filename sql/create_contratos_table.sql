@@ -70,15 +70,19 @@ CREATE TABLE IF NOT EXISTS `contratos` (
 
 -- ========================================
 -- IMPORTANTE: Se a tabela já existe, execute os comandos abaixo
+-- NOTA: MySQL 5.7 não suporta "IF NOT EXISTS" em ALTER TABLE
+-- Execute diretamente - se a coluna já existir, ignore o erro
 -- ========================================
 
 -- Adicionar coluna desconto_adicional (OBRIGATÓRIO para tabelas existentes)
-ALTER TABLE `contratos` ADD COLUMN IF NOT EXISTS `desconto_adicional` DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER `valor_desconto`;
+-- Se der erro "Duplicate column name", a coluna já existe e pode ignorar
+ALTER TABLE `contratos` ADD COLUMN `desconto_adicional` DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER `valor_desconto`;
 
 -- Remover colunas antigas (se existirem) - Opcional
--- ALTER TABLE `contratos` DROP COLUMN IF EXISTS `tipo_contrato`;
--- ALTER TABLE `contratos` DROP COLUMN IF EXISTS `localizacao`;
--- ALTER TABLE `contratos` DROP COLUMN IF EXISTS `metragem`;
+-- Se der erro "Can't DROP", a coluna não existe e pode ignorar
+-- ALTER TABLE `contratos` DROP COLUMN `tipo_contrato`;
+-- ALTER TABLE `contratos` DROP COLUMN `localizacao`;
+-- ALTER TABLE `contratos` DROP COLUMN `metragem`;
 
 -- ========================================
 -- Para remover a tabela (CUIDADO!)
