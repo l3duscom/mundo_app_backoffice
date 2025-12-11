@@ -116,25 +116,33 @@ class ContratoModel extends Model
 
     /**
      * Gera o próximo código de contrato
+     * Formato: CTR-ANO-XXXXXXXX (8 caracteres aleatórios)
      *
      * @return string
      */
     public function gerarCodigo(): string
     {
         $ano = date('Y');
+        $tentativas = 0;
+        $maxTentativas = 50;
         
-        $ultimo = $this->select('codigo')
-            ->like('codigo', "CTR-{$ano}-", 'after')
-            ->orderBy('id', 'DESC')
-            ->first();
-
-        if ($ultimo && preg_match('/CTR-' . $ano . '-(\d+)/', $ultimo->codigo, $matches)) {
-            $numero = (int)$matches[1] + 1;
-        } else {
-            $numero = 1;
-        }
-
-        return sprintf('CTR-%s-%04d', $ano, $numero);
+        do {
+            // Gera código aleatório de 8 caracteres (letras maiúsculas e números)
+            $codigoAleatorio = strtoupper(substr(bin2hex(random_bytes(4)), 0, 8));
+            $codigo = sprintf('CTR-%s-%s', $ano, $codigoAleatorio);
+            
+            // Verifica se já existe
+            $existe = $this->where('codigo', $codigo)->countAllResults() > 0;
+            
+            $tentativas++;
+            
+            if ($tentativas >= $maxTentativas) {
+                throw new \RuntimeException('Não foi possível gerar um código único após ' . $maxTentativas . ' tentativas');
+            }
+            
+        } while ($existe);
+        
+        return $codigo;
     }
 
     /**
