@@ -141,6 +141,7 @@
             <option value="Indie" <?php echo ($expositor->tipo_expositor ?? '') === 'Indie' ? 'selected' : ''; ?>>Indie</option>
             <option value="Games" <?php echo ($expositor->tipo_expositor ?? '') === 'Games' ? 'selected' : ''; ?>>Games</option>
             <option value="Espaço Temático" <?php echo ($expositor->tipo_expositor ?? '') === 'Espaço Temático' ? 'selected' : ''; ?>>Espaço Temático</option>
+            <option value="Estúdio Tattoo" <?php echo ($expositor->tipo_expositor ?? '') === 'Estúdio Tattoo' ? 'selected' : ''; ?>>Estúdio Tattoo</option>
             <option value="Parceiros" <?php echo ($expositor->tipo_expositor ?? '') === 'Parceiros' ? 'selected' : ''; ?>>Parceiros</option>
             <option value="Food Park" <?php echo ($expositor->tipo_expositor ?? '') === 'Food Park' ? 'selected' : ''; ?>>Food Park</option>
             <option value="Patrocinadores" <?php echo ($expositor->tipo_expositor ?? '') === 'Patrocinadores' ? 'selected' : ''; ?>>Patrocinadores</option>

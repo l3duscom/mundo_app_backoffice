@@ -117,6 +117,7 @@ class ItemCatalogoModel extends Model
             'Indie',
             'Games',
             'Espaço Temático',
+            'Estúdio Tattoo',
             'Food Park',
             'Cota',
             'Patrocínio',
