@@ -29,6 +29,7 @@ class Contratos extends BaseController
 
         $data = [
             'titulo' => 'Listando os contratos',
+            'eventos' => $this->eventoModel->orderBy('id', 'DESC')->findAll(),
         ];
 
         return view('Contratos/index', $data);
@@ -77,6 +78,114 @@ class Contratos extends BaseController
         ];
 
         return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Recupera totais para o dashboard de contratos (AJAX)
+     */
+    public function recuperaTotais()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $eventId = $this->request->getGet('event_id');
+
+        // Query base
+        $builder = $this->contratoModel
+            ->select('contratos.*, itens_catalogo.tipo as tipo_item, itens_catalogo.nome as item_nome')
+            ->join('contrato_itens', 'contrato_itens.contrato_id = contratos.id', 'left')
+            ->join('itens_catalogo', 'itens_catalogo.id = contrato_itens.item_catalogo_id', 'left')
+            ->where('contratos.deleted_at IS NULL');
+
+        if (!empty($eventId)) {
+            $builder->where('contratos.event_id', $eventId);
+        }
+
+        $dados = $builder->findAll();
+
+        // Inicializar totais
+        $totais = [
+            'quantidade_contratos' => 0,
+            'valor_total' => 0,
+            'valor_pago' => 0,
+            'valor_em_aberto' => 0,
+            'por_tipo' => [],
+            'por_situacao' => [],
+        ];
+
+        // IDs de contratos já contados
+        $contratosContados = [];
+        $contratosPorTipo = [];
+
+        foreach ($dados as $item) {
+            // Conta contrato apenas uma vez
+            if (!in_array($item->id, $contratosContados)) {
+                $contratosContados[] = $item->id;
+                $totais['quantidade_contratos']++;
+                $totais['valor_total'] += (float)$item->valor_final;
+                $totais['valor_pago'] += (float)$item->valor_pago;
+                $totais['valor_em_aberto'] += (float)$item->valor_em_aberto;
+
+                // Por situação
+                $situacao = $item->situacao ?? 'proposta';
+                if (!isset($totais['por_situacao'][$situacao])) {
+                    $totais['por_situacao'][$situacao] = [
+                        'quantidade' => 0,
+                        'valor' => 0,
+                    ];
+                }
+                $totais['por_situacao'][$situacao]['quantidade']++;
+                $totais['por_situacao'][$situacao]['valor'] += (float)$item->valor_final;
+            }
+
+            // Por tipo de item
+            $tipo = $item->tipo_item ?? 'Outros';
+            if (!empty($tipo)) {
+                $chave = $item->id . '-' . $tipo;
+                if (!isset($contratosPorTipo[$chave])) {
+                    $contratosPorTipo[$chave] = true;
+                    
+                    if (!isset($totais['por_tipo'][$tipo])) {
+                        $totais['por_tipo'][$tipo] = [
+                            'quantidade' => 0,
+                            'valor' => 0,
+                        ];
+                    }
+                    $totais['por_tipo'][$tipo]['quantidade']++;
+                }
+            }
+        }
+
+        // Buscar valores por tipo (baseado nos itens dos contratos)
+        $valoresPorTipo = $this->contratoModel
+            ->select('itens_catalogo.tipo, SUM(contrato_itens.valor_total) as valor_total, COUNT(DISTINCT contratos.id) as quantidade')
+            ->join('contrato_itens', 'contrato_itens.contrato_id = contratos.id')
+            ->join('itens_catalogo', 'itens_catalogo.id = contrato_itens.item_catalogo_id')
+            ->where('contratos.deleted_at IS NULL');
+
+        if (!empty($eventId)) {
+            $valoresPorTipo->where('contratos.event_id', $eventId);
+        }
+
+        $valoresPorTipo = $valoresPorTipo
+            ->groupBy('itens_catalogo.tipo')
+            ->findAll();
+
+        // Atualiza totais por tipo com valores corretos
+        $totais['por_tipo'] = [];
+        foreach ($valoresPorTipo as $v) {
+            $tipo = $v->tipo ?? 'Outros';
+            $totais['por_tipo'][$tipo] = [
+                'quantidade' => (int)$v->quantidade,
+                'valor' => (float)$v->valor_total,
+            ];
+        }
+
+        // Ordena por tipo alfabeticamente
+        ksort($totais['por_tipo']);
+
+        return $this->response->setJSON($totais);
     }
 
     public function criar()

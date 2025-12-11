@@ -8,6 +8,25 @@
 
 <link rel="stylesheet" type="text/css" href="<?php echo site_url('recursos/vendor/datatable/datatables-combinado.min.css') ?>" />
 
+<style>
+.resumo-card {
+    border-left: 4px solid;
+    transition: transform 0.2s;
+}
+.resumo-card:hover {
+    transform: translateY(-2px);
+}
+.resumo-card.primary { border-left-color: #0d6efd; }
+.resumo-card.success { border-left-color: #198754; }
+.resumo-card.warning { border-left-color: #ffc107; }
+.resumo-card.info { border-left-color: #0dcaf0; }
+
+.tipo-item-badge {
+    font-size: 0.8rem;
+    margin: 2px;
+}
+</style>
+
 <?php echo $this->endSection() ?>
 
 
@@ -33,6 +52,94 @@
 </div>
 <!--end breadcrumb-->
 
+<!-- Cards de Resumo -->
+<div class="row mb-4" id="cardsResumo">
+    <div class="col-md-3">
+        <div class="card shadow-sm resumo-card primary">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="bx bx-file text-primary fs-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="mb-0" id="totalContratos">-</h2>
+                        <small class="text-muted">Contratos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm resumo-card info">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                            <i class="bx bx-dollar text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="mb-0" id="valorTotal">-</h5>
+                        <small class="text-muted">Valor Total</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm resumo-card success">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="bx bx-check-circle text-success fs-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="mb-0" id="valorPago">-</h5>
+                        <small class="text-muted">Valor Pago</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm resumo-card warning">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                            <i class="bx bx-time text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h5 class="mb-0" id="valorEmAberto">-</h5>
+                        <small class="text-muted">Em Aberto</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Card de Totais por Tipo -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header py-2">
+                <h6 class="mb-0"><i class="bx bx-bar-chart-alt-2 me-2"></i>Totais por Tipo de Espaço</h6>
+            </div>
+            <div class="card-body py-3">
+                <div id="totaisPorTipo" class="d-flex flex-wrap gap-2">
+                    <span class="text-muted">Carregando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
 
     <div class="col-lg-12">
@@ -42,6 +149,15 @@
                 <!-- Filtros -->
                 <div class="row mb-4">
                     <div class="col-md-4">
+                        <label class="form-label fw-bold"><i class="bx bx-calendar me-1"></i>Evento</label>
+                        <select id="filtroEvento" class="form-select">
+                            <option value="">Todos os eventos</option>
+                            <?php foreach ($eventos as $evento): ?>
+                                <option value="<?php echo $evento->id; ?>"><?php echo esc($evento->nome); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label fw-bold"><i class="bx bx-check-circle me-1"></i>Situação</label>
                         <select id="filtroSituacao" class="form-select">
                             <option value="">Todas as situações</option>
@@ -50,6 +166,7 @@
                             <option value="contrato_assinado">Contrato Assinado</option>
                             <option value="pagamento_aberto">Pagamento em Aberto</option>
                             <option value="pagamento_andamento">Pagamento em Andamento</option>
+                            <option value="aguardando_contrato">Aguardando Contrato</option>
                             <option value="pagamento_confirmado">Pagamento Confirmado</option>
                             <option value="cancelado">Cancelado</option>
                             <option value="banido">Banido</option>
@@ -131,6 +248,50 @@ $(document).ready(function() {
         }
     }
 
+    // Função para formatar valores monetários
+    function formatMoney(value) {
+        return 'R$ ' + parseFloat(value).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    // Função para carregar totais
+    function carregarTotais() {
+        var eventId = $('#filtroEvento').val();
+        
+        $.ajax({
+            url: '<?php echo site_url("contratos/recuperaTotais"); ?>',
+            type: 'GET',
+            data: { event_id: eventId },
+            dataType: 'json',
+            success: function(data) {
+                $('#totalContratos').text(data.quantidade_contratos);
+                $('#valorTotal').text(formatMoney(data.valor_total));
+                $('#valorPago').text(formatMoney(data.valor_pago));
+                $('#valorEmAberto').text(formatMoney(data.valor_em_aberto));
+                
+                // Totais por tipo
+                var htmlTipos = '';
+                if (Object.keys(data.por_tipo).length > 0) {
+                    for (var tipo in data.por_tipo) {
+                        var info = data.por_tipo[tipo];
+                        htmlTipos += '<span class="badge bg-primary tipo-item-badge">' + 
+                            tipo + ': ' + info.quantidade + ' contrato(s) - ' + formatMoney(info.valor) + 
+                            '</span>';
+                    }
+                } else {
+                    htmlTipos = '<span class="text-muted">Nenhum item cadastrado</span>';
+                }
+                $('#totaisPorTipo').html(htmlTipos);
+            },
+            error: function() {
+                $('#totalContratos').text('-');
+                $('#valorTotal').text('-');
+                $('#valorPago').text('-');
+                $('#valorEmAberto').text('-');
+                $('#totaisPorTipo').html('<span class="text-danger">Erro ao carregar</span>');
+            }
+        });
+    }
+
     // Inicializa DataTable
     var table = $('#ajaxTable').DataTable({
         "oLanguage": DATATABLE_PTBR,
@@ -154,6 +315,19 @@ $(document).ready(function() {
         "pagingType": $(window).width() < 768 ? "simple" : "simple_numbers",
     });
 
+    // Carrega totais ao iniciar
+    carregarTotais();
+
+    // Filtro por Evento
+    $('#filtroEvento').on('change', function() {
+        var valor = $(this).find('option:selected').text();
+        if ($(this).val() === '') {
+            valor = '';
+        }
+        table.column(2).search(valor).draw();
+        carregarTotais();
+    });
+
     // Filtro por Situação
     $('#filtroSituacao').on('change', function() {
         var valor = $(this).val();
@@ -162,11 +336,12 @@ $(document).ready(function() {
 
     // Limpar Filtros
     $('#btnLimparFiltros').on('click', function() {
+        $('#filtroEvento').val('');
         $('#filtroSituacao').val('');
         table.columns().search('').draw();
+        carregarTotais();
     });
 });
 </script>
 
 <?php echo $this->endSection() ?>
-
