@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark-theme">
+<html lang="en" class="light-theme">
 
 <head>
 
@@ -284,6 +284,34 @@
                             <div class="parent-icon"><i class="bx bx-group"></i>
                             </div>
                             <div class="menu-title">Parceiros</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('/expositores'); ?>">
+                            <div class="parent-icon"><i class="bx bx-store-alt"></i>
+                            </div>
+                            <div class="menu-title">Expositores</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('/contratos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-file"></i>
+                            </div>
+                            <div class="menu-title">Contratos</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('/contratodocumentos/modelos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-file-blank"></i>
+                            </div>
+                            <div class="menu-title">Modelos de Contrato</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('/itenscatalogo'); ?>">
+                            <div class="parent-icon"><i class="bx bx-box"></i>
+                            </div>
+                            <div class="menu-title">Catálogo de Itens</div>
                         </a>
                     </li>
                     <li>

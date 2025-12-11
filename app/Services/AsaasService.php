@@ -39,7 +39,7 @@ class AsaasService
             'cpfCnpj' => $post['cpf'],
             'postalCode' => $post['cep'],
             'addressNumber' => $post['numero'],
-            "observations" => "Nome do evento",
+            "observations" => "Expositor - Backoffice",
             "notificationDisabled" => true,
         );
 
@@ -48,25 +48,38 @@ class AsaasService
             'access_token: ' . $this->access_token
         ];
 
-
-
         try {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $this->customers);
             curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($vars));  //Post Fields
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($vars));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Para ambiente Windows/localhost
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
             $apiResponse = curl_exec($ch);
-            $dadosCustomer = json_decode($apiResponse, true);
+            
+            // Verifica erros do curl
+            if (curl_errno($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                log_message('error', 'Asaas CURL Error (customers): ' . $error);
+                return ['errors' => [['description' => 'Erro de conexão: ' . $error]]];
+            }
 
             curl_close($ch);
+            
+            $dadosCustomer = json_decode($apiResponse, true);
+            
+            // Log para debug
+            log_message('info', 'Asaas customers response: ' . $apiResponse);
 
             return $dadosCustomer;
         } catch (Exception $e) {
-            print_r($e->getMessage());
+            log_message('error', 'Asaas Exception: ' . $e->getMessage());
+            return ['errors' => [['description' => $e->getMessage()]]];
         }
     }
 
@@ -239,6 +252,257 @@ class AsaasService
             return $retorno;
         } catch (Exception $e) {
             print_r($e->getMessage());
+        }
+    }
+
+    /**
+     * Cria cobrança genérica (BOLETO ou PIX)
+     * 
+     * @param array $post Dados da cobrança
+     *   - customer_id: ID do cliente no Asaas
+     *   - billing_type: BOLETO ou PIX
+     *   - value: Valor em reais (float)
+     *   - due_date: Data de vencimento (Y-m-d)
+     *   - description: Descrição da cobrança
+     *   - external_reference: Referência externa (código do contrato)
+     *   - installment_count: Quantidade de parcelas (opcional, só para boleto)
+     *   - installment_value: Valor da parcela (opcional, só para boleto)
+     * @return array
+     */
+    public function criarCobranca($post)
+    {
+        $pay = [
+            'customer' => $post['customer_id'],
+            'billingType' => $post['billing_type'] ?? 'BOLETO',
+            'dueDate' => $post['due_date'] ?? date('Y-m-d', strtotime('+7 days')),
+            'value' => (float) $post['value'],
+            'description' => $post['description'] ?? 'Cobrança',
+            'externalReference' => $post['external_reference'] ?? '',
+        ];
+
+        // Se for parcelado (boleto ou PIX)
+        if (isset($post['installment_count']) && $post['installment_count'] > 1) {
+            $pay['installmentCount'] = (int) $post['installment_count'];
+            $pay['installmentValue'] = (float) $post['installment_value'];
+            unset($pay['value']);
+        }
+
+        $headers = [
+            'Content-Type: application/json',
+            'access_token: ' . $this->access_token
+        ];
+
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $this->payments);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($pay));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+            $apiResponse = curl_exec($ch);
+            
+            // Verifica erros do curl
+            if (curl_errno($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                log_message('error', 'Asaas CURL Error (criarCobranca): ' . $error);
+                return ['errors' => [['description' => 'Erro de conexão: ' . $error]]];
+            }
+
+            curl_close($ch);
+            
+            $retorno = json_decode($apiResponse, true);
+            
+            // Log para debug
+            log_message('info', 'Asaas criarCobranca response: ' . $apiResponse);
+
+            return $retorno;
+        } catch (Exception $e) {
+            log_message('error', 'Asaas Exception: ' . $e->getMessage());
+            return ['errors' => [['description' => $e->getMessage()]]];
+        }
+    }
+
+    /**
+     * Confirma recebimento em dinheiro de uma cobrança existente
+     * 
+     * @param string $paymentId ID do pagamento no Asaas
+     * @param float $value Valor recebido
+     * @param string $paymentDate Data do pagamento (Y-m-d)
+     * @return array
+     */
+    public function receberEmDinheiro(string $paymentId, float $value, string $paymentDate = null)
+    {
+        $paymentDate = $paymentDate ?? date('Y-m-d');
+        
+        $data = [
+            'paymentDate' => $paymentDate,
+            'value' => $value,
+            'notifyCustomer' => false
+        ];
+
+        $headers = [
+            'Content-Type: application/json',
+            'access_token: ' . $this->access_token
+        ];
+
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $this->payments . $paymentId . '/receiveInCash');
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+            $apiResponse = curl_exec($ch);
+            
+            if (curl_errno($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                log_message('error', 'Asaas CURL Error (receberEmDinheiro): ' . $error);
+                return ['errors' => [['description' => 'Erro de conexão: ' . $error]]];
+            }
+
+            curl_close($ch);
+            
+            $retorno = json_decode($apiResponse, true);
+            
+            log_message('info', 'Asaas receberEmDinheiro response: ' . $apiResponse);
+
+            return $retorno;
+        } catch (Exception $e) {
+            log_message('error', 'Asaas Exception: ' . $e->getMessage());
+            return ['errors' => [['description' => $e->getMessage()]]];
+        }
+    }
+
+    /**
+     * Busca detalhes de uma cobrança (incluindo parcelas)
+     * 
+     * @param string $paymentId ID do pagamento no Asaas
+     * @return array
+     */
+    public function buscarCobranca(string $paymentId)
+    {
+        $headers = [
+            'Content-Type: application/json',
+            'access_token: ' . $this->access_token
+        ];
+
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $this->payments . $paymentId);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+            $apiResponse = curl_exec($ch);
+            
+            if (curl_errno($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                return ['errors' => [['description' => 'Erro de conexão: ' . $error]]];
+            }
+
+            curl_close($ch);
+            
+            return json_decode($apiResponse, true);
+        } catch (Exception $e) {
+            return ['errors' => [['description' => $e->getMessage()]]];
+        }
+    }
+
+    /**
+     * Busca parcelas de um parcelamento
+     * 
+     * @param string $installmentId ID do parcelamento no Asaas
+     * @return array
+     */
+    public function buscarParcelas(string $installmentId)
+    {
+        $headers = [
+            'Content-Type: application/json',
+            'access_token: ' . $this->access_token
+        ];
+
+        $url = str_replace('/payments/', '/installments/', $this->payments) . $installmentId . '/payments';
+
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+            $apiResponse = curl_exec($ch);
+            
+            if (curl_errno($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                return ['errors' => [['description' => 'Erro de conexão: ' . $error]]];
+            }
+
+            curl_close($ch);
+            
+            return json_decode($apiResponse, true);
+        } catch (Exception $e) {
+            return ['errors' => [['description' => $e->getMessage()]]];
+        }
+    }
+
+    /**
+     * Cancela/Estorna uma cobrança
+     * 
+     * @param string $paymentId ID do pagamento no Asaas
+     * @return array
+     */
+    public function cancelarCobranca(string $paymentId)
+    {
+        $headers = [
+            'Content-Type: application/json',
+            'access_token: ' . $this->access_token
+        ];
+
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $this->payments . $paymentId);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+
+            $apiResponse = curl_exec($ch);
+            
+            if (curl_errno($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                log_message('error', 'Asaas CURL Error (cancelarCobranca): ' . $error);
+                return ['errors' => [['description' => 'Erro de conexão: ' . $error]]];
+            }
+
+            curl_close($ch);
+            
+            $retorno = json_decode($apiResponse, true);
+            
+            log_message('info', 'Asaas cancelarCobranca response: ' . $apiResponse);
+
+            return $retorno;
+        } catch (Exception $e) {
+            log_message('error', 'Asaas Exception: ' . $e->getMessage());
+            return ['errors' => [['description' => $e->getMessage()]]];
         }
     }
 }

@@ -182,6 +182,44 @@ $routes->group('ordensitens', function ($routes) {
     $routes->add('removeritem/(:segment)', 'OrdensItens::removerItem/$1');
 });
 
+// ========================================
+// Rotas para Itens do Contrato
+// ========================================
+$routes->group('contratoitens', function ($routes) {
+    $routes->get('itens/(:num)', 'ContratoItens::itens/$1');
+    $routes->post('adicionar', 'ContratoItens::adicionar');
+    $routes->post('atualizar', 'ContratoItens::atualizar');
+    $routes->post('remover/(:num)', 'ContratoItens::remover/$1');
+    $routes->get('buscar/(:num)', 'ContratoItens::buscar/$1');
+    $routes->get('tipositem', 'ContratoItens::tiposItem');
+});
+
+// ========================================
+// Rotas para Documentos do Contrato
+// ========================================
+$routes->group('contratodocumentos', function ($routes) {
+    // Gerenciamento de documentos do contrato
+    $routes->get('gerenciar/(:num)', 'ContratoDocumentos::gerenciar/$1');
+    $routes->post('gerar', 'ContratoDocumentos::gerar');
+    $routes->get('visualizar/(:num)', 'ContratoDocumentos::visualizar/$1');
+    $routes->get('editar/(:num)', 'ContratoDocumentos::editar/$1');
+    $routes->post('salvar', 'ContratoDocumentos::salvar');
+    $routes->post('enviarparaassinatura', 'ContratoDocumentos::enviarParaAssinatura');
+    $routes->post('confirmar', 'ContratoDocumentos::confirmar');
+    $routes->post('cancelar', 'ContratoDocumentos::cancelar');
+    
+    // Assinatura pública (expositor)
+    $routes->get('assinar/(:any)', 'ContratoDocumentos::assinar/$1');
+    $routes->post('processarassinatura', 'ContratoDocumentos::processarAssinatura');
+    
+    // Modelos de documento
+    $routes->get('modelos', 'ContratoDocumentos::modelos');
+    $routes->get('criarmodelo', 'ContratoDocumentos::criarModelo');
+    $routes->post('salvarmodelo', 'ContratoDocumentos::salvarModelo');
+    $routes->get('editarmodelo/(:num)', 'ContratoDocumentos::editarModelo/$1');
+    $routes->get('excluirmodelo/(:num)', 'ContratoDocumentos::excluirModelo/$1');
+});
+
 
 // Grupo de rotas para o controller de Ordens Evidências para não dar o erro de 404 - Not found
 // quando estiver hospedado
