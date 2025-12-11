@@ -90,6 +90,7 @@ class Filters extends BaseConfig
                 'grupos(/*)?',
                 'fornecedores(/*)?',
                 'itens(/*)?',
+                'itenscatalogo(/*)?',
                 'formasPagamentos(/*)?',
                 'eventos(/*)?',
                 'ordens(/*)?',
