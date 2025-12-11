@@ -183,6 +183,21 @@ $routes->group('ordensitens', function ($routes) {
 });
 
 // ========================================
+// Rotas para Catálogo de Itens
+// ========================================
+$routes->group('itenscatalogo', function ($routes) {
+    $routes->get('/', 'ItensCatalogo::index');
+    $routes->get('recuperaitens', 'ItensCatalogo::recuperaItens');
+    $routes->get('buscaitens', 'ItensCatalogo::buscaItens');
+    $routes->get('criar', 'ItensCatalogo::criar');
+    $routes->post('cadastrar', 'ItensCatalogo::cadastrar');
+    $routes->get('exibir/(:num)', 'ItensCatalogo::exibir/$1');
+    $routes->get('editar/(:num)', 'ItensCatalogo::editar/$1');
+    $routes->post('atualizar', 'ItensCatalogo::atualizar');
+    $routes->match(['get', 'post'], 'excluir/(:num)', 'ItensCatalogo::excluir/$1');
+    $routes->get('desfazerexclusao/(:num)', 'ItensCatalogo::desfazerExclusao/$1');
+});
+// ========================================
 // Rotas para Itens do Contrato
 // ========================================
 $routes->group('contratoitens', function ($routes) {
