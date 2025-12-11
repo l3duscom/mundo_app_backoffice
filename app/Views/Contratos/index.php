@@ -54,71 +54,35 @@
 
 <!-- Cards de Resumo -->
 <div class="row mb-4" id="cardsResumo">
-    <div class="col-md-3">
-        <div class="card shadow-sm resumo-card primary">
+    <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #0d6efd !important;">
             <div class="card-body py-3">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                            <i class="bx bx-file text-primary fs-4"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h2 class="mb-0" id="totalContratos">-</h2>
-                        <span class="text-muted fw-semibold">Total de Contratos</span>
-                    </div>
-                </div>
+                <p class="text-muted mb-1 small text-uppercase fw-bold">Total de Contratos</p>
+                <h2 class="mb-0 text-primary" id="totalContratos">-</h2>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm resumo-card info">
+    <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #0dcaf0 !important;">
             <div class="card-body py-3">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <div class="rounded-circle bg-info bg-opacity-10 p-3">
-                            <i class="bx bx-dollar text-info fs-4"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h5 class="mb-0" id="valorTotal">-</h5>
-                        <span class="text-muted fw-semibold">Valor Total Contratado</span>
-                    </div>
-                </div>
+                <p class="text-muted mb-1 small text-uppercase fw-bold">Valor Total Contratado</p>
+                <h4 class="mb-0 text-info" id="valorTotal">-</h4>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm resumo-card success">
+    <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #198754 !important;">
             <div class="card-body py-3">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                            <i class="bx bx-check-circle text-success fs-4"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h5 class="mb-0" id="valorPago">-</h5>
-                        <span class="text-muted fw-semibold">Valor Recebido</span>
-                    </div>
-                </div>
+                <p class="text-muted mb-1 small text-uppercase fw-bold">Valor Recebido</p>
+                <h4 class="mb-0 text-success" id="valorPago">-</h4>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm resumo-card warning">
+    <div class="col-md-3 col-sm-6">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ffc107 !important;">
             <div class="card-body py-3">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
-                            <i class="bx bx-time text-warning fs-4"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h5 class="mb-0" id="valorEmAberto">-</h5>
-                        <span class="text-muted fw-semibold">Valor a Receber</span>
-                    </div>
-                </div>
+                <p class="text-muted mb-1 small text-uppercase fw-bold">Valor a Receber</p>
+                <h4 class="mb-0 text-warning" id="valorEmAberto">-</h4>
             </div>
         </div>
     </div>
