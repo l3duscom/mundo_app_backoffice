@@ -1,0 +1,10 @@
+INFO - 18-09-2025 00:15:59 --> CSRF cookie sent.
+INFO - 18-09-2025 00:15:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 18-09-2025 00:15:59 --> CSRF cookie sent.
+INFO - 18-09-2025 00:15:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 18-09-2025 00:16:02 --> CSRF cookie sent.
+INFO - 18-09-2025 00:16:02 --> CSRF token verified.
+INFO - 18-09-2025 00:16:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 18-09-2025 00:16:04 --> CSRF cookie sent.
+INFO - 18-09-2025 00:16:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 18-09-2025 00:16:04 --> CSRF cookie sent.

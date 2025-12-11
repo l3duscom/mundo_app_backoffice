@@ -1,0 +1,71 @@
+INFO - 24-10-2025 22:53:03 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:53:03 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:53:11 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:11 --> CSRF token verified.
+INFO - 24-10-2025 22:53:15 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:15 --> CSRF token verified.
+INFO - 24-10-2025 22:53:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:53:16 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:53:50 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:50 --> CSRF token verified.
+INFO - 24-10-2025 22:53:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:53:51 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:53:51 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:53:51 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:53:51 --> CSRF cookie sent.
+INFO - 24-10-2025 22:53:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:54:19 --> CSRF cookie sent.
+INFO - 24-10-2025 22:54:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:54:19 --> CSRF cookie sent.
+INFO - 24-10-2025 22:54:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:54:57 --> CSRF cookie sent.
+INFO - 24-10-2025 22:54:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:54:59 --> CSRF cookie sent.
+INFO - 24-10-2025 22:54:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:55:24 --> CSRF cookie sent.
+INFO - 24-10-2025 22:55:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:55:24 --> CSRF cookie sent.
+INFO - 24-10-2025 22:55:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:55:57 --> CSRF cookie sent.
+INFO - 24-10-2025 22:55:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:55:58 --> CSRF cookie sent.
+INFO - 24-10-2025 22:55:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:55:58 --> CSRF cookie sent.
+INFO - 24-10-2025 22:55:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:55:58 --> CSRF cookie sent.
+INFO - 24-10-2025 22:56:03 --> CSRF cookie sent.
+INFO - 24-10-2025 22:56:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:56:03 --> CSRF cookie sent.
+INFO - 24-10-2025 22:56:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:56:18 --> CSRF cookie sent.
+INFO - 24-10-2025 22:56:18 --> CSRF token verified.
+INFO - 24-10-2025 22:56:23 --> CSRF cookie sent.
+INFO - 24-10-2025 22:56:23 --> CSRF token verified.
+INFO - 24-10-2025 22:56:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:56:23 --> CSRF cookie sent.
+INFO - 24-10-2025 22:56:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 22:56:24 --> CSRF cookie sent.
+INFO - 24-10-2025 23:18:13 --> Security Event: {"event_type":"login_success","email":"eduardo@ledus.com.br","user_id":1,"ip_address":"::1","user_agent":"insomnia/11.3.0","description":"Login bem-sucedido via API","timestamp":"2025-10-24 23:18:13","uri":"api/auth/login"}
+INFO - 24-10-2025 23:18:13 --> Tabela security_logs criada com sucesso
+INFO - 24-10-2025 23:25:46 --> Security Event: {"event_type":"login_success","email":"luiseduardo777@gmail.com","user_id":6,"ip_address":"::1","user_agent":"insomnia/11.3.0","description":"Login bem-sucedido via API","timestamp":"2025-10-24 23:25:46","uri":"api/auth/login"}
+INFO - 24-10-2025 23:27:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:27:15 --> CSRF cookie sent.
+INFO - 24-10-2025 23:27:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:27:16 --> CSRF cookie sent.
+INFO - 24-10-2025 23:27:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:28:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:28:17 --> CSRF cookie sent.
+INFO - 24-10-2025 23:28:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:30:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:30:03 --> CSRF cookie sent.
+INFO - 24-10-2025 23:30:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:30:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:30:19 --> CSRF cookie sent.
+INFO - 24-10-2025 23:30:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 24-10-2025 23:31:39 --> Security Event: {"event_type":"login_success","email":"luiseduardo777@gmail.com","user_id":6,"ip_address":"::1","user_agent":"insomnia/11.3.0","description":"Login bem-sucedido via API","timestamp":"2025-10-24 23:31:39","uri":"api/auth/login"}

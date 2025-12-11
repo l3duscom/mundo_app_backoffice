@@ -43,7 +43,7 @@ class Filters extends BaseConfig
                     'cron/paynotify',
                     'cidades/getcidades',
                     'api/checkout/notify',
-                    'webhook/asaas',
+                    'webhook/backoffice',
                     'api/acessos/check',   // OK: CSRF liberado aqui
                     'api/*',   // Todas as rotas da API não usam CSRF
                 ],
@@ -79,7 +79,7 @@ class Filters extends BaseConfig
         'webhook' => [
             'before' => [
                 'api/checkout/notify',
-                'webhook/asaas',
+                'webhook/backoffice',
             ],
         ],
         'login' => [

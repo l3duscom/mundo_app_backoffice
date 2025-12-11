@@ -1,7 +1,7 @@
 <?php
 // Arquivo de teste para o novo webhook
 
-$url = 'http://localhost/webhook/asaas'; // Nova rota do webhook
+$url = 'http://localhost/webhook/backoffice'; // Nova rota do webhook
 
 $data = [
     'payment' => [

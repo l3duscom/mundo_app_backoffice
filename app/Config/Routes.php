@@ -259,7 +259,7 @@ $routes->group('relatorios', function ($routes) {
 $routes->get('api/checkout/obrigado', 'Api\Checkout::obrigado');
 $routes->post('api/checkout/notify', 'Api\Checkout::notify');
 $routes->post('notify', 'Api\Checkout::notify'); // Rota alternativa para o ASAAS
-$routes->post('webhook/asaas', 'Webhook::asaas'); // Rota webhook específica
+$routes->post('webhook/backoffice', 'Webhook::backoffice'); // Rota webhook específica
 $routes->post('api/acessos/check', 'Api\Acessos::check'); 
 
 // Rotas do Checkout

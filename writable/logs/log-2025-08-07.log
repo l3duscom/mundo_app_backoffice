@@ -1,0 +1,164 @@
+INFO - 07-08-2025 17:19:45 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:19:45 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:19:48 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:19:48 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:49 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:19:49 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:19:50 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:19:50 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:53 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:19:54 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:57 --> CSRF cookie sent.
+INFO - 07-08-2025 17:19:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:19:57 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:01 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:20:01 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:05 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:20:05 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:20:05 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:05 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:20:07 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:07 --> CSRF token verified.
+INFO - 07-08-2025 17:20:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:20:07 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:20:07 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:10 --> CSRF cookie sent.
+INFO - 07-08-2025 17:20:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:20:11 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:15 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:22:16 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:19 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:22:19 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:21 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:22:22 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:23 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:22:23 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:22:30 --> CSRF cookie sent.
+INFO - 07-08-2025 17:22:30 --> CSRF token verified.
+ERROR - 07-08-2025 17:22:30 --> Table 'mundo_app.cupons' doesn't exist
+INFO - 07-08-2025 17:25:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:06 --> CSRF cookie sent.
+INFO - 07-08-2025 17:25:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:06 --> CSRF cookie sent.
+INFO - 07-08-2025 17:25:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:10 --> CSRF cookie sent.
+INFO - 07-08-2025 17:25:10 --> CSRF token verified.
+ERROR - 07-08-2025 17:25:11 --> Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:25:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:26 --> CSRF cookie sent.
+INFO - 07-08-2025 17:25:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:26 --> CSRF cookie sent.
+INFO - 07-08-2025 17:25:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:25:31 --> CSRF cookie sent.
+INFO - 07-08-2025 17:25:31 --> CSRF token verified.
+ERROR - 07-08-2025 17:25:31 --> Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:25:36 --> CSRF cookie sent.
+INFO - 07-08-2025 17:25:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:28:24 --> CSRF cookie sent.
+INFO - 07-08-2025 17:28:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:28:24 --> CSRF cookie sent.
+INFO - 07-08-2025 17:28:30 --> CSRF cookie sent.
+INFO - 07-08-2025 17:28:30 --> CSRF token verified.
+INFO - 07-08-2025 17:28:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 07-08-2025 17:28:30 --> Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:30:50 --> CSRF cookie sent.
+INFO - 07-08-2025 17:30:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:30:51 --> CSRF cookie sent.
+INFO - 07-08-2025 17:30:58 --> CSRF cookie sent.
+INFO - 07-08-2025 17:30:58 --> CSRF token verified.
+INFO - 07-08-2025 17:30:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:30:58 --> validarCupom chamado - Method: post
+INFO - 07-08-2025 17:30:58 --> POST data: {"cupom":"teste10","evento_id":"17","valor_total":"4.815"}
+ERROR - 07-08-2025 17:30:58 --> Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:30:58 --> Erro em validarCupom: Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:31:06 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:31:06 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:20 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:20 --> CSRF token verified.
+INFO - 07-08-2025 17:31:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:31:21 --> validarCupom chamado - Method: post
+INFO - 07-08-2025 17:31:21 --> POST data: {"cupom":"TESTE20","evento_id":"17","valor_total":"4.815"}
+ERROR - 07-08-2025 17:31:21 --> Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:31:21 --> Erro em validarCupom: Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:31:31 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:31:31 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:36 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:36 --> CSRF token verified.
+INFO - 07-08-2025 17:31:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:31:36 --> validarCupom chamado - Method: post
+INFO - 07-08-2025 17:31:36 --> POST data: {"cupom":"TESTE20","evento_id":"17","valor_total":"4.815"}
+ERROR - 07-08-2025 17:31:36 --> Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:31:36 --> Erro em validarCupom: Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:31:54 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:31:54 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:59 --> CSRF cookie sent.
+INFO - 07-08-2025 17:31:59 --> CSRF token verified.
+INFO - 07-08-2025 17:31:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:31:59 --> validarCupom chamado - Method: post
+INFO - 07-08-2025 17:31:59 --> POST data: {"cupom":"TESTE10","evento_id":"17","valor_total":"4.815"}
+ERROR - 07-08-2025 17:31:59 --> Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:31:59 --> Erro em validarCupom: Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:32:17 --> CSRF cookie sent.
+INFO - 07-08-2025 17:32:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:32:17 --> CSRF cookie sent.
+INFO - 07-08-2025 17:32:29 --> CSRF cookie sent.
+INFO - 07-08-2025 17:32:29 --> CSRF token verified.
+INFO - 07-08-2025 17:32:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:32:29 --> validarCupom chamado - Method: post
+INFO - 07-08-2025 17:32:29 --> POST data: {"cupom":"TESTE20","evento_id":"17","valor_total":"4.815"}
+ERROR - 07-08-2025 17:32:29 --> Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:32:29 --> Erro em validarCupom: Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:33:06 --> Duplicate entry 'TESTE10' for key 'cupons.nome'
+INFO - 07-08-2025 17:36:53 --> CSRF cookie sent.
+INFO - 07-08-2025 17:36:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:36:53 --> CSRF cookie sent.
+INFO - 07-08-2025 17:37:01 --> CSRF cookie sent.
+INFO - 07-08-2025 17:37:01 --> CSRF token verified.
+INFO - 07-08-2025 17:37:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:37:01 --> validarCupom chamado - Method: post
+INFO - 07-08-2025 17:37:01 --> POST data: {"cupom":"TESTE20","evento_id":"17","valor_total":"4.815"}
+ERROR - 07-08-2025 17:37:01 --> Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:37:01 --> Erro em validarCupom: Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:37:22 --> CSRF cookie sent.
+INFO - 07-08-2025 17:37:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:37:23 --> CSRF cookie sent.
+INFO - 07-08-2025 17:37:28 --> CSRF cookie sent.
+INFO - 07-08-2025 17:37:28 --> CSRF token verified.
+INFO - 07-08-2025 17:37:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:37:28 --> validarCupom chamado - Method: post
+INFO - 07-08-2025 17:37:28 --> POST data: {"cupom":"TESTE20","evento_id":"17","valor_total":"4.815"}
+ERROR - 07-08-2025 17:37:28 --> Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:37:28 --> Erro em validarCupom: Unknown column 'cupons.deleted_at' in 'where clause'
+INFO - 07-08-2025 17:37:48 --> CSRF cookie sent.
+INFO - 07-08-2025 17:37:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:37:48 --> CSRF cookie sent.
+INFO - 07-08-2025 17:37:51 --> CSRF cookie sent.
+INFO - 07-08-2025 17:37:51 --> CSRF token verified.
+INFO - 07-08-2025 17:37:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 07-08-2025 17:37:51 --> validarCupom chamado - Method: post
+INFO - 07-08-2025 17:37:51 --> POST data: {"cupom":"VALOR50","evento_id":"17","valor_total":"4.815"}
+ERROR - 07-08-2025 17:37:51 --> Unknown column 'cupons.deleted_at' in 'where clause'
+ERROR - 07-08-2025 17:37:51 --> Erro em validarCupom: Unknown column 'cupons.deleted_at' in 'where clause'

@@ -9,7 +9,7 @@ use App\Models\ContratoParcelaModel;
 
 class Webhook extends BaseController
 {
-    public function asaas()
+    public function backoffice()
     {
         // Log do início da notificação
         log_message('info', 'Webhook ASAAS recebido: ' . $this->request->getBody());
