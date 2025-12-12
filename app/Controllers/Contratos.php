@@ -62,14 +62,18 @@ class Contratos extends BaseController
             // Conta itens do contrato
             $qtdItens = $contratoItemModel->where('contrato_id', $contrato->id)->countAllResults();
 
-            // Verifica se está pago
+            // Verifica se está pago e situação
             $valorFinal = (float)($contrato->valor_final ?? 0);
             $valorPago = (float)($contrato->valor_pago ?? 0);
             $estaPago = $valorFinal > 0 && $valorPago >= $valorFinal;
+            $situacao = $contrato->situacao ?? 'proposta';
+            
+            // Situações que indicam pagamento pendente/em aberto
+            $situacoesPagamentoPendente = ['pagamento_aberto', 'pagamento_andamento'];
             
             // Formata valor pago com indicador
             $valorPagoFormatado = $contrato->getValorPagoFormatado();
-            if (!$estaPago && $valorFinal > 0) {
+            if (in_array($situacao, $situacoesPagamentoPendente) && !$estaPago) {
                 $valorPagoFormatado = '<span class="text-danger">' . $valorPagoFormatado . '</span> <i class="bx bx-error-circle text-danger" title="Pagamento pendente"></i>';
             } elseif ($estaPago && $valorFinal > 0) {
                 $valorPagoFormatado = '<span class="text-success">' . $valorPagoFormatado . '</span> <i class="bx bx-check-circle text-success" title="Pago"></i>';
