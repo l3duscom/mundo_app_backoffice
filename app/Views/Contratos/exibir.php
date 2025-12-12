@@ -268,9 +268,9 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="text-center p-2 bg-success bg-opacity-10 rounded">
-                            <small class="text-muted d-block">Valor Líquido</small>
-                            <span class="fw-bold text-success fs-5">R$ <?php echo number_format($totais_parcelas['total_liquido'], 2, ',', '.'); ?></span>
+                        <div class="text-center p-2 bg-success rounded">
+                            <small class="text-white d-block">Valor Líquido</small>
+                            <span class="fw-bold text-white fs-5">R$ <?php echo number_format($totais_parcelas['total_liquido'], 2, ',', '.'); ?></span>
                         </div>
                     </div>
                 </div>
