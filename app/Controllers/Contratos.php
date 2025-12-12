@@ -62,13 +62,26 @@ class Contratos extends BaseController
             // Conta itens do contrato
             $qtdItens = $contratoItemModel->where('contrato_id', $contrato->id)->countAllResults();
 
+            // Verifica se está pago
+            $valorFinal = (float)($contrato->valor_final ?? 0);
+            $valorPago = (float)($contrato->valor_pago ?? 0);
+            $estaPago = $valorFinal > 0 && $valorPago >= $valorFinal;
+            
+            // Formata valor pago com indicador
+            $valorPagoFormatado = $contrato->getValorPagoFormatado();
+            if (!$estaPago && $valorFinal > 0) {
+                $valorPagoFormatado = '<span class="text-danger">' . $valorPagoFormatado . '</span> <i class="bx bx-error-circle text-danger" title="Pagamento pendente"></i>';
+            } elseif ($estaPago && $valorFinal > 0) {
+                $valorPagoFormatado = '<span class="text-success">' . $valorPagoFormatado . '</span> <i class="bx bx-check-circle text-success" title="Pago"></i>';
+            }
+
             $data[] = [
                 'codigo' => anchor("contratos/exibir/$contrato->id", esc($contrato->codigo ?? '#' . $contrato->id), 'title="Exibir contrato"'),
                 'expositor' => esc($nomeExpositor ?? 'N/A'),
                 'evento' => esc($contrato->evento_nome ?? 'N/A'),
                 'qtd_itens' => '<span class="badge bg-secondary">' . $qtdItens . ' ' . ($qtdItens == 1 ? 'item' : 'itens') . '</span>',
                 'valor_final' => $contrato->getValorFinalFormatado(),
-                'valor_pago' => $contrato->getValorPagoFormatado(),
+                'valor_pago' => $valorPagoFormatado,
                 'situacao' => $contrato->exibeSituacao() . '<span class="d-none">' . esc($contrato->situacao) . '</span>',
             ];
         }
