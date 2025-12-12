@@ -253,6 +253,46 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
             </div>
         </div>
 
+        <!-- Card Resumo Financeiro Líquido (aparece quando tem parcelas sincronizadas) -->
+        <?php if (!empty($totais_parcelas) && $totais_parcelas['quantidade'] > 0 && ($totais_parcelas['taxa_total'] ?? 0) > 0): ?>
+        <div class="card shadow radius-10 mt-4 border-success">
+            <div class="card-header bg-success bg-opacity-10">
+                <h6 class="mb-0 text-success"><i class="bx bx-dollar-circle me-2"></i>Resumo Financeiro Líquido</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="text-center p-2 bg-light rounded">
+                            <small class="text-muted d-block">Valor Bruto</small>
+                            <span class="text-muted text-decoration-line-through">R$ <?php echo number_format($totais_parcelas['total'], 2, ',', '.'); ?></span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-2 bg-success bg-opacity-10 rounded">
+                            <small class="text-muted d-block">Valor Líquido</small>
+                            <span class="fw-bold text-success fs-5">R$ <?php echo number_format($totais_parcelas['total_liquido'], 2, ',', '.'); ?></span>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row g-2 text-center">
+                    <div class="col-4">
+                        <small class="text-muted d-block">Taxa Asaas</small>
+                        <span class="text-danger fw-bold">-R$ <?php echo number_format($totais_parcelas['taxa_total'], 2, ',', '.'); ?></span>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Recebido Líq.</small>
+                        <span class="text-success fw-bold">R$ <?php echo number_format($totais_parcelas['pago_liquido'] ?? 0, 2, ',', '.'); ?></span>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">A Receber Líq.</small>
+                        <span class="text-primary fw-bold">R$ <?php echo number_format($totais_parcelas['pendente_liquido'] ?? 0, 2, ',', '.'); ?></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Card Documento do Contrato (aparece quando aguardando_contrato ou pagamento_confirmado) -->
         <?php 
         $aguardandoContrato = ($contrato->situacao === 'aguardando_contrato');
@@ -422,7 +462,8 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                             <tr>
                                 <th class="text-center" style="width: 80px;">Parcela</th>
                                 <th>Vencimento</th>
-                                <th class="text-end">Valor</th>
+                                <th class="text-end">Valor Bruto</th>
+                                <th class="text-end">Valor Líquido</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-center">Asaas</th>
                             </tr>
@@ -444,8 +485,17 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                                             <br><small class="text-success">Pago: <?php echo $parcela->getPagamentoFormatado(); ?></small>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-end fw-bold">
-                                        <?php echo $parcela->getValorFormatado(); ?>
+                                    <td class="text-end text-muted">
+                                        <small><?php echo $parcela->getValorFormatado(); ?></small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-success"><?php echo $parcela->getValorLiquidoFormatado(); ?></span>
+                                        <?php 
+                                        $taxa = ($parcela->valor ?? 0) - ($parcela->valor_liquido ?? $parcela->valor ?? 0);
+                                        if ($taxa > 0): 
+                                        ?>
+                                        <br><small class="text-danger">-R$ <?php echo number_format($taxa, 2, ',', '.'); ?></small>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-center">
                                         <?php echo $parcela->getBadgeStatus(); ?>
@@ -493,8 +543,12 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                                             <?php echo date('d/m/Y', $vencimentoParcela); ?>
                                         </span>
                                     </td>
-                                    <td class="text-end fw-bold">
-                                        R$ <?php echo number_format($valorParcelaAtual, 2, ',', '.'); ?>
+                                    <td class="text-end text-muted">
+                                        <small>R$ <?php echo number_format($valorParcelaAtual, 2, ',', '.'); ?></small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-success">R$ <?php echo number_format($valorParcelaAtual, 2, ',', '.'); ?></span>
+                                        <br><small class="text-muted">sincronizar para ver</small>
                                     </td>
                                     <td class="text-center">
                                         <?php if ($statusParcela === 'pago'): ?>
@@ -515,9 +569,27 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                             <?php endif; ?>
                         </tbody>
                         <tfoot class="table-light">
+                            <?php 
+                            // Calcula totais se tem parcelas sincronizadas
+                            $totalBruto = $valorAPagar;
+                            $totalLiquido = $valorAPagar;
+                            $taxaTotal = 0;
+                            
+                            if (!empty($totais_parcelas) && $totais_parcelas['quantidade'] > 0) {
+                                $totalBruto = $totais_parcelas['total'];
+                                $totalLiquido = $totais_parcelas['total_liquido'];
+                                $taxaTotal = $totais_parcelas['taxa_total'] ?? 0;
+                            }
+                            ?>
                             <tr>
-                                <td colspan="2" class="text-end fw-bold">Total:</td>
-                                <td class="text-end fw-bold text-success">R$ <?php echo number_format($valorAPagar, 2, ',', '.'); ?></td>
+                                <td colspan="2" class="text-end fw-bold">Total Bruto:</td>
+                                <td class="text-end text-muted">R$ <?php echo number_format($totalBruto, 2, ',', '.'); ?></td>
+                                <td class="text-end">
+                                    <span class="fw-bold text-success fs-6">R$ <?php echo number_format($totalLiquido, 2, ',', '.'); ?></span>
+                                    <?php if ($taxaTotal > 0): ?>
+                                    <br><small class="text-danger">Taxa: -R$ <?php echo number_format($taxaTotal, 2, ',', '.'); ?></small>
+                                    <?php endif; ?>
+                                </td>
                                 <td colspan="2" class="text-center">
                                     <?php if (!empty($parcelas)): ?>
                                         <small class="text-muted">

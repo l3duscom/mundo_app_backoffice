@@ -97,7 +97,7 @@ class ContratoParcelaModel extends Model
     }
 
     /**
-     * Calcula totais das parcelas
+     * Calcula totais das parcelas (bruto e líquido)
      */
     public function calculaTotais(int $contratoId): array
     {
@@ -105,21 +105,32 @@ class ContratoParcelaModel extends Model
         
         $totais = [
             'total' => 0,
+            'total_liquido' => 0,
             'pago' => 0,
+            'pago_liquido' => 0,
             'pendente' => 0,
+            'pendente_liquido' => 0,
             'quantidade' => count($parcelas),
             'pagas' => 0,
             'pendentes' => 0,
+            'taxa_total' => 0,
         ];
 
         foreach ($parcelas as $parcela) {
-            $totais['total'] += $parcela->valor;
+            $valorBruto = $parcela->valor;
+            $valorLiquido = $parcela->valor_liquido ?? $parcela->valor;
+            
+            $totais['total'] += $valorBruto;
+            $totais['total_liquido'] += $valorLiquido;
+            $totais['taxa_total'] += ($valorBruto - $valorLiquido);
             
             if ($parcela->status_local === 'pago') {
-                $totais['pago'] += $parcela->valor;
+                $totais['pago'] += $valorBruto;
+                $totais['pago_liquido'] += $valorLiquido;
                 $totais['pagas']++;
             } else {
-                $totais['pendente'] += $parcela->valor;
+                $totais['pendente'] += $valorBruto;
+                $totais['pendente_liquido'] += $valorLiquido;
                 $totais['pendentes']++;
             }
         }
