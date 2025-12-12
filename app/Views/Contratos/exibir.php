@@ -148,9 +148,10 @@
 <!--end breadcrumb-->
 
 <?php 
-// Calcula desconto PIX (10%) se forma de pagamento for PIX
+// Calcula desconto PIX (10%) apenas se forma de pagamento for PIX à vista (1 parcela)
 $isPix = ($contrato->forma_pagamento === 'PIX');
-$descontoPix = $isPix ? ($contrato->valor_final * 0.10) : 0;
+$isPixAVista = $isPix && ($contrato->quantidade_parcelas == 1);
+$descontoPix = $isPixAVista ? ($contrato->valor_final * 0.10) : 0;
 $valorAPagar = $contrato->valor_final - $descontoPix;
 $valorRestante = $valorAPagar - ($contrato->valor_pago ?? 0);
 $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPagar) * 100, 1) : 0;
@@ -325,10 +326,10 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                             <h4 class="mb-0 text-danger">- <?php echo $contrato->getValorDescontoFormatado(); ?></h4>
                         </div>
                     </div>
-                    <?php if ($isPix): ?>
+                    <?php if ($isPixAVista): ?>
                     <div class="col-md-3 text-center">
                         <div class="p-3 bg-light rounded">
-                            <small class="text-muted d-block">Desc. PIX (10%)</small>
+                            <small class="text-muted d-block">Desc. PIX à Vista (10%)</small>
                             <h4 class="mb-0 text-danger">- R$ <?php echo number_format($descontoPix, 2, ',', '.'); ?></h4>
                         </div>
                     </div>
@@ -767,7 +768,7 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                         <span class="badge bg-primary fs-5"><?php echo esc($contrato->forma_pagamento ?? 'Não definida'); ?></span>
                     </div>
                     
-                    <?php if (($contrato->forma_pagamento ?? '') === 'PIX'): ?>
+                    <?php if ($isPixAVista): ?>
                     <div class="row mb-3">
                         <div class="col-12">
                             <small class="text-muted">Valor do Contrato</small>
@@ -776,7 +777,7 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                     </div>
                     <div class="alert alert-success mb-3">
                         <i class="bx bx-gift me-2"></i>
-                        <strong>Desconto PIX: 10%</strong>
+                        <strong>Desconto PIX à Vista: 10%</strong>
                         <span class="badge bg-success ms-2">- R$ <?php echo number_format(($contrato->valor_final ?? 0) * 0.10, 2, ',', '.'); ?></span>
                     </div>
                     <div class="row mb-4">
