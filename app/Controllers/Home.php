@@ -94,6 +94,18 @@ class Home extends BaseController
         return view('Home/evento', $data);
     }
 
+    /**
+     * Seleciona um evento e redireciona para o dashboard de vendas
+     */
+    public function selecionarEvento(int $event_id)
+    {
+        // Salvar o event_id na sessão para contexto global
+        session()->set('event_id', $event_id);
+        
+        // Redirecionar para o dashboard de vendas
+        return redirect()->to(site_url('dashboard-vendas'));
+    }
+
     public function boletoteste()
     {
 
