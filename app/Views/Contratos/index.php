@@ -152,6 +152,7 @@
                                 <th>Código</th>
                                 <th>Expositor</th>
                                 <th>Evento</th>
+                                <th>Tipo</th>
                                 <th>Itens</th>
                                 <th>Valor</th>
                                 <th>Pago</th>
@@ -264,6 +265,7 @@ $(document).ready(function() {
             { "data": "codigo" },
             { "data": "expositor" },
             { "data": "evento" },
+            { "data": "tipo" },
             { "data": "qtd_itens" },
             { "data": "valor_final" },
             { "data": "valor_pago" },

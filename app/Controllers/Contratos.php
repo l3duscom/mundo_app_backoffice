@@ -59,8 +59,20 @@ class Contratos extends BaseController
                 ? $contrato->expositor_fantasia 
                 : $contrato->expositor_nome;
 
-            // Conta itens do contrato
-            $qtdItens = $contratoItemModel->where('contrato_id', $contrato->id)->countAllResults();
+            // Conta itens do contrato e busca tipos
+            $itensContrato = $contratoItemModel->where('contrato_id', $contrato->id)->findAll();
+            $qtdItens = count($itensContrato);
+            
+            // Agrupa tipos únicos dos itens
+            $tiposUnicos = [];
+            foreach ($itensContrato as $item) {
+                if (!empty($item->tipo_item) && !in_array($item->tipo_item, $tiposUnicos)) {
+                    $tiposUnicos[] = $item->tipo_item;
+                }
+            }
+            $tiposFormatados = !empty($tiposUnicos) 
+                ? implode(', ', $tiposUnicos) 
+                : '<span class="text-muted">-</span>';
 
             // Verifica se está pago e situação
             $valorFinal = (float)($contrato->valor_final ?? 0);
@@ -83,6 +95,7 @@ class Contratos extends BaseController
                 'codigo' => anchor("contratos/exibir/$contrato->id", esc($contrato->codigo ?? '#' . $contrato->id), 'title="Exibir contrato"'),
                 'expositor' => esc($nomeExpositor ?? 'N/A'),
                 'evento' => esc($contrato->evento_nome ?? 'N/A'),
+                'tipo' => $tiposFormatados,
                 'qtd_itens' => '<span class="badge bg-secondary">' . $qtdItens . ' ' . ($qtdItens == 1 ? 'item' : 'itens') . '</span>',
                 'valor_final' => $contrato->getValorFinalFormatado(),
                 'valor_pago' => $valorPagoFormatado,
