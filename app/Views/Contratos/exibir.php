@@ -293,18 +293,23 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
         </div>
         <?php endif; ?>
 
-        <!-- Card Documento do Contrato (aparece quando aguardando_contrato ou pagamento_confirmado) -->
+        <!-- Card Documento do Contrato -->
         <?php 
         $aguardandoContrato = ($contrato->situacao === 'aguardando_contrato');
         $pagamentoConfirmado = ($contrato->situacao === 'pagamento_confirmado');
         $documentoModel = new \App\Models\ContratoDocumentoModel();
         $documento = $documentoModel->buscaDocumentoAtivo($contrato->id);
+        $todosDocumentos = $documentoModel->buscaPorContrato($contrato->id);
         
-        if ($aguardandoContrato || $pagamentoConfirmado || $documento): 
+        // Card aparece se estiver aguardando contrato, pagamento confirmado, ou tem algum documento
+        if ($aguardandoContrato || $pagamentoConfirmado || !empty($todosDocumentos)): 
         ?>
         <div class="card shadow radius-10 mt-4">
-            <div class="card-header bg-purple text-white">
+            <div class="card-header bg-purple text-white d-flex justify-content-between align-items-center">
                 <h6 class="mb-0"><i class="bx bx-file-blank me-2"></i>Documento do Contrato</h6>
+                <?php if ($documento): ?>
+                    <?php echo $documento->getBadgeStatus(); ?>
+                <?php endif; ?>
             </div>
             <div class="card-body">
                 <?php if ($aguardandoContrato): ?>
@@ -314,23 +319,54 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                 </div>
                 <?php endif; ?>
                 
-                <?php if ($documento): ?>
-                    <p class="mb-2">
-                        <strong>Status:</strong> <?php echo $documento->getBadgeStatus(); ?>
-                    </p>
-                    <?php if ($documento->data_assinatura): ?>
-                        <p class="mb-2 text-success">
-                            <i class="bx bx-check-circle me-1"></i>
-                            Assinado por: <?php echo esc($documento->assinado_por); ?><br>
-                            <small>em <?php echo $documento->getDataAssinaturaFormatada(); ?></small>
-                        </p>
-                    <?php endif; ?>
-                    <?php if ($documento->data_confirmacao): ?>
-                        <p class="mb-2 text-success">
-                            <i class="bx bx-badge-check me-1"></i>
-                            Confirmado em: <?php echo $documento->getDataConfirmacaoFormatada(); ?>
-                        </p>
-                    <?php endif; ?>
+                <?php if (!empty($todosDocumentos)): ?>
+                    <!-- Tabela de Histórico de Documentos -->
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Título</th>
+                                    <th class="text-center">Status</th>
+                                    <th>Criado em</th>
+                                    <th>Assinatura</th>
+                                    <th>Confirmação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($todosDocumentos as $doc): ?>
+                                <tr class="<?php echo $doc->id === $documento->id ? 'table-primary' : ''; ?>">
+                                    <td>
+                                        <?php echo esc($doc->titulo); ?>
+                                        <?php if ($doc->id === $documento->id): ?>
+                                            <span class="badge bg-primary ms-1">Atual</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-center"><?php echo $doc->getBadgeStatus(); ?></td>
+                                    <td><small><?php echo $doc->created_at->format('d/m/Y H:i'); ?></small></td>
+                                    <td>
+                                        <?php if ($doc->data_assinatura): ?>
+                                            <small class="text-success">
+                                                <i class="bx bx-check me-1"></i><?php echo $doc->getDataAssinaturaFormatada(); ?>
+                                                <br><span class="text-muted">por <?php echo esc($doc->assinado_por); ?></span>
+                                            </small>
+                                        <?php else: ?>
+                                            <small class="text-muted">-</small>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if ($doc->data_confirmacao): ?>
+                                            <small class="text-success">
+                                                <i class="bx bx-badge-check me-1"></i><?php echo $doc->getDataConfirmacaoFormatada(); ?>
+                                            </small>
+                                        <?php else: ?>
+                                            <small class="text-muted">-</small>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 <?php else: ?>
                     <p class="text-muted mb-3">Nenhum documento gerado ainda.</p>
                 <?php endif; ?>

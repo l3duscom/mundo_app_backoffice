@@ -157,6 +157,7 @@
                                 <th>Valor</th>
                                 <th>Pago</th>
                                 <th>Situação</th>
+                                <th>Documento</th>
                             </tr>
                         </thead>
                     </table>
@@ -270,6 +271,7 @@ $(document).ready(function() {
             { "data": "valor_final" },
             { "data": "valor_pago" },
             { "data": "situacao" },
+            { "data": "documento" },
         ],
         "order": [],
         "deferRender": true,

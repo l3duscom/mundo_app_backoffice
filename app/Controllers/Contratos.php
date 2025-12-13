@@ -53,6 +53,9 @@ class Contratos extends BaseController
 
         // Carregar modelo de itens para contar
         $contratoItemModel = new \App\Models\ContratoItemModel();
+        
+        // Carregar modelo de documentos
+        $documentoModel = new \App\Models\ContratoDocumentoModel();
 
         foreach ($contratos as $contrato) {
             $nomeExpositor = !empty($contrato->expositor_fantasia) 
@@ -91,6 +94,14 @@ class Contratos extends BaseController
                 $valorPagoFormatado = '<span class="text-success">' . $valorPagoFormatado . '</span> <i class="bx bx-check-circle text-success" title="Pago"></i>';
             }
 
+            // Busca documento ativo do contrato
+            $documento = $documentoModel->buscaDocumentoAtivo($contrato->id);
+            $documentoBadge = '<span class="badge bg-secondary"><i class="bx bx-minus me-1"></i>Sem doc.</span>';
+            
+            if ($documento) {
+                $documentoBadge = $documento->getBadgeStatus();
+            }
+
             $data[] = [
                 'codigo' => anchor("contratos/exibir/$contrato->id", esc($contrato->codigo ?? '#' . $contrato->id), 'title="Exibir contrato"'),
                 'expositor' => esc($nomeExpositor ?? 'N/A'),
@@ -100,6 +111,7 @@ class Contratos extends BaseController
                 'valor_final' => $contrato->getValorFinalFormatado(),
                 'valor_pago' => $valorPagoFormatado,
                 'situacao' => $contrato->exibeSituacao() . '<span class="d-none">' . esc($contrato->situacao) . '</span>',
+                'documento' => $documentoBadge,
             ];
         }
 
