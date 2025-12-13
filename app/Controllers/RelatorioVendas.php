@@ -430,25 +430,34 @@ class RelatorioVendas extends BaseController
     }
 
     /**
-     * Busca totais do período - conta INGRESSOS (combo = 2)
+     * Busca totais do período - conta INGRESSOS (combo = 2) e valor sem duplicação
      */
     private function getTotaisPeriodo(int $event_id, string $data_inicio, string $data_fim): array
     {
-        $result = $this->db->query("
-            SELECT 
-                SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as quantidade,
-                SUM(p.total) as valor_total
+        // Buscar quantidade de ingressos
+        $ingressosResult = $this->db->query("
+            SELECT SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as quantidade
             FROM pedidos p
             INNER JOIN ingressos i ON i.pedido_id = p.id
             WHERE p.evento_id = ?
-            AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+            AND p.status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH')
             AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
             AND DATE(p.created_at) >= ?
             AND DATE(p.created_at) <= ?
         ", [$event_id, $data_inicio, $data_fim])->getRowArray();
 
-        $quantidade = (int)($result['quantidade'] ?? 0);
-        $valorTotal = (float)($result['valor_total'] ?? 0);
+        // Buscar valor total direto dos pedidos (sem duplicação)
+        $valoresResult = $this->db->query("
+            SELECT SUM(total) as valor_total
+            FROM pedidos
+            WHERE evento_id = ?
+            AND status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH')
+            AND DATE(created_at) >= ?
+            AND DATE(created_at) <= ?
+        ", [$event_id, $data_inicio, $data_fim])->getRowArray();
+
+        $quantidade = (int)($ingressosResult['quantidade'] ?? 0);
+        $valorTotal = (float)($valoresResult['valor_total'] ?? 0);
 
         return [
             'quantidade' => $quantidade,
