@@ -315,31 +315,60 @@ class RelatorioVendas extends BaseController
     // ========================================
 
     /**
-     * Busca vendas diárias - conta INGRESSOS (combo = 2)
+     * Busca vendas diárias - conta INGRESSOS (combo = 2) e valor total sem duplicação
      */
     private function getVendasDiarias(int $event_id, string $data_inicio, string $data_fim): array
     {
-        $result = $this->db->query("
+        // Buscar ingressos por dia
+        $ingressos = $this->db->query("
             SELECT 
                 DATE(p.created_at) as data,
-                SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as quantidade,
-                SUM(p.total) as valor_total
+                SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as quantidade
             FROM pedidos p
             INNER JOIN ingressos i ON i.pedido_id = p.id
             WHERE p.evento_id = ?
-            AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+            AND p.status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH')
             AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
             AND DATE(p.created_at) >= ?
             AND DATE(p.created_at) <= ?
             GROUP BY DATE(p.created_at)
-            ORDER BY data ASC
         ", [$event_id, $data_inicio, $data_fim])->getResultArray();
 
-        // Formatar para exibição
-        foreach ($result as &$row) {
-            $row['data_formatada'] = date('d/m/Y', strtotime($row['data']));
-            $row['valor_formatado'] = 'R$ ' . number_format($row['valor_total'] ?? 0, 2, ',', '.');
+        // Buscar valor total por dia (separado para evitar duplicação)
+        $valores = $this->db->query("
+            SELECT 
+                DATE(created_at) as data,
+                SUM(total) as valor_total
+            FROM pedidos
+            WHERE evento_id = ?
+            AND status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH')
+            AND DATE(created_at) >= ?
+            AND DATE(created_at) <= ?
+            GROUP BY DATE(created_at)
+        ", [$event_id, $data_inicio, $data_fim])->getResultArray();
+
+        // Indexar valores por data
+        $valoresPorData = [];
+        foreach ($valores as $v) {
+            $valoresPorData[$v['data']] = $v['valor_total'];
         }
+
+        // Combinar
+        $result = [];
+        foreach ($ingressos as $ing) {
+            $result[] = [
+                'data' => $ing['data'],
+                'quantidade' => $ing['quantidade'],
+                'valor_total' => $valoresPorData[$ing['data']] ?? 0,
+                'data_formatada' => date('d/m/Y', strtotime($ing['data'])),
+                'valor_formatado' => 'R$ ' . number_format($valoresPorData[$ing['data']] ?? 0, 2, ',', '.'),
+            ];
+        }
+
+        // Ordenar por data
+        usort($result, function($a, $b) {
+            return strcmp($a['data'], $b['data']);
+        });
 
         return $result;
     }
