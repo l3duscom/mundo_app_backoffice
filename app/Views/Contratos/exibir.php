@@ -297,12 +297,13 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
         <?php 
         $aguardandoContrato = ($contrato->situacao === 'aguardando_contrato');
         $pagamentoConfirmado = ($contrato->situacao === 'pagamento_confirmado');
+        $pagamentoEmAndamento = ($contrato->situacao === 'pagamento_andamento');
         $documentoModel = new \App\Models\ContratoDocumentoModel();
         $documento = $documentoModel->buscaDocumentoAtivo($contrato->id);
         $todosDocumentos = $documentoModel->buscaPorContrato($contrato->id);
         
-        // Card aparece se estiver aguardando contrato, pagamento confirmado, ou tem algum documento
-        if ($aguardandoContrato || $pagamentoConfirmado || !empty($todosDocumentos)): 
+        // Card aparece se estiver aguardando contrato, pagamento confirmado, pagamento em andamento, ou tem algum documento
+        if ($aguardandoContrato || $pagamentoConfirmado || $pagamentoEmAndamento || !empty($todosDocumentos)): 
         ?>
         <div class="card shadow radius-10 mt-4">
             <div class="card-header bg-purple text-white d-flex justify-content-between align-items-center">
