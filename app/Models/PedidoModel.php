@@ -16,6 +16,7 @@ class PedidoModel extends Model
         'codigo',
         'rastreio',
         'total',
+        'valor_liquido',
         'data_vencimento',
         'status',
         'status_entrega',

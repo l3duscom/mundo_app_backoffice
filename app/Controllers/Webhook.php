@@ -56,19 +56,28 @@ class Webhook extends BaseController
             $auditoriaModel = new AuditoriaModel();
             $auditoriaModel->insert([
                 'acao' => 'Webhook ASAAS',
-                'descricao' => 'Notificação Asaas pay - ID: ' . $payment_id . ' - Status: ' . $payment_status . ' - Valor: ' . $payment_value,
+                'descricao' => 'Notificação Asaas pay - ID: ' . $payment_id . ' - Status: ' . $payment_status . ' - Valor: ' . $payment_value . ' - Líquido: ' . $payment_netValue,
                 'created_at' => date('Y-m-d H:i:s')
             ]);
+
+            // Monta dados para atualização do pedido
+            $dadosAtualizacao = [
+                'status' => $payment_status,
+                'comprovante' => $payment_transactionReceiptUrl,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            // Só salva valor_liquido em pagamentos confirmados e se netValue > 0
+            if (in_array($payment_status, ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH']) && $payment_netValue > 0) {
+                $dadosAtualizacao['valor_liquido'] = $payment_netValue;
+                log_message('info', 'Valor líquido salvo: R$ ' . $payment_netValue);
+            }
 
             // Tenta atualizar pedido
             $pedidosModel = new PedidoModel();
             $pedidoAtualizado = $pedidosModel
                 ->where('charge_id', $payment_id)
-                ->set([
-                    'status' => $payment_status,
-                    'comprovante' => $payment_transactionReceiptUrl,
-                    'updated_at' => date('Y-m-d H:i:s')
-                ])
+                ->set($dadosAtualizacao)
                 ->update();
 
             if ($pedidoAtualizado) {
