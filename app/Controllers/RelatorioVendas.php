@@ -298,20 +298,25 @@ class RelatorioVendas extends BaseController
     // ========================================
 
     /**
-     * Busca vendas diárias
+     * Busca vendas diárias - conta INGRESSOS (combo = 2)
      */
     private function getVendasDiarias(int $event_id, string $data_inicio, string $data_fim): array
     {
-        $result = $this->db->table('pedidos')
-            ->select("DATE(created_at) as data, COUNT(*) as quantidade, SUM(total) as valor_total")
-            ->where('evento_id', $event_id)
-            ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
-            ->where("DATE(created_at) >=", $data_inicio)
-            ->where("DATE(created_at) <=", $data_fim)
-            ->groupBy("DATE(created_at)")
-            ->orderBy("data", "ASC")
-            ->get()
-            ->getResultArray();
+        $result = $this->db->query("
+            SELECT 
+                DATE(p.created_at) as data,
+                SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as quantidade,
+                SUM(p.total) as valor_total
+            FROM pedidos p
+            INNER JOIN ingressos i ON i.pedido_id = p.id
+            WHERE p.evento_id = ?
+            AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+            AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+            AND DATE(p.created_at) >= ?
+            AND DATE(p.created_at) <= ?
+            GROUP BY DATE(p.created_at)
+            ORDER BY data ASC
+        ", [$event_id, $data_inicio, $data_fim])->getResultArray();
 
         // Formatar para exibição
         foreach ($result as &$row) {
@@ -379,25 +384,32 @@ class RelatorioVendas extends BaseController
     }
 
     /**
-     * Busca totais do período
+     * Busca totais do período - conta INGRESSOS (combo = 2)
      */
     private function getTotaisPeriodo(int $event_id, string $data_inicio, string $data_fim): array
     {
-        $result = $this->db->table('pedidos')
-            ->select("COUNT(*) as quantidade, SUM(total) as valor_total")
-            ->where('evento_id', $event_id)
-            ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
-            ->where("DATE(created_at) >=", $data_inicio)
-            ->where("DATE(created_at) <=", $data_fim)
-            ->get()
-            ->getRowArray();
+        $result = $this->db->query("
+            SELECT 
+                SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as quantidade,
+                SUM(p.total) as valor_total
+            FROM pedidos p
+            INNER JOIN ingressos i ON i.pedido_id = p.id
+            WHERE p.evento_id = ?
+            AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+            AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+            AND DATE(p.created_at) >= ?
+            AND DATE(p.created_at) <= ?
+        ", [$event_id, $data_inicio, $data_fim])->getRowArray();
+
+        $quantidade = (int)($result['quantidade'] ?? 0);
+        $valorTotal = (float)($result['valor_total'] ?? 0);
 
         return [
-            'quantidade' => $result['quantidade'] ?? 0,
-            'valor_total' => $result['valor_total'] ?? 0,
-            'valor_formatado' => 'R$ ' . number_format($result['valor_total'] ?? 0, 2, ',', '.'),
-            'ticket_medio' => ($result['quantidade'] ?? 0) > 0 
-                ? 'R$ ' . number_format(($result['valor_total'] ?? 0) / $result['quantidade'], 2, ',', '.') 
+            'quantidade' => $quantidade,
+            'valor_total' => $valorTotal,
+            'valor_formatado' => 'R$ ' . number_format($valorTotal, 2, ',', '.'),
+            'ticket_medio' => $quantidade > 0 
+                ? 'R$ ' . number_format($valorTotal / $quantidade, 2, ',', '.') 
                 : 'R$ 0,00',
         ];
     }
