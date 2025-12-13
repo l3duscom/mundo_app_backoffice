@@ -163,6 +163,7 @@
         </div>
     </div>
     
+    <?php if (!empty($dados) && !empty($colunas)): ?>
     <table>
         <thead>
             <tr>
@@ -193,6 +194,7 @@
             <?php endforeach; ?>
         </tbody>
     </table>
+    <?php endif; ?>
     
     <div class="footer">
         Gerado em: <?= date('d/m/Y H:i:s') ?> | Sistema de Gestão

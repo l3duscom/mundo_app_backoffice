@@ -191,16 +191,25 @@ class RelatorioVendas extends BaseController
                 $dados = $this->getVendasDiarias($event_id, $data_inicio, $data_fim);
                 $filename = "vendas_periodo_{$nomeEvento}_{$data_inicio}_{$data_fim}.csv";
                 $cabecalho = ['Data', 'Ingressos', 'Valor Total'];
+                $apenasResumo = false;
+                break;
+            case 'resumo':
+                $dados = [];
+                $filename = "vendas_resumo_{$nomeEvento}_{$data_inicio}_{$data_fim}.csv";
+                $cabecalho = [];
+                $apenasResumo = true;
                 break;
             case 'ingresso':
                 $dados = $this->getVendasPorIngresso($event_id, $data_inicio, $data_fim);
                 $filename = "vendas_ingresso_{$nomeEvento}_{$data_inicio}_{$data_fim}.csv";
                 $cabecalho = ['Ingresso', 'Quantidade', 'Valor Total', 'Percentual'];
+                $apenasResumo = false;
                 break;
             case 'metodo':
                 $dados = $this->getVendasPorMetodoPagamento($event_id, $data_inicio, $data_fim);
                 $filename = "vendas_metodo_{$nomeEvento}_{$data_inicio}_{$data_fim}.csv";
                 $cabecalho = ['Método', 'Quantidade', 'Valor Total', 'Percentual'];
+                $apenasResumo = false;
                 break;
             default:
                 return redirect()->back()->with('erro', 'Tipo de relatório inválido.');
@@ -222,20 +231,22 @@ class RelatorioVendas extends BaseController
         fputcsv($output, ['Receita Total', $metricas['receita_formatada']], ';');
         fputcsv($output, ['Ticket Médio (por pedido)', $metricas['ticket_medio_formatado']], ';');
         fputcsv($output, ['Clientes Únicos', $metricas['clientes_unicos']], ';');
-        fputcsv($output, [], ';'); // Linha em branco
         
-        // Cabeçalho dos dados
-        fputcsv($output, $cabecalho, ';');
+        // Se não for apenas resumo, adicionar dados detalhados
+        if (!$apenasResumo && !empty($dados)) {
+            fputcsv($output, [], ';'); // Linha em branco
+            fputcsv($output, $cabecalho, ';');
 
-        // Dados
-        foreach ($dados as $linha) {
-            $row = [];
-            foreach ($linha as $key => $valor) {
-                if (!str_contains($key, 'formatado') && $key !== 'metodo_label') {
-                    $row[] = $valor;
+            // Dados
+            foreach ($dados as $linha) {
+                $row = [];
+                foreach ($linha as $key => $valor) {
+                    if (!str_contains($key, 'formatado') && $key !== 'metodo_label') {
+                        $row[] = $valor;
+                    }
                 }
+                fputcsv($output, $row, ';');
             }
-            fputcsv($output, $row, ';');
         }
 
         rewind($output);
@@ -270,6 +281,11 @@ class RelatorioVendas extends BaseController
                 $dados = $this->getVendasDiarias($event_id, $data_inicio, $data_fim);
                 $titulo = 'Relatório de Vendas por Período';
                 $colunas = ['Data', 'Ingressos', 'Valor Total'];
+                break;
+            case 'resumo':
+                $dados = [];
+                $titulo = 'Resumo de Vendas';
+                $colunas = [];
                 break;
             case 'ingresso':
                 $dados = $this->getVendasPorIngresso($event_id, $data_inicio, $data_fim);

@@ -68,13 +68,33 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0"><i class="bx bx-calendar me-2"></i><?= $titulo ?></h4>
-    <div>
-        <a href="<?= site_url('relatorios/vendas/exportar-excel/periodo?evento_id=' . $event_id . '&data_inicio=' . $data_inicio . '&data_fim=' . $data_fim) ?>" class="btn btn-success export-btn me-2">
-            <i class="bx bx-file me-1"></i>Exportar Excel
-        </a>
-        <a href="<?= site_url('relatorios/vendas/exportar-pdf/periodo?evento_id=' . $event_id . '&data_inicio=' . $data_inicio . '&data_fim=' . $data_fim) ?>" target="_blank" class="btn btn-danger export-btn">
-            <i class="bx bx-file-blank me-1"></i>Exportar PDF
-        </a>
+    <div class="btn-group">
+        <div class="dropdown me-2">
+            <button class="btn btn-success dropdown-toggle export-btn" type="button" data-bs-toggle="dropdown">
+                <i class="bx bx-file me-1"></i>Excel
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="<?= site_url('relatorios/vendas/exportar-excel/periodo?evento_id=' . $event_id . '&data_inicio=' . $data_inicio . '&data_fim=' . $data_fim) ?>">
+                    <i class="bx bx-table me-2"></i>Completo (com evolução)
+                </a></li>
+                <li><a class="dropdown-item" href="<?= site_url('relatorios/vendas/exportar-excel/resumo?evento_id=' . $event_id . '&data_inicio=' . $data_inicio . '&data_fim=' . $data_fim) ?>">
+                    <i class="bx bx-list-check me-2"></i>Apenas Resumo
+                </a></li>
+            </ul>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-danger dropdown-toggle export-btn" type="button" data-bs-toggle="dropdown">
+                <i class="bx bx-file-blank me-1"></i>PDF
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="<?= site_url('relatorios/vendas/exportar-pdf/periodo?evento_id=' . $event_id . '&data_inicio=' . $data_inicio . '&data_fim=' . $data_fim) ?>" target="_blank">
+                    <i class="bx bx-table me-2"></i>Completo (com evolução)
+                </a></li>
+                <li><a class="dropdown-item" href="<?= site_url('relatorios/vendas/exportar-pdf/resumo?evento_id=' . $event_id . '&data_inicio=' . $data_inicio . '&data_fim=' . $data_fim) ?>" target="_blank">
+                    <i class="bx bx-list-check me-2"></i>Apenas Resumo
+                </a></li>
+            </ul>
+        </div>
     </div>
 </div>
 
