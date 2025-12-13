@@ -109,28 +109,119 @@
 
 <!-- Cards de Estatísticas -->
 <div class="row g-4 mb-4">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="stats-card">
-            <p class="mb-1 opacity-75">Total de Vendas</p>
-            <h3><?= $totais['quantidade'] ?></h3>
+            <p class="mb-1 opacity-75">Total de Ingressos</p>
+            <h3><?= $metricas['total_ingressos'] ?? $totais['quantidade'] ?></h3>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="stats-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
             <p class="mb-1 opacity-75">Receita Total</p>
-            <h3><?= $totais['valor_formatado'] ?></h3>
+            <h3><?= $metricas['receita_formatada'] ?? $totais['valor_formatado'] ?></h3>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
             <p class="mb-1 opacity-75">Ticket Médio</p>
-            <h3><?= $totais['ticket_medio'] ?></h3>
+            <h3><?= $metricas['ticket_medio_formatado'] ?? $totais['ticket_medio'] ?></h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <p class="mb-1 opacity-75">Clientes Únicos</p>
+            <h3><?= $metricas['clientes_unicos'] ?? 0 ?></h3>
         </div>
     </div>
 </div>
 
-<!-- Tabela de Resultados -->
+<div class="row g-4 mb-4">
+    <!-- Top Ingressos -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bx bx-trophy me-2"></i>Top Ingressos Vendidos</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ingresso</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-end">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($top_ingressos)): ?>
+                                <?php foreach ($top_ingressos as $index => $ing): ?>
+                                <tr>
+                                    <td>
+                                        <?php if ($index < 3): ?>
+                                            <span class="badge bg-warning text-dark me-2"><?= $index + 1 ?>º</span>
+                                        <?php endif; ?>
+                                        <?= esc($ing['ingresso']) ?>
+                                    </td>
+                                    <td class="text-center"><span class="badge bg-primary"><?= $ing['quantidade'] ?></span></td>
+                                    <td class="text-end text-success fw-bold"><?= $ing['valor_formatado'] ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="3" class="text-center text-muted py-3">Nenhum dado</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vendas por Método -->
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bx bx-credit-card me-2"></i>Vendas por Método de Pagamento</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Método</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-end">Valor</th>
+                                <th class="text-center">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($vendas_por_metodo)): ?>
+                                <?php foreach ($vendas_por_metodo as $metodo): ?>
+                                <tr>
+                                    <td>
+                                        <i class="bx bx-credit-card me-2 text-primary"></i>
+                                        <?= esc($metodo['metodo_label'] ?? $metodo['metodo']) ?>
+                                    </td>
+                                    <td class="text-center"><span class="badge bg-success"><?= $metodo['quantidade'] ?></span></td>
+                                    <td class="text-end text-success fw-bold"><?= $metodo['valor_formatado'] ?></td>
+                                    <td class="text-center"><?= $metodo['percentual'] ?>%</td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="4" class="text-center text-muted py-3">Nenhum dado</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela de Vendas Diárias -->
 <div class="card shadow-sm">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="bx bx-calendar me-2"></i>Evolução Diária de Vendas</h6>
+    </div>
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-report table-hover mb-0">

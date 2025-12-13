@@ -70,6 +70,11 @@ class RelatorioVendas extends BaseController
         // Buscar vendas por período
         $vendasDiarias = $this->getVendasDiarias($event_id, $data_inicio, $data_fim);
         $totais = $this->getTotaisPeriodo($event_id, $data_inicio, $data_fim);
+        
+        // Métricas adicionais como no dashboard
+        $metricas = $this->getMetricasCompletas($event_id, $data_inicio, $data_fim);
+        $topIngressos = $this->getTopIngressosPeriodo($event_id, $data_inicio, $data_fim);
+        $vendasPorMetodo = $this->getVendasPorMetodoPagamento($event_id, $data_inicio, $data_fim);
 
         $data = [
             'titulo' => 'Relatório de Vendas por Período',
@@ -80,6 +85,9 @@ class RelatorioVendas extends BaseController
             'data_fim' => $data_fim,
             'vendas_diarias' => $vendasDiarias,
             'totais' => $totais,
+            'metricas' => $metricas,
+            'top_ingressos' => $topIngressos,
+            'vendas_por_metodo' => $vendasPorMetodo,
         ];
 
         return view('Relatorios/Vendas/vendas_periodo', $data);
@@ -412,5 +420,101 @@ class RelatorioVendas extends BaseController
         ];
 
         return $labels[$metodo] ?? $metodo;
+    }
+
+    /**
+     * Busca métricas completas do período (similar ao dashboard)
+     */
+    private function getMetricasCompletas(int $event_id, string $data_inicio, string $data_fim): array
+    {
+        try {
+            // Total de ingressos vendidos (combo conta como 2)
+            $ingressosResult = $this->db->query("
+                SELECT SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as total_ingressos
+                FROM ingressos i
+                INNER JOIN pedidos p ON p.id = i.pedido_id
+                WHERE p.evento_id = ?
+                AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+                AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+                AND DATE(p.created_at) >= ?
+                AND DATE(p.created_at) <= ?
+            ", [$event_id, $data_inicio, $data_fim])->getRowArray();
+
+            // Clientes únicos
+            $clientesResult = $this->db->table('pedidos')
+                ->select('COUNT(DISTINCT user_id) as clientes_unicos')
+                ->where('evento_id', $event_id)
+                ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
+                ->where("DATE(created_at) >=", $data_inicio)
+                ->where("DATE(created_at) <=", $data_fim)
+                ->get()
+                ->getRowArray();
+
+            // Receita total e ticket médio
+            $receitaResult = $this->db->table('pedidos')
+                ->select('SUM(total) as receita_total, COUNT(*) as total_pedidos, AVG(total) as ticket_medio')
+                ->where('evento_id', $event_id)
+                ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
+                ->where("DATE(created_at) >=", $data_inicio)
+                ->where("DATE(created_at) <=", $data_fim)
+                ->get()
+                ->getRowArray();
+
+            return [
+                'total_ingressos' => (int)($ingressosResult['total_ingressos'] ?? 0),
+                'clientes_unicos' => (int)($clientesResult['clientes_unicos'] ?? 0),
+                'receita_total' => (float)($receitaResult['receita_total'] ?? 0),
+                'receita_formatada' => 'R$ ' . number_format($receitaResult['receita_total'] ?? 0, 2, ',', '.'),
+                'total_pedidos' => (int)($receitaResult['total_pedidos'] ?? 0),
+                'ticket_medio' => (float)($receitaResult['ticket_medio'] ?? 0),
+                'ticket_medio_formatado' => 'R$ ' . number_format($receitaResult['ticket_medio'] ?? 0, 2, ',', '.'),
+            ];
+        } catch (\Exception $e) {
+            log_message('error', 'Erro getMetricasCompletas: ' . $e->getMessage());
+            return [
+                'total_ingressos' => 0,
+                'clientes_unicos' => 0,
+                'receita_total' => 0,
+                'receita_formatada' => 'R$ 0,00',
+                'total_pedidos' => 0,
+                'ticket_medio' => 0,
+                'ticket_medio_formatado' => 'R$ 0,00',
+            ];
+        }
+    }
+
+    /**
+     * Busca top ingressos vendidos no período
+     */
+    private function getTopIngressosPeriodo(int $event_id, string $data_inicio, string $data_fim, int $limit = 10): array
+    {
+        try {
+            $result = $this->db->query("
+                SELECT 
+                    t.nome as ingresso,
+                    SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as quantidade,
+                    SUM(i.valor) as valor_total
+                FROM ingressos i
+                INNER JOIN pedidos p ON p.id = i.pedido_id
+                INNER JOIN tickets t ON t.id = i.ticket_id
+                WHERE p.evento_id = ?
+                AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+                AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+                AND DATE(p.created_at) >= ?
+                AND DATE(p.created_at) <= ?
+                GROUP BY t.id, t.nome
+                ORDER BY quantidade DESC
+                LIMIT 10
+            ", [$event_id, $data_inicio, $data_fim])->getResultArray();
+
+            foreach ($result as &$row) {
+                $row['valor_formatado'] = 'R$ ' . number_format($row['valor_total'] ?? 0, 2, ',', '.');
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            log_message('error', 'Erro getTopIngressosPeriodo: ' . $e->getMessage());
+            return [];
+        }
     }
 }
