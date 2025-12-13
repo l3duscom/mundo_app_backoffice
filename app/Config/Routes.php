@@ -269,6 +269,22 @@ $routes->group('relatorios', function ($routes) {
     // Equipe
     $routes->add('desempenho-atendentes', 'Relatorios::exibeRelatorioEquipe');
     $routes->add('desempenho-responsaveis', 'Relatorios::exibeRelatorioEquipe');
+    
+    // Vendas
+    $routes->get('vendas', 'RelatorioVendas::index');
+    $routes->get('vendas/periodo', 'RelatorioVendas::vendasPorPeriodo');
+    $routes->get('vendas/ingresso', 'RelatorioVendas::vendasPorIngresso');
+    $routes->get('vendas/metodo', 'RelatorioVendas::vendasPorMetodo');
+    $routes->get('vendas/exportar-excel/(:segment)', 'RelatorioVendas::exportarExcel/$1');
+    $routes->get('vendas/exportar-pdf/(:segment)', 'RelatorioVendas::exportarPdf/$1');
+    
+    // Contratos
+    $routes->get('contratos', 'RelatorioContratos::index');
+    $routes->get('contratos/situacao', 'RelatorioContratos::contratosPorSituacao');
+    $routes->get('contratos/financeiro', 'RelatorioContratos::financeiroContratos');
+    $routes->get('contratos/expositor', 'RelatorioContratos::contratosPorExpositor');
+    $routes->get('contratos/exportar-excel/(:segment)', 'RelatorioContratos::exportarExcel/$1');
+    $routes->get('contratos/exportar-pdf/(:segment)', 'RelatorioContratos::exportarPdf/$1');
 });
 
 $routes->get('api/checkout/obrigado', 'Api\Checkout::obrigado');

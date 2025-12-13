@@ -273,6 +273,20 @@
                         </a>
                     </li>
                     <li>
+                        <a href="<?php echo site_url('relatorios/vendas'); ?>">
+                            <div class="parent-icon"><i class="bx bx-bar-chart-alt-2"></i>
+                            </div>
+                            <div class="menu-title">Relatórios de Vendas</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('relatorios/contratos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-file-find"></i>
+                            </div>
+                            <div class="menu-title">Relatórios de Contratos</div>
+                        </a>
+                    </li>
+                    <li>
                         <a href="<?php echo site_url('/clientes'); ?>">
                             <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
                             </div>
