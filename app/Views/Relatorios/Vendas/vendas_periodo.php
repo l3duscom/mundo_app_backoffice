@@ -109,28 +109,40 @@
 
 <!-- Cards de Estatísticas -->
 <div class="row g-4 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="stats-card">
-            <p class="mb-1 opacity-75">Total de Ingressos</p>
-            <h3><?= $metricas['total_ingressos'] ?? $totais['quantidade'] ?></h3>
+            <p class="mb-1 opacity-75">Ingressos Vendidos</p>
+            <h3><?= $metricas['total_ingressos'] ?? 0 ?></h3>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
+        <div class="stats-card" style="background: linear-gradient(135deg, #a8e6cf 0%, #88d8b0 100%);">
+            <p class="mb-1 opacity-75">Cortesias</p>
+            <h3><?= $metricas['total_cortesias'] ?? 0 ?></h3>
+        </div>
+    </div>
+    <div class="col-md-2">
         <div class="stats-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
             <p class="mb-1 opacity-75">Receita Total</p>
             <h3><?= $metricas['receita_formatada'] ?? $totais['valor_formatado'] ?></h3>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
             <p class="mb-1 opacity-75">Ticket Médio</p>
             <h3><?= $metricas['ticket_medio_formatado'] ?? $totais['ticket_medio'] ?></h3>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <p class="mb-1 opacity-75">Clientes Únicos</p>
+            <p class="mb-1 opacity-75">Clientes</p>
             <h3><?= $metricas['clientes_unicos'] ?? 0 ?></h3>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stats-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333;">
+            <p class="mb-1 opacity-75">Pedidos</p>
+            <h3><?= $metricas['total_pedidos'] ?? 0 ?></h3>
         </div>
     </div>
 </div>

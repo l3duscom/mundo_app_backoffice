@@ -135,16 +135,30 @@
     <div class="info-box">
         <div class="info-grid">
             <div class="info-item">
-                <div class="label">Total de Vendas</div>
-                <div class="value"><?= $totais['quantidade'] ?></div>
+                <div class="label">Ingressos Vendidos</div>
+                <div class="value"><?= $metricas['total_ingressos'] ?? 0 ?></div>
             </div>
+            <div class="info-item">
+                <div class="label">Cortesias</div>
+                <div class="value" style="color: #17a2b8;"><?= $metricas['total_cortesias'] ?? 0 ?></div>
+            </div>
+            <div class="info-item">
+                <div class="label">Pedidos</div>
+                <div class="value" style="color: #6c757d;"><?= $metricas['total_pedidos'] ?? 0 ?></div>
+            </div>
+        </div>
+        <div class="info-grid" style="margin-top: 10px;">
             <div class="info-item">
                 <div class="label">Receita Total</div>
-                <div class="value"><?= $totais['valor_formatado'] ?></div>
+                <div class="value"><?= $metricas['receita_formatada'] ?? $totais['valor_formatado'] ?></div>
             </div>
             <div class="info-item">
-                <div class="label">Ticket Médio</div>
-                <div class="value"><?= $totais['ticket_medio'] ?></div>
+                <div class="label">Ticket Médio (por pedido)</div>
+                <div class="value" style="color: #dc3545;"><?= $metricas['ticket_medio_formatado'] ?? $totais['ticket_medio'] ?></div>
+            </div>
+            <div class="info-item">
+                <div class="label">Clientes Únicos</div>
+                <div class="value" style="color: #007bff;"><?= $metricas['clientes_unicos'] ?? 0 ?></div>
             </div>
         </div>
     </div>

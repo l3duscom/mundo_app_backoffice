@@ -184,12 +184,13 @@ class RelatorioVendas extends BaseController
 
         $evento = $this->eventoModel->find($event_id);
         $nomeEvento = preg_replace('/[^a-zA-Z0-9]/', '_', $evento->nome ?? 'evento');
+        $metricas = $this->getMetricasCompletas($event_id, $data_inicio, $data_fim);
 
         switch ($tipo) {
             case 'periodo':
                 $dados = $this->getVendasDiarias($event_id, $data_inicio, $data_fim);
                 $filename = "vendas_periodo_{$nomeEvento}_{$data_inicio}_{$data_fim}.csv";
-                $cabecalho = ['Data', 'Quantidade', 'Valor Total'];
+                $cabecalho = ['Data', 'Ingressos', 'Valor Total'];
                 break;
             case 'ingresso':
                 $dados = $this->getVendasPorIngresso($event_id, $data_inicio, $data_fim);
@@ -211,14 +212,28 @@ class RelatorioVendas extends BaseController
         // BOM para UTF-8
         fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
         
-        // Cabeçalho
+        // Cabeçalho do resumo
+        fputcsv($output, ['RESUMO DO PERÍODO'], ';');
+        fputcsv($output, ['Evento', $evento->nome ?? 'N/A'], ';');
+        fputcsv($output, ['Período', $data_inicio . ' a ' . $data_fim], ';');
+        fputcsv($output, ['Ingressos Vendidos', $metricas['total_ingressos']], ';');
+        fputcsv($output, ['Cortesias', $metricas['total_cortesias']], ';');
+        fputcsv($output, ['Total de Pedidos', $metricas['total_pedidos']], ';');
+        fputcsv($output, ['Receita Total', $metricas['receita_formatada']], ';');
+        fputcsv($output, ['Ticket Médio (por pedido)', $metricas['ticket_medio_formatado']], ';');
+        fputcsv($output, ['Clientes Únicos', $metricas['clientes_unicos']], ';');
+        fputcsv($output, [], ';'); // Linha em branco
+        
+        // Cabeçalho dos dados
         fputcsv($output, $cabecalho, ';');
 
         // Dados
         foreach ($dados as $linha) {
             $row = [];
-            foreach ($linha as $valor) {
-                $row[] = $valor;
+            foreach ($linha as $key => $valor) {
+                if (!str_contains($key, 'formatado') && $key !== 'metodo_label') {
+                    $row[] = $valor;
+                }
             }
             fputcsv($output, $row, ';');
         }
@@ -248,12 +263,13 @@ class RelatorioVendas extends BaseController
 
         $evento = $this->eventoModel->find($event_id);
         $totais = $this->getTotaisPeriodo($event_id, $data_inicio, $data_fim);
+        $metricas = $this->getMetricasCompletas($event_id, $data_inicio, $data_fim);
 
         switch ($tipo) {
             case 'periodo':
                 $dados = $this->getVendasDiarias($event_id, $data_inicio, $data_fim);
                 $titulo = 'Relatório de Vendas por Período';
-                $colunas = ['Data', 'Quantidade', 'Valor Total'];
+                $colunas = ['Data', 'Ingressos', 'Valor Total'];
                 break;
             case 'ingresso':
                 $dados = $this->getVendasPorIngresso($event_id, $data_inicio, $data_fim);
@@ -277,6 +293,7 @@ class RelatorioVendas extends BaseController
             'dados' => $dados,
             'colunas' => $colunas,
             'totais' => $totais,
+            'metricas' => $metricas,
         ]);
 
         $dompdf = new Dompdf();
@@ -440,14 +457,28 @@ class RelatorioVendas extends BaseController
     private function getMetricasCompletas(int $event_id, string $data_inicio, string $data_fim): array
     {
         try {
-            // Total de ingressos vendidos (combo conta como 2)
+            // Total de ingressos (sem cortesias - ticket_id != 608)
             $ingressosResult = $this->db->query("
                 SELECT SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as total_ingressos
                 FROM ingressos i
                 INNER JOIN pedidos p ON p.id = i.pedido_id
                 WHERE p.evento_id = ?
-                AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+                AND p.status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH')
                 AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+                AND i.ticket_id != 608
+                AND DATE(p.created_at) >= ?
+                AND DATE(p.created_at) <= ?
+            ", [$event_id, $data_inicio, $data_fim])->getRowArray();
+
+            // Total de cortesias (ticket_id = 608)
+            $cortesiasResult = $this->db->query("
+                SELECT SUM(CASE WHEN i.tipo = 'combo' THEN 2 ELSE 1 END) as total_cortesias
+                FROM ingressos i
+                INNER JOIN pedidos p ON p.id = i.pedido_id
+                WHERE p.evento_id = ?
+                AND p.status IN ('CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH')
+                AND i.tipo NOT IN ('cinemark', 'adicional', '', 'produto')
+                AND i.ticket_id = 608
                 AND DATE(p.created_at) >= ?
                 AND DATE(p.created_at) <= ?
             ", [$event_id, $data_inicio, $data_fim])->getRowArray();
@@ -456,35 +487,41 @@ class RelatorioVendas extends BaseController
             $clientesResult = $this->db->table('pedidos')
                 ->select('COUNT(DISTINCT user_id) as clientes_unicos')
                 ->where('evento_id', $event_id)
-                ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
+                ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH'])
                 ->where("DATE(created_at) >=", $data_inicio)
                 ->where("DATE(created_at) <=", $data_fim)
                 ->get()
                 ->getRowArray();
 
-            // Receita total e ticket médio
+            // Receita total e ticket médio (baseado em PEDIDOS)
             $receitaResult = $this->db->table('pedidos')
-                ->select('SUM(total) as receita_total, COUNT(*) as total_pedidos, AVG(total) as ticket_medio')
+                ->select('SUM(total) as receita_total, COUNT(*) as total_pedidos')
                 ->where('evento_id', $event_id)
-                ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
+                ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH'])
                 ->where("DATE(created_at) >=", $data_inicio)
                 ->where("DATE(created_at) <=", $data_fim)
                 ->get()
                 ->getRowArray();
+
+            $totalPedidos = (int)($receitaResult['total_pedidos'] ?? 0);
+            $receitaTotal = (float)($receitaResult['receita_total'] ?? 0);
+            $ticketMedio = $totalPedidos > 0 ? $receitaTotal / $totalPedidos : 0;
 
             return [
                 'total_ingressos' => (int)($ingressosResult['total_ingressos'] ?? 0),
+                'total_cortesias' => (int)($cortesiasResult['total_cortesias'] ?? 0),
                 'clientes_unicos' => (int)($clientesResult['clientes_unicos'] ?? 0),
-                'receita_total' => (float)($receitaResult['receita_total'] ?? 0),
-                'receita_formatada' => 'R$ ' . number_format($receitaResult['receita_total'] ?? 0, 2, ',', '.'),
-                'total_pedidos' => (int)($receitaResult['total_pedidos'] ?? 0),
-                'ticket_medio' => (float)($receitaResult['ticket_medio'] ?? 0),
-                'ticket_medio_formatado' => 'R$ ' . number_format($receitaResult['ticket_medio'] ?? 0, 2, ',', '.'),
+                'receita_total' => $receitaTotal,
+                'receita_formatada' => 'R$ ' . number_format($receitaTotal, 2, ',', '.'),
+                'total_pedidos' => $totalPedidos,
+                'ticket_medio' => $ticketMedio,
+                'ticket_medio_formatado' => 'R$ ' . number_format($ticketMedio, 2, ',', '.'),
             ];
         } catch (\Exception $e) {
             log_message('error', 'Erro getMetricasCompletas: ' . $e->getMessage());
             return [
                 'total_ingressos' => 0,
+                'total_cortesias' => 0,
                 'clientes_unicos' => 0,
                 'receita_total' => 0,
                 'receita_formatada' => 'R$ 0,00',
