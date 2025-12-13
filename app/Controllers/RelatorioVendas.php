@@ -547,9 +547,9 @@ class RelatorioVendas extends BaseController
                 ->get()
                 ->getRowArray();
 
-            // Receita total e ticket médio (baseado em PEDIDOS)
+            // Receita total, líquida e ticket médio (baseado em PEDIDOS)
             $receitaResult = $this->db->table('pedidos')
-                ->select('SUM(total) as receita_total, COUNT(*) as total_pedidos')
+                ->select('SUM(total) as receita_total, SUM(valor_liquido) as receita_liquida, COUNT(*) as total_pedidos')
                 ->where('evento_id', $event_id)
                 ->whereIn('status', ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH'])
                 ->where("DATE(created_at) >=", $data_inicio)
@@ -559,6 +559,8 @@ class RelatorioVendas extends BaseController
 
             $totalPedidos = (int)($receitaResult['total_pedidos'] ?? 0);
             $receitaTotal = (float)($receitaResult['receita_total'] ?? 0);
+            $receitaLiquida = (float)($receitaResult['receita_liquida'] ?? 0);
+            $taxaTotal = $receitaTotal - $receitaLiquida;
             $ticketMedio = $totalPedidos > 0 ? $receitaTotal / $totalPedidos : 0;
 
             return [
@@ -567,6 +569,10 @@ class RelatorioVendas extends BaseController
                 'clientes_unicos' => (int)($clientesResult['clientes_unicos'] ?? 0),
                 'receita_total' => $receitaTotal,
                 'receita_formatada' => 'R$ ' . number_format($receitaTotal, 2, ',', '.'),
+                'receita_liquida' => $receitaLiquida,
+                'receita_liquida_formatada' => 'R$ ' . number_format($receitaLiquida, 2, ',', '.'),
+                'taxa_total' => $taxaTotal,
+                'taxa_formatada' => 'R$ ' . number_format($taxaTotal, 2, ',', '.'),
                 'total_pedidos' => $totalPedidos,
                 'ticket_medio' => $ticketMedio,
                 'ticket_medio_formatado' => 'R$ ' . number_format($ticketMedio, 2, ',', '.'),
@@ -579,6 +585,10 @@ class RelatorioVendas extends BaseController
                 'clientes_unicos' => 0,
                 'receita_total' => 0,
                 'receita_formatada' => 'R$ 0,00',
+                'receita_liquida' => 0,
+                'receita_liquida_formatada' => 'R$ 0,00',
+                'taxa_total' => 0,
+                'taxa_formatada' => 'R$ 0,00',
                 'total_pedidos' => 0,
                 'ticket_medio' => 0,
                 'ticket_medio_formatado' => 'R$ 0,00',

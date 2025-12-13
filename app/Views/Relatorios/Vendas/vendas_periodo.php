@@ -145,6 +145,11 @@
         <div class="stats-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
             <p class="mb-1 opacity-75">Receita Total</p>
             <h3><?= $metricas['receita_formatada'] ?? $totais['valor_formatado'] ?></h3>
+            <?php if (($metricas['receita_liquida'] ?? 0) > 0): ?>
+            <small class="d-block mt-1 opacity-75" style="font-size: 0.75rem;">
+                Líquido: <?= $metricas['receita_liquida_formatada'] ?? 'R$ 0,00' ?>
+            </small>
+            <?php endif; ?>
         </div>
     </div>
     <div class="col-md-2">
