@@ -325,6 +325,33 @@ class Expositores extends BaseController
         }
     }
 
+    public function criarUsuario(int $id = null)
+    {
+        if (!$this->usuarioLogado()->temPermissaoPara('editar-expositores')) {
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+        }
+
+        $expositor = $this->buscaExpositorOu404($id);
+
+        // Verifica se já possui usuário vinculado
+        if (!empty($expositor->usuario_id)) {
+            return redirect()->back()->with('info', "Este expositor já possui um usuário de acesso vinculado.");
+        }
+
+        try {
+            // Cria usuário do expositor
+            $this->criaUsuarioParaExpositorExistente($expositor);
+
+            // Envia dados de acesso ao expositor
+            $this->enviaEmailCriacaoExpositorAcesso($expositor);
+
+            return redirect()->back()->with('sucesso', "Usuário de acesso criado com sucesso!<br><br>Dados enviados para: " . $expositor->email . "<br>Senha inicial: 123456");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('erro', "Erro ao criar usuário: " . $e->getMessage());
+        }
+    }
+
+
     public function consultaCep()
     {
         if (!$this->request->isAJAX()) {
@@ -517,6 +544,50 @@ class Expositores extends BaseController
             ->protect(false)
             ->where('id', $this->expositorModel->getInsertID())
             ->set('usuario_id', $this->usuarioModel->getInsertID())
+            ->update();
+    }
+
+    /**
+     * Método que cria o usuário para um expositor já existente no banco
+     *
+     * @param object $expositor
+     * @return void
+     */
+    private function criaUsuarioParaExpositorExistente(object $expositor): void
+    {
+        // Montamos os dados do usuário do expositor
+        $usuario = [
+            'nome'     => $expositor->getNomeExibicao(),
+            'email'    => $expositor->email,
+            'password' => '123456',
+            'ativo'    => true,
+        ];
+
+        // Criamos o usuário do expositor
+        $this->usuarioModel->skipValidation(true)->protect(false)->insert($usuario);
+
+        $usuarioId = $this->usuarioModel->getInsertID();
+
+        // Montamos os dados do grupo que o usuário fará parte
+        $grupoCliente = [
+            'grupo_id'   => 2, // Grupo de clientes - base
+            'usuario_id' => $usuarioId,
+        ];
+
+        $grupoParceiro = [
+            'grupo_id'   => 4, // Grupo de Parceiros
+            'usuario_id' => $usuarioId,
+        ];
+
+        // Inserimos o usuário nos grupos
+        $this->grupoUsuarioModel->protect(false)->insert($grupoCliente);
+        $this->grupoUsuarioModel->protect(false)->insert($grupoParceiro);
+
+        // Atualizamos a tabela de expositores com o ID do usuário criado
+        $this->expositorModel
+            ->protect(false)
+            ->where('id', $expositor->id)
+            ->set('usuario_id', $usuarioId)
             ->update();
     }
 

@@ -77,8 +77,15 @@
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="<?php echo site_url("expositores/editar/$expositor->id"); ?>">
                     <i class="bx bx-edit-alt me-2"></i>Editar expositor</a></li>
-                <li><a class="dropdown-item" href="<?php echo site_url("expositores/reenviarEmail/$expositor->id"); ?>">
-                    <i class="bx bx-envelope me-2"></i>Reenviar email de boas-vindas</a></li>
+                
+                <?php if (empty($expositor->usuario_id)) : ?>
+                    <li><a class="dropdown-item text-primary" href="<?php echo site_url("expositores/criarUsuario/$expositor->id"); ?>">
+                        <i class="bx bx-user-plus me-2"></i>Criar usuário de acesso</a></li>
+                <?php else : ?>
+                    <li><a class="dropdown-item" href="<?php echo site_url("expositores/reenviarEmail/$expositor->id"); ?>">
+                        <i class="bx bx-envelope me-2"></i>Reenviar email de boas-vindas</a></li>
+                <?php endif; ?>
+                
                 <li><hr class="dropdown-divider"></li>
                 
                 <?php if ($expositor->deleted_at == null) : ?>
