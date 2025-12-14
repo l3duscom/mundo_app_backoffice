@@ -112,6 +112,11 @@ class Filters extends BaseConfig
                 'concursos/gerenciar(/*)',
                 'concursos/my(/*)',
                 'concursos',
+                'contratos(/*)?',
+                'contratoitens(/*)?',
+                'contratodocumentos(/*)?',
+                'expositores(/*)?',
+                'relatorios(/*)?',
             ],
             'except' => [
                 'api/*', // Exclui todas as rotas da API do filtro de login web
