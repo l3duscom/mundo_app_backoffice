@@ -8,7 +8,7 @@
 
 <h3>Seus dados de acesso:</h3>
 
-<p><strong>Link de acesso:</strong> <a href="https://mundodream.com.br">https://mundodream.com.br</a></p>
+<p><strong>Link de acesso:</strong> <a href="https://expositor.mundodream.com.br">https://expositor.mundodream.com.br</a></p>
 
 <p><strong>E-mail:</strong> <?php echo esc($expositor->email); ?></p>
 
