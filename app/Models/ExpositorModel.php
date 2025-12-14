@@ -32,6 +32,7 @@ class ExpositorModel extends Model
         'observacoes',
         'ativo',
         'asaas_customer_id',
+        'usuario_id',
     ];
 
     // Dates

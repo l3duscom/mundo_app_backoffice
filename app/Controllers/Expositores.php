@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Traits\ValidacoesTrait;
 use App\Entities\Expositor;
+use App\Services\ResendService;
 
 class Expositores extends BaseController
 {
@@ -12,10 +13,16 @@ class Expositores extends BaseController
     use ValidacoesTrait;
 
     private $expositorModel;
+    private $usuarioModel;
+    private $grupoUsuarioModel;
+    private $resendService;
 
     public function __construct()
     {
         $this->expositorModel = new \App\Models\ExpositorModel();
+        $this->usuarioModel = new \App\Models\UsuarioModel();
+        $this->grupoUsuarioModel = new \App\Models\GrupoUsuarioModel();
+        $this->resendService = new ResendService();
     }
 
     public function index()
@@ -143,13 +150,26 @@ class Expositores extends BaseController
 
         if ($this->expositorModel->save($expositor)) {
 
-            $btnCriar = anchor("expositores/criar", 'Cadastrar novo expositor', ['class' => 'btn btn-danger mt-2']);
+            try {
+                // Cria usuário do expositor
+                $this->criaUsuarioParaExpositor($expositor);
 
-            session()->setFlashdata('sucesso', "Dados salvos com sucesso!<br> $btnCriar");
+                // Envia dados de acesso ao expositor
+                $this->enviaEmailCriacaoExpositorAcesso($expositor);
 
-            $retorno['id'] = $this->expositorModel->getInsertID();
+                $btnCriar = anchor("expositores/criar", 'Cadastrar novo expositor', ['class' => 'btn btn-danger mt-2']);
 
-            return $this->response->setJSON($retorno);
+                session()->setFlashdata('sucesso', "Dados salvos com sucesso!<br><br>Importante: informe ao expositor os dados de acesso ao sistema: <p>E-mail: $expositor->email <p><p>Senha inicial: 123456</p> Esses mesmos dados foram enviados para o e-mail do expositor.<br> $btnCriar");
+
+                $retorno['id'] = $this->expositorModel->getInsertID();
+
+                return $this->response->setJSON($retorno);
+            } catch (\Exception $e) {
+                // Em caso de erro ao criar usuário ou enviar email, retornamos erro
+                $retorno['erro'] = 'Expositor cadastrado, mas houve um erro ao criar acesso: ' . $e->getMessage();
+                $retorno['id'] = $this->expositorModel->getInsertID();
+                return $this->response->setJSON($retorno);
+            }
         }
 
         // Retornamos os erros de validação
@@ -286,6 +306,23 @@ class Expositores extends BaseController
         $this->expositorModel->protect(false)->save($expositor);
 
         return redirect()->back()->with('sucesso', "Expositor " . $expositor->getNomeExibicao() . " recuperado com sucesso!");
+    }
+
+    public function reenviarEmail(int $id = null)
+    {
+        if (!$this->usuarioLogado()->temPermissaoPara('editar-expositores')) {
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+        }
+
+        $expositor = $this->buscaExpositorOu404($id);
+
+        try {
+            $this->enviaEmailCriacaoExpositorAcesso($expositor);
+
+            return redirect()->back()->with('sucesso', "Email de boas-vindas reenviado com sucesso para " . $expositor->email);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('erro', "Erro ao enviar email: " . $e->getMessage());
+        }
     }
 
     public function consultaCep()
@@ -439,6 +476,70 @@ class Expositores extends BaseController
         }
 
         return '<span class="badge ' . $classe . '" ' . $style . '>' . esc($segmento) . '</span>';
+    }
+
+    /**
+     * Método que cria o usuário para o expositor recém cadastrado
+     *
+     * @param object $expositor
+     * @return void
+     */
+    private function criaUsuarioParaExpositor(object $expositor): void
+    {
+        // Montamos os dados do usuário do expositor
+        $usuario = [
+            'nome'     => $expositor->getNomeExibicao(),
+            'email'    => $expositor->email,
+            'password' => '123456',
+            'ativo'    => true,
+        ];
+
+        // Criamos o usuário do expositor
+        $this->usuarioModel->skipValidation(true)->protect(false)->insert($usuario);
+
+        // Montamos os dados do grupo que o usuário fará parte
+        $grupoCliente = [
+            'grupo_id'   => 2, // Grupo de clientes - base
+            'usuario_id' => $this->usuarioModel->getInsertID(),
+        ];
+
+        $grupoParceiro = [
+            'grupo_id'   => 4, // Grupo de Parceiros
+            'usuario_id' => $this->usuarioModel->getInsertID(),
+        ];
+
+        // Inserimos o usuário nos grupos
+        $this->grupoUsuarioModel->protect(false)->insert($grupoCliente);
+        $this->grupoUsuarioModel->protect(false)->insert($grupoParceiro);
+
+        // Atualizamos a tabela de expositores com o ID do usuário criado
+        $this->expositorModel
+            ->protect(false)
+            ->where('id', $this->expositorModel->getInsertID())
+            ->set('usuario_id', $this->usuarioModel->getInsertID())
+            ->update();
+    }
+
+    /**
+     * Método que envia o e-mail para o expositor com os dados de acesso.
+     *
+     * @param object $expositor
+     * @return void
+     */
+    private function enviaEmailCriacaoExpositorAcesso(object $expositor): void
+    {
+        $data = [
+            'expositor' => $expositor,
+        ];
+
+        $mensagem = view('Expositores/email_dados_acesso', $data);
+
+        // Enviar via Resend
+        $this->resendService->enviarEmail(
+            $expositor->email,
+            'Dados de acesso ao Mundo Dream para Expositores',
+            $mensagem
+        );
     }
 }
 

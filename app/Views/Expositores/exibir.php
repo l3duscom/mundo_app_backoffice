@@ -77,6 +77,8 @@
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="<?php echo site_url("expositores/editar/$expositor->id"); ?>">
                     <i class="bx bx-edit-alt me-2"></i>Editar expositor</a></li>
+                <li><a class="dropdown-item" href="<?php echo site_url("expositores/reenviarEmail/$expositor->id"); ?>">
+                    <i class="bx bx-envelope me-2"></i>Reenviar email de boas-vindas</a></li>
                 <li><hr class="dropdown-divider"></li>
                 
                 <?php if ($expositor->deleted_at == null) : ?>
