@@ -86,9 +86,21 @@
 
                                             <strong><?= $i->nome ?></strong>
                                         </div>
-                                        <div class="col-lg-3">
+                                        <div class="col-lg-2">
                                             <p class="mb-0 text-muted" style="font-size: 10px;">Código do ingresso</p>
                                             <strong><?= $i->codigo ?></strong>
+                                        </div>
+                                        <div class="col-lg-2">
+                                            <p class="mb-0 text-muted" style="font-size: 10px;">Último Acesso</p>
+                                            <?php if (isset($ultimoAcessoPorIngresso[$i->id]) && $ultimoAcessoPorIngresso[$i->id]): ?>
+                                                <?php $ultimoAcesso = $ultimoAcessoPorIngresso[$i->id]; ?>
+                                                <span class="badge bg-success">
+                                                    <i class="bx bx-check-circle me-1"></i>
+                                                    <?= date('d/m/Y H:i', strtotime($ultimoAcesso->created_at)) ?>
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary">Nunca utilizado</span>
+                                            <?php endif; ?>
                                         </div>
                                         <div class="col-lg-12 mt-3"></div>
                                         <div class="col-lg-3">
@@ -142,6 +154,44 @@
 
 
                                     </div>
+
+                                    <!-- Histórico de Acessos -->
+                                    <?php if (isset($acessosPorIngresso[$i->id]) && !empty($acessosPorIngresso[$i->id])): ?>
+                                    <hr class="mt-3">
+                                    <div class="mt-3">
+                                        <h6><i class="bx bx-log-in-circle me-2"></i>Histórico de Acessos</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Data/Hora</th>
+                                                        <th>Tipo</th>
+                                                        <th>Operador</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($acessosPorIngresso[$i->id] as $acesso): ?>
+                                                    <tr>
+                                                        <td>
+                                                            <i class="bx bx-calendar me-1"></i>
+                                                            <?= date('d/m/Y H:i:s', strtotime($acesso->created_at)) ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php 
+                                                            $tipoClass = 'bg-info';
+                                                            if ($acesso->tipo_acesso == 'ACESSO') $tipoClass = 'bg-success';
+                                                            if ($acesso->tipo_acesso == 'SAIDA') $tipoClass = 'bg-warning';
+                                                            ?>
+                                                            <span class="badge <?= $tipoClass ?>"><?= esc($acesso->tipo_acesso ?? 'ACESSO') ?></span>
+                                                        </td>
+                                                        <td><?= esc($acesso->operador_nome ?? 'Sistema') ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>

@@ -690,6 +690,27 @@ class Pedidos extends BaseController
 		$ingressos = $this->ingressoModel->recuperaIngressosPorPedido($pedido_id);
 
 		$credenciais = $this->credencialModel->withDeleted(true)->where('pedido_id', $pedido_id)->findAll();
+
+		// Buscar acessos de cada ingresso
+		$checkModel = new \App\Models\CheckModel();
+		$acessosPorIngresso = [];
+		$ultimoAcessoPorIngresso = [];
+		
+		foreach ($ingressos as $ingresso) {
+			// Todos os acessos do ingresso
+			$acessos = $checkModel
+				->select('acessos.*, usuarios.nome as operador_nome')
+				->join('usuarios', 'usuarios.id = acessos.operador_id', 'left')
+				->where('ingresso_id', $ingresso->id)
+				->orderBy('created_at', 'DESC')
+				->findAll();
+			
+			$acessosPorIngresso[$ingresso->id] = $acessos;
+			
+			// Último acesso
+			$ultimoAcessoPorIngresso[$ingresso->id] = !empty($acessos) ? $acessos[0] : null;
+		}
+
 		$data = [
 			'titulo' => 'Ingressos do pedido' . esc($pedido->cod_pedido),
 			'todos' => $todos,
@@ -697,7 +718,9 @@ class Pedidos extends BaseController
 			'pedido' => $pedido,
 			'cliente' => $cliente,
 			'endereco' => $endereco,
-			'credenciais' => $credenciais
+			'credenciais' => $credenciais,
+			'acessosPorIngresso' => $acessosPorIngresso,
+			'ultimoAcessoPorIngresso' => $ultimoAcessoPorIngresso,
 		];
 
 
