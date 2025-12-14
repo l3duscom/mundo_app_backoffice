@@ -507,13 +507,46 @@ class Expositores extends BaseController
 
     /**
      * Método que cria o usuário para o expositor recém cadastrado
+     * Se já existir usuário com o mesmo email, reutiliza e adiciona ao grupo Parceiro
      *
      * @param object $expositor
      * @return void
      */
     private function criaUsuarioParaExpositor(object $expositor): void
     {
-        // Montamos os dados do usuário do expositor
+        // Verifica se já existe usuário com o mesmo email
+        $usuarioExistente = $this->usuarioModel->buscaUsuarioPorEmail($expositor->email);
+
+        if ($usuarioExistente) {
+            // Usuário já existe - reutiliza e adiciona ao grupo Parceiro se necessário
+            $usuarioId = $usuarioExistente->id;
+
+            // Verifica se já está no grupo Parceiro (grupo 4)
+            $jaEhParceiro = $this->grupoUsuarioModel
+                ->where('usuario_id', $usuarioId)
+                ->where('grupo_id', 4)
+                ->first();
+
+            if (!$jaEhParceiro) {
+                // Adiciona ao grupo Parceiro
+                $grupoParceiro = [
+                    'grupo_id'   => 4, // Grupo de Parceiros
+                    'usuario_id' => $usuarioId,
+                ];
+                $this->grupoUsuarioModel->protect(false)->insert($grupoParceiro);
+            }
+
+            // Vincula o usuário existente ao expositor
+            $this->expositorModel
+                ->protect(false)
+                ->where('id', $this->expositorModel->getInsertID())
+                ->set('usuario_id', $usuarioId)
+                ->update();
+
+            return;
+        }
+
+        // Usuário não existe - cria novo
         $usuario = [
             'nome'     => $expositor->getNomeExibicao(),
             'email'    => $expositor->email,
@@ -524,15 +557,17 @@ class Expositores extends BaseController
         // Criamos o usuário do expositor
         $this->usuarioModel->skipValidation(true)->protect(false)->insert($usuario);
 
+        $usuarioId = $this->usuarioModel->getInsertID();
+
         // Montamos os dados do grupo que o usuário fará parte
         $grupoCliente = [
             'grupo_id'   => 2, // Grupo de clientes - base
-            'usuario_id' => $this->usuarioModel->getInsertID(),
+            'usuario_id' => $usuarioId,
         ];
 
         $grupoParceiro = [
             'grupo_id'   => 4, // Grupo de Parceiros
-            'usuario_id' => $this->usuarioModel->getInsertID(),
+            'usuario_id' => $usuarioId,
         ];
 
         // Inserimos o usuário nos grupos
@@ -543,19 +578,52 @@ class Expositores extends BaseController
         $this->expositorModel
             ->protect(false)
             ->where('id', $this->expositorModel->getInsertID())
-            ->set('usuario_id', $this->usuarioModel->getInsertID())
+            ->set('usuario_id', $usuarioId)
             ->update();
     }
 
     /**
      * Método que cria o usuário para um expositor já existente no banco
+     * Se já existir usuário com o mesmo email, reutiliza e adiciona ao grupo Parceiro
      *
      * @param object $expositor
      * @return void
      */
     private function criaUsuarioParaExpositorExistente(object $expositor): void
     {
-        // Montamos os dados do usuário do expositor
+        // Verifica se já existe usuário com o mesmo email
+        $usuarioExistente = $this->usuarioModel->buscaUsuarioPorEmail($expositor->email);
+
+        if ($usuarioExistente) {
+            // Usuário já existe - reutiliza e adiciona ao grupo Parceiro se necessário
+            $usuarioId = $usuarioExistente->id;
+
+            // Verifica se já está no grupo Parceiro (grupo 4)
+            $jaEhParceiro = $this->grupoUsuarioModel
+                ->where('usuario_id', $usuarioId)
+                ->where('grupo_id', 4)
+                ->first();
+
+            if (!$jaEhParceiro) {
+                // Adiciona ao grupo Parceiro
+                $grupoParceiro = [
+                    'grupo_id'   => 4, // Grupo de Parceiros
+                    'usuario_id' => $usuarioId,
+                ];
+                $this->grupoUsuarioModel->protect(false)->insert($grupoParceiro);
+            }
+
+            // Vincula o usuário existente ao expositor
+            $this->expositorModel
+                ->protect(false)
+                ->where('id', $expositor->id)
+                ->set('usuario_id', $usuarioId)
+                ->update();
+
+            return;
+        }
+
+        // Usuário não existe - cria novo
         $usuario = [
             'nome'     => $expositor->getNomeExibicao(),
             'email'    => $expositor->email,
