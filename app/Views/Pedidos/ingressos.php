@@ -8,7 +8,17 @@
 
 <link rel="stylesheet" type="text/css" href="<?php echo site_url('recursos/vendor/datatable/datatables-combinado.min.css') ?>" />
 
+<style>
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+}
 
+.badge.bg-danger[style*="pulse"] {
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+}
+</style>
 
 <?php echo $this->endSection() ?>
 
@@ -99,7 +109,9 @@
                                                     <?= date('d/m/Y H:i', strtotime($ultimoAcesso->created_at)) ?>
                                                 </span>
                                             <?php else: ?>
-                                                <span class="badge bg-secondary">Nunca utilizado</span>
+                                                <span class="badge bg-danger fs-6" style="animation: pulse 1.5s infinite;">
+                                                    <i class="bx bx-error-circle me-1"></i>Não utilizado
+                                                </span>
                                             <?php endif; ?>
                                         </div>
                                         <div class="col-lg-12 mt-3"></div>
