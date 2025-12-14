@@ -102,6 +102,35 @@ class Contratos extends BaseController
                 $documentoBadge = $documento->getBadgeStatus();
             }
 
+            // Verifica se tem parcela vencida (baseado na data, não no status_local)
+            // Considera vencido apenas APÓS o dia de vencimento (data_vencimento < hoje)
+            $hoje = date('Y-m-d');
+            $parcelaVencida = $this->parcelaModel
+                ->where('contrato_id', $contrato->id)
+                ->whereIn('status_local', ['pendente', 'vencido'])
+                ->where('data_vencimento <', $hoje)
+                ->orderBy('data_vencimento', 'ASC')
+                ->first();
+            
+            $vencidoBadge = '';
+            if ($parcelaVencida) {
+                $vencidoBadge = '<span class="badge bg-danger" title="Parcela vencida em ' . date('d/m/Y', strtotime($parcelaVencida->data_vencimento)) . '"><i class="bx bx-time-five me-1"></i>Vencido</span>';
+            } elseif (!$estaPago && $valorFinal > 0) {
+                // Verifica se tem parcela pendente próxima do vencimento (7 dias, incluindo hoje)
+                $seteDias = date('Y-m-d', strtotime('+7 days'));
+                $parcelaProxima = $this->parcelaModel
+                    ->where('contrato_id', $contrato->id)
+                    ->where('status_local', 'pendente')
+                    ->where('data_vencimento >=', $hoje)
+                    ->where('data_vencimento <=', $seteDias)
+                    ->orderBy('data_vencimento', 'ASC')
+                    ->first();
+                
+                if ($parcelaProxima) {
+                    $vencidoBadge = '<span class="badge bg-warning text-dark" title="Parcela vence em ' . date('d/m/Y', strtotime($parcelaProxima->data_vencimento)) . '"><i class="bx bx-calendar me-1"></i>Próximo</span>';
+                }
+            }
+
             $data[] = [
                 'codigo' => anchor("contratos/exibir/$contrato->id", esc($contrato->codigo ?? '#' . $contrato->id), 'title="Exibir contrato"'),
                 'expositor' => esc($nomeExpositor ?? 'N/A'),
@@ -112,6 +141,7 @@ class Contratos extends BaseController
                 'valor_pago' => $valorPagoFormatado,
                 'situacao' => $contrato->exibeSituacao() . '<span class="d-none">' . esc($contrato->situacao) . '</span>',
                 'documento' => $documentoBadge,
+                'parcela' => $vencidoBadge ?: '<span class="badge bg-light text-muted">-</span>',
             ];
         }
 

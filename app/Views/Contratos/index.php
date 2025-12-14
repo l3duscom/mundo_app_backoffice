@@ -112,7 +112,7 @@
                 
                 <!-- Filtros -->
                 <div class="row mb-4">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-bold"><i class="bx bx-calendar me-1"></i>Evento</label>
                         <select id="filtroEvento" class="form-select">
                             <option value="">Todos os eventos</option>
@@ -121,7 +121,7 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-bold"><i class="bx bx-check-circle me-1"></i>Situação</label>
                         <select id="filtroSituacao" class="form-select">
                             <option value="">Todas as situações</option>
@@ -136,7 +136,15 @@
                             <option value="banido">Banido</option>
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold"><i class="bx bx-time-five me-1"></i>Parcela</label>
+                        <select id="filtroParcela" class="form-select">
+                            <option value="">Todas</option>
+                            <option value="Vencido">🔴 Vencidas</option>
+                            <option value="Próximo">🟡 Próximas a vencer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
                         <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary">
                             <i class="bx bx-x me-1"></i>Limpar
                         </button>
@@ -158,6 +166,7 @@
                                 <th>Pago</th>
                                 <th>Situação</th>
                                 <th>Documento</th>
+                                <th>Parcela</th>
                             </tr>
                         </thead>
                     </table>
@@ -272,6 +281,7 @@ $(document).ready(function() {
             { "data": "valor_pago" },
             { "data": "situacao" },
             { "data": "documento" },
+            { "data": "parcela" },
         ],
         "order": [],
         "deferRender": true,
@@ -299,13 +309,20 @@ $(document).ready(function() {
     // Filtro por Situação
     $('#filtroSituacao').on('change', function() {
         var valor = $(this).val();
-        table.column(6).search(valor).draw();
+        table.column(7).search(valor).draw();
+    });
+
+    // Filtro por Parcela
+    $('#filtroParcela').on('change', function() {
+        var valor = $(this).val();
+        table.column(9).search(valor).draw();
     });
 
     // Limpar Filtros
     $('#btnLimparFiltros').on('click', function() {
         $('#filtroEvento').val('');
         $('#filtroSituacao').val('');
+        $('#filtroParcela').val('');
         table.columns().search('').draw();
         carregarTotais();
     });
