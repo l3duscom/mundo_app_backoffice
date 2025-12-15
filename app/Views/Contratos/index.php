@@ -127,11 +127,13 @@
                             <option value="">Todas as situações</option>
                             <option value="proposta">Proposta</option>
                             <option value="proposta_aceita">Proposta Aceita</option>
+                            <option value="aguardando_contrato">Aguardando Contrato</option>
                             <option value="contrato_assinado">Contrato Assinado</option>
+                            <option value="aguardando_credenciamento">Aguardando Credenciamento</option>
                             <option value="pagamento_aberto">Pagamento em Aberto</option>
                             <option value="pagamento_andamento">Pagamento em Andamento</option>
-                            <option value="aguardando_contrato">Aguardando Contrato</option>
                             <option value="pagamento_confirmado">Pagamento Confirmado</option>
+                            <option value="finalizado">Finalizado</option>
                             <option value="cancelado">Cancelado</option>
                             <option value="banido">Banido</option>
                         </select>

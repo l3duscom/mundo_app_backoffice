@@ -341,7 +341,7 @@ class Credenciamento extends BaseController
         // Atualiza situação do contrato
         $contrato = $this->contratoModel->find($credenciamento->contrato_id);
         if ($contrato && $contrato->situacao === 'aguardando_credenciamento') {
-            $this->contratoModel->update($contrato->id, ['situacao' => 'pagamento_aberto']);
+            $this->contratoModel->update($contrato->id, ['situacao' => 'finalizado']);
         }
 
         return $this->response->setJSON(['success' => true, 'message' => 'Credenciamento aprovado com sucesso!']);
@@ -366,7 +366,7 @@ class Credenciamento extends BaseController
                 $credenciamento = $this->credenciamentoModel->find($pessoa->credenciamento_id);
                 $contrato = $this->contratoModel->find($credenciamento->contrato_id);
                 if ($contrato && $contrato->situacao === 'aguardando_credenciamento') {
-                    $this->contratoModel->update($contrato->id, ['situacao' => 'pagamento_aberto']);
+                    $this->contratoModel->update($contrato->id, ['situacao' => 'finalizado']);
                 }
             }
             

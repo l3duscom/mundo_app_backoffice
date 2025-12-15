@@ -23,6 +23,7 @@ class Contrato extends Entity
         'pagamento_andamento'       => 'Pagamento em Andamento',
         'aguardando_contrato'       => 'Aguardando Contrato',
         'pagamento_confirmado'      => 'Pagamento Confirmado',
+        'finalizado'                => 'Finalizado',
         'cancelado'                 => 'Cancelado',
         'banido'                    => 'Banido',
     ];
@@ -53,6 +54,7 @@ class Contrato extends Entity
             'pagamento_andamento'       => 'bg-orange',
             'aguardando_contrato'       => 'bg-purple',
             'pagamento_confirmado'      => 'bg-success',
+            'finalizado'                => 'bg-success',
             'cancelado'                 => 'bg-danger',
             'banido'                    => 'bg-dark',
         ];
@@ -92,6 +94,7 @@ class Contrato extends Entity
             'pagamento_andamento'       => 'bx bx-loader',
             'aguardando_contrato'       => 'bx bx-file-find',
             'pagamento_confirmado'      => 'bx bx-check-circle',
+            'finalizado'                => 'bx bx-check-double',
             'cancelado'                 => 'bx bx-x-circle',
             'banido'                    => 'bx bx-block',
         ];

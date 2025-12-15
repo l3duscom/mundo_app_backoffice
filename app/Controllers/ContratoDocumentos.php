@@ -82,6 +82,12 @@ class ContratoDocumentos extends BaseController
             $documentoId = $this->documentoModel->gerarDocumento($contratoId, $modeloIdInt);
 
             if ($documentoId) {
+                // Muda situação do contrato para aguardando_contrato
+                if (in_array($contrato->situacao, ['proposta', 'proposta_aceita'])) {
+                    $contrato->situacao = 'aguardando_contrato';
+                    $this->contratoModel->save($contrato);
+                }
+                
                 $retorno['sucesso'] = 'Documento gerado com sucesso!';
                 $retorno['documento_id'] = $documentoId;
                 return $this->response->setJSON($retorno);
@@ -330,6 +336,13 @@ class ContratoDocumentos extends BaseController
             $contrato = $this->contratoModel->find($documento->contrato_id);
             $expositor = $this->expositorModel->find($contrato->expositor_id);
             $evento = $this->eventoModel->find($contrato->event_id);
+
+            // Muda situação do contrato para contrato_assinado
+            if (in_array($contrato->situacao, ['aguardando_contrato', 'proposta', 'proposta_aceita'])) {
+                $contrato->situacao = 'contrato_assinado';
+                $contrato->data_assinatura = date('Y-m-d');
+                $this->contratoModel->save($contrato);
+            }
 
             // Envia email de notificação para a equipe de relacionamento
             $this->enviaEmailNotificacaoAssinatura($documento, $contrato, $expositor, $evento);
