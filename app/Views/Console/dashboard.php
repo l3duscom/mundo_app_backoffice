@@ -17,36 +17,302 @@
 <?php echo $this->section('conteudo') ?>
 
 <?php if (usuario_logado()->is_parceiro) : ?>
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-xl-6">
-            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%);">
-                <div class="card-body text-center py-5 px-4">
-                    <div class="mb-4">
-                        <i class="bi bi-gear-wide-connected text-warning" style="font-size: 5rem; animation: spin 4s linear infinite;"></i>
+<div class="container-fluid py-4">
+    <!-- Header de boas-vindas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-white bg-opacity-25 p-3 me-3">
+                            <i class="bi bi-building text-white" style="font-size: 2rem;"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white mb-1">Olá, <?= esc($expositor->nome_fantasia ?? $expositor->nome ?? 'Parceiro') ?>!</h3>
+                            <p class="text-white-50 mb-0">Bem-vindo ao seu painel de parceiro</p>
+                        </div>
                     </div>
-                    <h2 class="text-white mb-3">Estamos em Manutenção</h2>
-                    <p class="text-muted mb-4" style="font-size: 1.1rem;">
-                        O painel do expositor está passando por melhorias para oferecer uma experiência ainda melhor para você.
-                    </p>
-                    <div class="alert alert-warning d-inline-block mb-4" style="background: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.3);">
-                        <i class="bi bi-clock-history me-2"></i>
-                        <strong>Previsão:</strong> Em breve estaremos de volta!
-                    </div>
-                    <p class="text-muted small mb-0">
-                        Em caso de dúvidas, entre em contato pelo e-mail: <a href="mailto:suporte@mundodream.com.br" class="text-primary">suporte@mundodream.com.br</a>
-                    </p>
                 </div>
             </div>
         </div>
     </div>
+
+    <?php if (!$expositor) : ?>
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Seu cadastro de expositor ainda não está vinculado à sua conta. Entre em contato com o suporte.
+    </div>
+    <?php else : ?>
+
+    <!-- Abas de Eventos -->
+    <ul class="nav nav-tabs mb-4" id="eventosTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="ativos-tab" data-bs-toggle="tab" data-bs-target="#ativos" type="button" role="tab" aria-controls="ativos" aria-selected="true">
+                <i class="bi bi-calendar-check me-2"></i>Eventos Ativos
+                <?php if (!empty($eventos_ativos)) : ?>
+                <span class="badge bg-primary ms-1"><?= count($eventos_ativos) ?></span>
+                <?php endif; ?>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="anteriores-tab" data-bs-toggle="tab" data-bs-target="#anteriores-eventos" type="button" role="tab" aria-controls="anteriores-eventos" aria-selected="false">
+                <i class="bi bi-calendar-x me-2"></i>Eventos Anteriores
+                <?php if (!empty($eventos_anteriores)) : ?>
+                <span class="badge bg-secondary ms-1"><?= count($eventos_anteriores) ?></span>
+                <?php endif; ?>
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="eventosTabContent">
+        <!-- Eventos Ativos -->
+        <div class="tab-pane fade show active" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
+            <?php if (empty($eventos_ativos)) : ?>
+            <div class="text-center py-5">
+                <i class="bi bi-calendar-plus text-muted" style="font-size: 4rem;"></i>
+                <h5 class="mt-3 text-muted">Nenhum evento ativo no momento</h5>
+                <p class="text-muted">Quando você tiver contratos para eventos futuros, eles aparecerão aqui.</p>
+            </div>
+            <?php else : ?>
+            <?php foreach ($eventos_ativos as $eventoData) : ?>
+            <div class="card mb-4 shadow-sm border-0">
+                <div class="card-header bg-dark border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1 text-white">
+                                <i class="bi bi-calendar-event me-2"></i><?= esc($eventoData['evento']->nome) ?>
+                            </h5>
+                            <small class="text-muted">
+                                <?= date('d/m/Y', strtotime($eventoData['evento']->data_inicio)) ?> 
+                                - <?= date('d/m/Y', strtotime($eventoData['evento']->data_fim)) ?>
+                            </small>
+                        </div>
+                        <span class="badge bg-success">Ativo</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <?php foreach ($eventoData['contratos'] as $contratoData) : ?>
+                    <?php $contrato = $contratoData['contrato']; $parcelas = $contratoData['parcelas']; $totais = $contratoData['totais']; ?>
+                    <div class="border rounded p-3 mb-3" style="background: rgba(255,255,255,0.02);">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Contrato</small>
+                                <strong><?= esc($contrato->codigo) ?></strong>
+                                <?php if ($contrato->descricao) : ?>
+                                <p class="text-muted small mb-0"><?= esc($contrato->descricao) ?></p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <small class="text-muted d-block">Valor Total</small>
+                                <strong class="text-success">R$ <?= number_format($contrato->valor_final, 2, ',', '.') ?></strong>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <small class="text-muted d-block">Parcelas</small>
+                                <strong><?= $totais['pagas'] ?>/<?= $totais['quantidade'] ?> pagas</strong>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <small class="text-muted d-block">Situação</small>
+                                <?php
+                                $situacaoClass = match($contrato->situacao) {
+                                    'pago' => 'bg-success',
+                                    'ativo', 'assinado' => 'bg-primary',
+                                    'pendente', 'proposta' => 'bg-warning',
+                                    'cancelado', 'banido' => 'bg-danger',
+                                    default => 'bg-secondary'
+                                };
+                                ?>
+                                <span class="badge <?= $situacaoClass ?>"><?= ucfirst(esc($contrato->situacao)) ?></span>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#parcelas<?= $contrato->id ?>" aria-expanded="false">
+                                    <i class="bi bi-list-ul"></i> Ver Parcelas
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Accordion de Parcelas -->
+                        <div class="collapse mt-3" id="parcelas<?= $contrato->id ?>">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Vencimento</th>
+                                            <th>Valor</th>
+                                            <th>Status</th>
+                                            <th>Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($parcelas as $parcela) : ?>
+                                        <tr>
+                                            <td><?= $parcela->numero_parcela ?></td>
+                                            <td><?= date('d/m/Y', strtotime($parcela->data_vencimento)) ?></td>
+                                            <td>R$ <?= number_format($parcela->valor, 2, ',', '.') ?></td>
+                                            <td>
+                                                <?php
+                                                $statusClass = match($parcela->status_local) {
+                                                    'pago' => 'bg-success',
+                                                    'pendente' => 'bg-warning text-dark',
+                                                    'vencido' => 'bg-danger',
+                                                    'cancelado' => 'bg-dark',
+                                                    default => 'bg-secondary'
+                                                };
+                                                ?>
+                                                <span class="badge <?= $statusClass ?>"><?= ucfirst($parcela->status_local) ?></span>
+                                                <?php if ($parcela->data_pagamento) : ?>
+                                                <small class="text-muted d-block">Pago em <?= date('d/m/Y', strtotime($parcela->data_pagamento)) ?></small>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if (in_array($parcela->status_local, ['pendente', 'vencido']) && $parcela->asaas_payment_id) : ?>
+                                                <a href="https://www.asaas.com/i/<?= $parcela->asaas_payment_id ?>" target="_blank" class="btn btn-sm btn-success">
+                                                    <i class="bi bi-credit-card me-1"></i>Pagar
+                                                </a>
+                                                <?php elseif ($parcela->status_local === 'pago' && $parcela->comprovante_url) : ?>
+                                                <a href="<?= $parcela->comprovante_url ?>" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-file-earmark-pdf me-1"></i>Comprovante
+                                                </a>
+                                                <?php else : ?>
+                                                <span class="text-muted">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td colspan="2"><strong>Totais</strong></td>
+                                            <td><strong>R$ <?= number_format($totais['total'], 2, ',', '.') ?></strong></td>
+                                            <td colspan="2">
+                                                <span class="badge bg-success me-1">Pago: R$ <?= number_format($totais['pago'], 2, ',', '.') ?></span>
+                                                <?php if ($totais['pendente'] > 0) : ?>
+                                                <span class="badge bg-warning text-dark">Pendente: R$ <?= number_format($totais['pendente'], 2, ',', '.') ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+        <!-- Eventos Anteriores -->
+        <div class="tab-pane fade" id="anteriores-eventos" role="tabpanel" aria-labelledby="anteriores-tab">
+            <?php if (empty($eventos_anteriores)) : ?>
+            <div class="text-center py-5">
+                <i class="bi bi-archive text-muted" style="font-size: 4rem;"></i>
+                <h5 class="mt-3 text-muted">Nenhum evento anterior encontrado</h5>
+                <p class="text-muted">O histórico de eventos passados aparecerá aqui.</p>
+            </div>
+            <?php else : ?>
+            <?php foreach ($eventos_anteriores as $eventoData) : ?>
+            <div class="card mb-4 shadow-sm border-0" style="opacity: 0.85;">
+                <div class="card-header bg-secondary border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1 text-white">
+                                <i class="bi bi-calendar-event me-2"></i><?= esc($eventoData['evento']->nome) ?>
+                            </h5>
+                            <small class="text-white-50">
+                                <?= date('d/m/Y', strtotime($eventoData['evento']->data_inicio)) ?> 
+                                - <?= date('d/m/Y', strtotime($eventoData['evento']->data_fim)) ?>
+                            </small>
+                        </div>
+                        <span class="badge bg-dark">Encerrado</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <?php foreach ($eventoData['contratos'] as $contratoData) : ?>
+                    <?php $contrato = $contratoData['contrato']; $parcelas = $contratoData['parcelas']; $totais = $contratoData['totais']; ?>
+                    <div class="border rounded p-3 mb-3" style="background: rgba(255,255,255,0.02);">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Contrato</small>
+                                <strong><?= esc($contrato->codigo) ?></strong>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <small class="text-muted d-block">Valor Total</small>
+                                <strong>R$ <?= number_format($contrato->valor_final, 2, ',', '.') ?></strong>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <small class="text-muted d-block">Parcelas</small>
+                                <strong><?= $totais['pagas'] ?>/<?= $totais['quantidade'] ?> pagas</strong>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <small class="text-muted d-block">Situação</small>
+                                <?php
+                                $situacaoClass = match($contrato->situacao) {
+                                    'pago' => 'bg-success',
+                                    'ativo', 'assinado' => 'bg-primary',
+                                    'pendente', 'proposta' => 'bg-warning',
+                                    'cancelado', 'banido' => 'bg-danger',
+                                    default => 'bg-secondary'
+                                };
+                                ?>
+                                <span class="badge <?= $situacaoClass ?>"><?= ucfirst(esc($contrato->situacao)) ?></span>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#parcelasAnt<?= $contrato->id ?>" aria-expanded="false">
+                                    <i class="bi bi-list-ul"></i> Ver Histórico
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Accordion de Parcelas -->
+                        <div class="collapse mt-3" id="parcelasAnt<?= $contrato->id ?>">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark table-striped mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Vencimento</th>
+                                            <th>Valor</th>
+                                            <th>Status</th>
+                                            <th>Data Pgto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($parcelas as $parcela) : ?>
+                                        <tr>
+                                            <td><?= $parcela->numero_parcela ?></td>
+                                            <td><?= date('d/m/Y', strtotime($parcela->data_vencimento)) ?></td>
+                                            <td>R$ <?= number_format($parcela->valor, 2, ',', '.') ?></td>
+                                            <td>
+                                                <?php
+                                                $statusClass = match($parcela->status_local) {
+                                                    'pago' => 'bg-success',
+                                                    'pendente' => 'bg-warning text-dark',
+                                                    'vencido' => 'bg-danger',
+                                                    default => 'bg-secondary'
+                                                };
+                                                ?>
+                                                <span class="badge <?= $statusClass ?>"><?= ucfirst($parcela->status_local) ?></span>
+                                            </td>
+                                            <td><?= $parcela->data_pagamento ? date('d/m/Y', strtotime($parcela->data_pagamento)) : '-' ?></td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php endif; ?>
 </div>
-<style>
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-</style>
 <?php else : ?>
 
 <div class="row g-4 align-items-start">
