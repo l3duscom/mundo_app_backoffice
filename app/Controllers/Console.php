@@ -98,7 +98,6 @@ class Console extends BaseController
 
 
 
-
 		$data = [
 			'titulo' => 'Dashboard de ' . esc($cliente->nome),
 			'cliente' => $cliente,
@@ -159,6 +158,82 @@ class Console extends BaseController
         }, $enderecos));
 
         $data['enderecos_lista'] = $enderecos_lista;
+
+        // ========== DADOS DO PARCEIRO ==========
+        if ($usuario->is_parceiro) {
+            $expositorModel = new \App\Models\ExpositorModel();
+            $contratoModel = new \App\Models\ContratoModel();
+            $contratoParcelaModel = new \App\Models\ContratoParcelaModel();
+            
+            // Busca o expositor vinculado ao usuário logado
+            $expositor = $expositorModel->where('usuario_id', $id)->first();
+            
+            if ($expositor) {
+                $data['expositor'] = $expositor;
+                
+                // Busca todos os contratos do expositor
+                $contratos = $contratoModel->buscaPorExpositor($expositor->id);
+                
+                // Agrupa contratos por evento e separa em ativos/anteriores
+                $eventos_ativos = [];
+                $eventos_anteriores = [];
+                $hoje = date('Y-m-d');
+                
+                foreach ($contratos as $contrato) {
+                    // Busca dados do evento
+                    $evento = $this->eventoModel->find($contrato->event_id);
+                    if (!$evento) continue;
+                    
+                    $eventId = $contrato->event_id;
+                    
+                    // Busca parcelas do contrato
+                    $parcelas = $contratoParcelaModel->buscaPorContrato($contrato->id);
+                    $totaisParcelas = $contratoParcelaModel->calculaTotais($contrato->id);
+                    
+                    // Prepara dados do contrato
+                    $contratoData = [
+                        'contrato' => $contrato,
+                        'parcelas' => $parcelas,
+                        'totais' => $totaisParcelas,
+                    ];
+                    
+                    // Determina se evento é ativo ou anterior
+                    $data_fim_evento = $evento->data_fim ?? null;
+                    $isAtivo = true;
+                    
+                    if ($data_fim_evento) {
+                        $limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
+                        $isAtivo = $data_fim_evento >= $limite;
+                    }
+                    
+                    // Agrupa por evento
+                    if ($isAtivo) {
+                        if (!isset($eventos_ativos[$eventId])) {
+                            $eventos_ativos[$eventId] = [
+                                'evento' => $evento,
+                                'contratos' => [],
+                            ];
+                        }
+                        $eventos_ativos[$eventId]['contratos'][] = $contratoData;
+                    } else {
+                        if (!isset($eventos_anteriores[$eventId])) {
+                            $eventos_anteriores[$eventId] = [
+                                'evento' => $evento,
+                                'contratos' => [],
+                            ];
+                        }
+                        $eventos_anteriores[$eventId]['contratos'][] = $contratoData;
+                    }
+                }
+                
+                $data['eventos_ativos'] = array_values($eventos_ativos);
+                $data['eventos_anteriores'] = array_values($eventos_anteriores);
+            } else {
+                $data['expositor'] = null;
+                $data['eventos_ativos'] = [];
+                $data['eventos_anteriores'] = [];
+            }
+        }
 
 
 		return view('Console/dashboard', $data);
