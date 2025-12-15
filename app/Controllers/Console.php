@@ -51,7 +51,11 @@ class Console extends BaseController
 
 		// ========== DASHBOARD DO PARCEIRO ==========
 		if ($usuario->is_parceiro) {
-			return $this->response->setBody('<h1>OI</h1>');
+			$data = [
+				'titulo' => 'Dashboard de Parceiro',
+				'mensagem' => 'OI',
+			];
+			return view('Console/dashboard_parceiro', $data);
 		}
 
 		// ========== USUÁRIO NÃO-PARCEIRO ==========
