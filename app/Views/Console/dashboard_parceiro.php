@@ -174,7 +174,8 @@
                                     </td>
                                     <td>
                                         <?php if (in_array($parcela->status_local, ['pendente', 'vencido']) && $parcela->asaas_payment_id) : ?>
-                                        <a href="https://www.asaas.com/i/<?= $parcela->asaas_payment_id ?>" target="_blank" class="btn btn-sm btn-success">
+                                        <?php $paymentId = str_replace('pay_', '', $parcela->asaas_payment_id); ?>
+                                        <a href="https://www.asaas.com/i/<?= $paymentId ?>" target="_blank" class="btn btn-sm btn-success">
                                             <i class="bi bi-credit-card me-1"></i>Pagar
                                         </a>
                                         <?php elseif ($parcela->status_local === 'pago' && $parcela->comprovante_url) : ?>
