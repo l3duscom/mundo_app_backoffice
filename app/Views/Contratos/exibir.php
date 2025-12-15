@@ -116,11 +116,13 @@
                 $situacoes = [
                     'proposta' => 'Proposta',
                     'proposta_aceita' => 'Proposta Aceita',
+                    'aguardando_contrato' => 'Aguardando Contrato',
                     'contrato_assinado' => 'Contrato Assinado',
+                    'aguardando_credenciamento' => 'Aguardando Credenciamento',
                     'pagamento_aberto' => 'Pagamento em Aberto',
                     'pagamento_andamento' => 'Pagamento em Andamento',
-                    'aguardando_contrato' => 'Aguardando Contrato',
                     'pagamento_confirmado' => 'Pagamento Confirmado',
+                    'finalizado' => 'Finalizado',
                     'cancelado' => 'Cancelado',
                     'banido' => 'Banido',
                 ];
@@ -480,7 +482,7 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
 
         <!-- Card Parcelas (só aparece quando status é pagamento em aberto ou posterior) -->
         <?php 
-        $statusComParcelas = ['pagamento_aberto', 'pagamento_andamento', 'aguardando_contrato', 'pagamento_confirmado'];
+        $statusComParcelas = ['pagamento_aberto', 'pagamento_andamento', 'aguardando_contrato', 'pagamento_confirmado', 'aguardando_credenciamento', 'finalizado'];
         if ($contrato->quantidade_parcelas > 0 && in_array($contrato->situacao, $statusComParcelas)): 
         ?>
         <div class="card shadow radius-10 mt-4">
@@ -654,7 +656,8 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                 $propostaAguardando = ($contrato->situacao === 'proposta');
                 $pagamentoAberto = in_array($contrato->situacao, ['pagamento_aberto', 'pagamento_andamento']);
                 $aguardandoContratoItens = ($contrato->situacao === 'aguardando_contrato');
-                $contratoBloqueado = in_array($contrato->situacao, ['aguardando_contrato', 'pagamento_confirmado', 'cancelado', 'banido']);
+                $aguardandoCredenciamento = ($contrato->situacao === 'aguardando_credenciamento');
+                $contratoBloqueado = in_array($contrato->situacao, ['aguardando_contrato', 'pagamento_confirmado', 'aguardando_credenciamento', 'finalizado', 'cancelado', 'banido']);
                 ?>
 
                 <?php if ($propostaAguardando): ?>
