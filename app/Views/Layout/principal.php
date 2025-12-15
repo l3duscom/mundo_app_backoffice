@@ -315,6 +315,13 @@
                         </a>
                     </li>
                     <li>
+                        <a href="<?php echo site_url('/credenciamento/admin'); ?>">
+                            <div class="parent-icon"><i class="bx bx-id-card"></i>
+                            </div>
+                            <div class="menu-title">Credenciamentos</div>
+                        </a>
+                    </li>
+                    <li>
                         <a href="<?php echo site_url('/contratodocumentos/modelos'); ?>">
                             <div class="parent-icon"><i class="bx bx-file-blank"></i>
                             </div>
