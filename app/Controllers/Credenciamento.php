@@ -218,4 +218,108 @@ class Credenciamento extends BaseController
 
         return $this->response->setJSON(['success' => false, 'message' => 'Erro ao excluir pessoa.']);
     }
+
+    // =====================================================
+    // MÉTODOS DE APROVAÇÃO (ADMIN)
+    // =====================================================
+
+    /**
+     * Aprovar todo o credenciamento
+     */
+    public function aprovarTudo()
+    {
+        $credenciamentoId = $this->request->getPost('credenciamento_id');
+        
+        $credenciamento = $this->credenciamentoModel->find($credenciamentoId);
+        if (!$credenciamento) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Credenciamento não encontrado.']);
+        }
+
+        // Aprova todas as pessoas
+        $this->pessoaModel->aprovarTodas($credenciamentoId);
+        
+        // Atualiza status do credenciamento
+        $this->credenciamentoModel->update($credenciamentoId, ['status' => 'aprovado']);
+        
+        // Atualiza situação do contrato
+        $contrato = $this->contratoModel->find($credenciamento->contrato_id);
+        if ($contrato && $contrato->situacao === 'aguardando_credenciamento') {
+            $this->contratoModel->update($contrato->id, ['situacao' => 'pagamento_aberto']);
+        }
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Credenciamento aprovado com sucesso!']);
+    }
+
+    /**
+     * Aprovar pessoa individual
+     */
+    public function aprovarPessoa($id)
+    {
+        $pessoa = $this->pessoaModel->find($id);
+        if (!$pessoa) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Pessoa não encontrada.']);
+        }
+
+        if ($this->pessoaModel->aprovar($id)) {
+            // Verifica se todas foram aprovadas
+            if ($this->pessoaModel->todasAprovadas($pessoa->credenciamento_id)) {
+                $this->credenciamentoModel->update($pessoa->credenciamento_id, ['status' => 'aprovado']);
+                
+                // Atualiza situação do contrato
+                $credenciamento = $this->credenciamentoModel->find($pessoa->credenciamento_id);
+                $contrato = $this->contratoModel->find($credenciamento->contrato_id);
+                if ($contrato && $contrato->situacao === 'aguardando_credenciamento') {
+                    $this->contratoModel->update($contrato->id, ['situacao' => 'pagamento_aberto']);
+                }
+            }
+            
+            return $this->response->setJSON(['success' => true, 'message' => 'Pessoa aprovada!']);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Erro ao aprovar.']);
+    }
+
+    /**
+     * Rejeitar pessoa individual
+     */
+    public function rejeitarPessoa($id)
+    {
+        $pessoa = $this->pessoaModel->find($id);
+        if (!$pessoa) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Pessoa não encontrada.']);
+        }
+
+        $motivo = $this->request->getPost('motivo') ?? null;
+
+        if ($this->pessoaModel->rejeitar($id, $motivo)) {
+            return $this->response->setJSON(['success' => true, 'message' => 'Pessoa rejeitada.']);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Erro ao rejeitar.']);
+    }
+
+    /**
+     * Devolver credenciamento para o expositor preencher novamente
+     */
+    public function devolver()
+    {
+        $credenciamentoId = $this->request->getPost('credenciamento_id');
+        $observacao = $this->request->getPost('observacao') ?? null;
+        
+        $credenciamento = $this->credenciamentoModel->find($credenciamentoId);
+        if (!$credenciamento) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Credenciamento não encontrado.']);
+        }
+
+        // Reseta status de todas as pessoas
+        $this->pessoaModel->resetarStatus($credenciamentoId);
+        
+        // Atualiza status do credenciamento
+        $this->credenciamentoModel->update($credenciamentoId, [
+            'status' => 'pendente',
+            'observacoes' => $observacao,
+        ]);
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Credenciamento devolvido para correção.']);
+    }
 }

@@ -15,15 +15,16 @@ class Contrato extends Entity
 
     // Mapeamento das situações
     protected $situacoes = [
-        'proposta'              => 'Proposta',
-        'proposta_aceita'       => 'Proposta Aceita',
-        'contrato_assinado'     => 'Contrato Assinado',
-        'pagamento_aberto'      => 'Pagamento em Aberto',
-        'pagamento_andamento'   => 'Pagamento em Andamento',
-        'aguardando_contrato'   => 'Aguardando Contrato',
-        'pagamento_confirmado'  => 'Pagamento Confirmado',
-        'cancelado'             => 'Cancelado',
-        'banido'                => 'Banido',
+        'proposta'                  => 'Proposta',
+        'proposta_aceita'           => 'Proposta Aceita',
+        'contrato_assinado'         => 'Contrato Assinado',
+        'aguardando_credenciamento' => 'Aguardando Credenciamento',
+        'pagamento_aberto'          => 'Pagamento em Aberto',
+        'pagamento_andamento'       => 'Pagamento em Andamento',
+        'aguardando_contrato'       => 'Aguardando Contrato',
+        'pagamento_confirmado'      => 'Pagamento Confirmado',
+        'cancelado'                 => 'Cancelado',
+        'banido'                    => 'Banido',
     ];
 
     /**
@@ -44,15 +45,16 @@ class Contrato extends Entity
     public function getBadgeSituacao(): string
     {
         $cores = [
-            'proposta'              => 'bg-secondary',
-            'proposta_aceita'       => 'bg-info',
-            'contrato_assinado'     => 'bg-primary',
-            'pagamento_aberto'      => 'bg-warning text-dark',
-            'pagamento_andamento'   => 'bg-orange',
-            'aguardando_contrato'   => 'bg-purple',
-            'pagamento_confirmado'  => 'bg-success',
-            'cancelado'             => 'bg-danger',
-            'banido'                => 'bg-dark',
+            'proposta'                  => 'bg-secondary',
+            'proposta_aceita'           => 'bg-info',
+            'contrato_assinado'         => 'bg-primary',
+            'aguardando_credenciamento' => 'bg-teal',
+            'pagamento_aberto'          => 'bg-warning text-dark',
+            'pagamento_andamento'       => 'bg-orange',
+            'aguardando_contrato'       => 'bg-purple',
+            'pagamento_confirmado'      => 'bg-success',
+            'cancelado'                 => 'bg-danger',
+            'banido'                    => 'bg-dark',
         ];
 
         $classe = $cores[$this->situacao] ?? 'bg-secondary';
@@ -66,6 +68,9 @@ class Contrato extends Entity
         } elseif ($classe === 'bg-purple') {
             $classe = '';
             $style = 'style="background-color: #6f42c1; color: white;"';
+        } elseif ($classe === 'bg-teal') {
+            $classe = '';
+            $style = 'style="background-color: #20c997; color: white;"';
         }
 
         return '<span class="badge ' . $classe . '" ' . $style . '>' . esc($texto) . '</span>';
@@ -79,15 +84,16 @@ class Contrato extends Entity
     public function getIconeSituacao(): string
     {
         $icones = [
-            'proposta'              => 'bx bx-file',
-            'proposta_aceita'       => 'bx bx-check',
-            'contrato_assinado'     => 'bx bx-edit',
-            'pagamento_aberto'      => 'bx bx-time',
-            'pagamento_andamento'   => 'bx bx-loader',
-            'aguardando_contrato'   => 'bx bx-file-find',
-            'pagamento_confirmado'  => 'bx bx-check-circle',
-            'cancelado'             => 'bx bx-x-circle',
-            'banido'                => 'bx bx-block',
+            'proposta'                  => 'bx bx-file',
+            'proposta_aceita'           => 'bx bx-check',
+            'contrato_assinado'         => 'bx bx-edit',
+            'aguardando_credenciamento' => 'bx bx-id-card',
+            'pagamento_aberto'          => 'bx bx-time',
+            'pagamento_andamento'       => 'bx bx-loader',
+            'aguardando_contrato'       => 'bx bx-file-find',
+            'pagamento_confirmado'      => 'bx bx-check-circle',
+            'cancelado'                 => 'bx bx-x-circle',
+            'banido'                    => 'bx bx-block',
         ];
 
         return $icones[$this->situacao] ?? 'bx bx-help-circle';

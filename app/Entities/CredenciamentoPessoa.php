@@ -60,4 +60,34 @@ class CredenciamentoPessoa extends Entity
     {
         return $this->tipo === 'responsavel';
     }
+
+    /**
+     * Retorna badge do status de aprovação
+     */
+    public function getBadgeStatusAprovacao(): string
+    {
+        $badges = [
+            'pendente' => '<span class="badge bg-warning text-dark">Pendente</span>',
+            'aprovado' => '<span class="badge bg-success">Aprovado</span>',
+            'rejeitado' => '<span class="badge bg-danger">Rejeitado</span>',
+        ];
+
+        return $badges[$this->status] ?? '<span class="badge bg-secondary">' . ucfirst($this->status ?? 'pendente') . '</span>';
+    }
+
+    /**
+     * Verifica se está aprovado
+     */
+    public function isAprovado(): bool
+    {
+        return $this->status === 'aprovado';
+    }
+
+    /**
+     * Verifica se está rejeitado
+     */
+    public function isRejeitado(): bool
+    {
+        return $this->status === 'rejeitado';
+    }
 }

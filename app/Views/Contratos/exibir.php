@@ -753,9 +753,11 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
         <div class="card shadow radius-10 mt-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0"><i class="bx bx-id-card me-2"></i>Credenciamento</h6>
-                <?php if (isset($credenciamento) && $credenciamento): ?>
-                <?= $credenciamento['credenciamento']->getBadgeStatus() ?>
-                <?php endif; ?>
+                <div>
+                    <?php if (isset($credenciamento) && $credenciamento): ?>
+                    <?= $credenciamento['credenciamento']->getBadgeStatus() ?>
+                    <?php endif; ?>
+                </div>
             </div>
             <div class="card-body">
                 <?php if (!isset($credenciamento) || !$credenciamento): ?>
@@ -764,6 +766,25 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                     Nenhum credenciamento preenchido para este contrato.
                 </p>
                 <?php else: ?>
+                
+                <?php $cred = $credenciamento['credenciamento']; ?>
+                
+                <!-- Botões de Ação Admin -->
+                <?php if ($cred->status !== 'aprovado'): ?>
+                <div class="alert alert-light border mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bx bx-check-shield me-1"></i> <strong>Ações de Aprovação:</strong></span>
+                        <div>
+                            <button class="btn btn-success btn-sm me-2" id="btnAprovarTudo" data-id="<?= $cred->id ?>">
+                                <i class="bx bx-check-double me-1"></i>Aprovar Tudo
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modalDevolverCredenciamento">
+                                <i class="bx bx-undo me-1"></i>Devolver para Correção
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
                 
                 <!-- Veículo -->
                 <div class="mb-4">
@@ -788,13 +809,29 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                     <p class="text-muted small">Nenhum responsável cadastrado.</p>
                     <?php else: ?>
                     <?php $resp = $credenciamento['responsavel']; ?>
-                    <div class="p-2 bg-light rounded">
-                        <strong><?= esc($resp->nome) ?></strong>
-                        <small class="d-block text-muted">
-                            CPF: <?= $resp->getCpfFormatado() ?> | 
-                            RG: <?= esc($resp->rg) ?> | 
-                            WhatsApp: <?= $resp->getWhatsappFormatado() ?>
-                        </small>
+                    <div class="p-2 bg-light rounded d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong><?= esc($resp->nome) ?></strong>
+                            <?= $resp->getBadgeStatusAprovacao() ?>
+                            <small class="d-block text-muted">
+                                CPF: <?= $resp->getCpfFormatado() ?> | 
+                                RG: <?= esc($resp->rg) ?> | 
+                                WhatsApp: <?= $resp->getWhatsappFormatado() ?>
+                            </small>
+                            <?php if ($resp->motivo_rejeicao): ?>
+                            <small class="text-danger"><i class="bx bx-x-circle"></i> <?= esc($resp->motivo_rejeicao) ?></small>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($cred->status !== 'aprovado'): ?>
+                        <div class="btn-group btn-group-sm">
+                            <?php if ($resp->status !== 'aprovado'): ?>
+                            <button class="btn btn-outline-success btn-aprovar-pessoa" data-id="<?= $resp->id ?>"><i class="bx bx-check"></i></button>
+                            <?php endif; ?>
+                            <?php if ($resp->status !== 'rejeitado'): ?>
+                            <button class="btn btn-outline-danger btn-rejeitar-pessoa" data-id="<?= $resp->id ?>" data-nome="<?= esc($resp->nome) ?>"><i class="bx bx-x"></i></button>
+                            <?php endif; ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -813,15 +850,37 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                                     <th>CPF</th>
                                     <th>RG</th>
                                     <th>WhatsApp</th>
+                                    <th class="text-center">Status</th>
+                                    <?php if ($cred->status !== 'aprovado'): ?>
+                                    <th class="text-center">Ações</th>
+                                    <?php endif; ?>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($credenciamento['funcionarios'] as $func): ?>
                                 <tr>
-                                    <td><?= esc($func->nome) ?></td>
+                                    <td>
+                                        <?= esc($func->nome) ?>
+                                        <?php if ($func->motivo_rejeicao): ?>
+                                        <br><small class="text-danger"><?= esc($func->motivo_rejeicao) ?></small>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?= $func->getCpfFormatado() ?></td>
                                     <td><?= esc($func->rg) ?></td>
                                     <td><?= $func->getWhatsappFormatado() ?></td>
+                                    <td class="text-center"><?= $func->getBadgeStatusAprovacao() ?></td>
+                                    <?php if ($cred->status !== 'aprovado'): ?>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <?php if ($func->status !== 'aprovado'): ?>
+                                            <button class="btn btn-outline-success btn-aprovar-pessoa" data-id="<?= $func->id ?>"><i class="bx bx-check"></i></button>
+                                            <?php endif; ?>
+                                            <?php if ($func->status !== 'rejeitado'): ?>
+                                            <button class="btn btn-outline-danger btn-rejeitar-pessoa" data-id="<?= $func->id ?>" data-nome="<?= esc($func->nome) ?>"><i class="bx bx-x"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <?php endif; ?>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -844,15 +903,37 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                                     <th>CPF</th>
                                     <th>RG</th>
                                     <th>WhatsApp</th>
+                                    <th class="text-center">Status</th>
+                                    <?php if ($cred->status !== 'aprovado'): ?>
+                                    <th class="text-center">Ações</th>
+                                    <?php endif; ?>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($credenciamento['suplentes'] as $sup): ?>
                                 <tr>
-                                    <td><?= esc($sup->nome) ?></td>
+                                    <td>
+                                        <?= esc($sup->nome) ?>
+                                        <?php if ($sup->motivo_rejeicao): ?>
+                                        <br><small class="text-danger"><?= esc($sup->motivo_rejeicao) ?></small>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?= $sup->getCpfFormatado() ?></td>
                                     <td><?= esc($sup->rg) ?></td>
                                     <td><?= $sup->getWhatsappFormatado() ?></td>
+                                    <td class="text-center"><?= $sup->getBadgeStatusAprovacao() ?></td>
+                                    <?php if ($cred->status !== 'aprovado'): ?>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <?php if ($sup->status !== 'aprovado'): ?>
+                                            <button class="btn btn-outline-success btn-aprovar-pessoa" data-id="<?= $sup->id ?>"><i class="bx bx-check"></i></button>
+                                            <?php endif; ?>
+                                            <?php if ($sup->status !== 'rejeitado'): ?>
+                                            <button class="btn btn-outline-danger btn-rejeitar-pessoa" data-id="<?= $sup->id ?>" data-nome="<?= esc($sup->nome) ?>"><i class="bx bx-x"></i></button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <?php endif; ?>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -866,6 +947,59 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
         </div>
     </div>
 </div>
+
+<!-- Modal Devolver Credenciamento -->
+<?php if (isset($credenciamento) && $credenciamento): ?>
+<div class="modal fade" id="modalDevolverCredenciamento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bx bx-undo me-2"></i>Devolver Credenciamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">O credenciamento será devolvido para o expositor fazer correções.</p>
+                <div class="mb-3">
+                    <label class="form-label">Observação <small class="text-muted">(opcional)</small></label>
+                    <textarea class="form-control" id="observacaoDevolucao" rows="3" placeholder="Informe o que precisa ser corrigido..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" id="btnConfirmarDevolucao" data-id="<?= $credenciamento['credenciamento']->id ?>">
+                    <i class="bx bx-undo me-1"></i>Devolver
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Rejeitar Pessoa -->
+<div class="modal fade" id="modalRejeitarPessoa" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bx bx-x-circle me-2 text-danger"></i>Rejeitar Pessoa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Rejeitar <strong id="nomeRejeitar"></strong>?</p>
+                <div class="mb-3">
+                    <label class="form-label">Motivo da rejeição <small class="text-muted">(opcional)</small></label>
+                    <input type="text" class="form-control" id="motivoRejeicao" placeholder="Ex: Documento inválido">
+                    <input type="hidden" id="idRejeitar">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarRejeicao">
+                    <i class="bx bx-x me-1"></i>Rejeitar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Modal Adicionar/Editar Item -->
 <div class="modal fade" id="modalItem" tabindex="-1" aria-hidden="true">
@@ -1657,6 +1791,107 @@ $(document).ready(function() {
             error: function() {
                 alert('Erro ao processar a solicitação');
             }
+        });
+    });
+    
+    // =====================================================
+    // CREDENCIAMENTO - AÇÕES DE APROVAÇÃO
+    // =====================================================
+    
+    // Aprovar todo credenciamento
+    $('#btnAprovarTudo').on('click', function() {
+        var credId = $(this).data('id');
+        if (!confirm('Aprovar todo o credenciamento?')) return;
+        
+        $.ajax({
+            type: 'POST',
+            url: '<?= site_url('credenciamento/aprovarTudo') ?>',
+            data: { credenciamento_id: credId, [csrfName]: csrfToken },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert(response.message || 'Erro ao aprovar');
+                }
+            },
+            error: function() { alert('Erro ao processar'); }
+        });
+    });
+    
+    // Aprovar pessoa individual
+    $(document).on('click', '.btn-aprovar-pessoa', function() {
+        var id = $(this).data('id');
+        
+        $.ajax({
+            type: 'POST',
+            url: '<?= site_url('credenciamento/aprovarPessoa/') ?>' + id,
+            data: { [csrfName]: csrfToken },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message || 'Erro ao aprovar');
+                }
+            },
+            error: function() { alert('Erro ao processar'); }
+        });
+    });
+    
+    // Abrir modal de rejeição
+    $(document).on('click', '.btn-rejeitar-pessoa', function() {
+        var id = $(this).data('id');
+        var nome = $(this).data('nome');
+        $('#idRejeitar').val(id);
+        $('#nomeRejeitar').text(nome);
+        $('#motivoRejeicao').val('');
+        $('#modalRejeitarPessoa').modal('show');
+    });
+    
+    // Confirmar rejeição
+    $('#btnConfirmarRejeicao').on('click', function() {
+        var id = $('#idRejeitar').val();
+        var motivo = $('#motivoRejeicao').val();
+        
+        $.ajax({
+            type: 'POST',
+            url: '<?= site_url('credenciamento/rejeitarPessoa/') ?>' + id,
+            data: { motivo: motivo, [csrfName]: csrfToken },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    $('#modalRejeitarPessoa').modal('hide');
+                    location.reload();
+                } else {
+                    alert(response.message || 'Erro ao rejeitar');
+                }
+            },
+            error: function() { alert('Erro ao processar'); }
+        });
+    });
+    
+    // Confirmar devolução
+    $('#btnConfirmarDevolucao').on('click', function() {
+        var credId = $(this).data('id');
+        var obs = $('#observacaoDevolucao').val();
+        
+        $.ajax({
+            type: 'POST',
+            url: '<?= site_url('credenciamento/devolver') ?>',
+            data: { credenciamento_id: credId, observacao: obs, [csrfName]: csrfToken },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    $('#modalDevolverCredenciamento').modal('hide');
+                    location.reload();
+                } else {
+                    alert(response.message || 'Erro ao devolver');
+                }
+            },
+            error: function() { alert('Erro ao processar'); }
         });
     });
     

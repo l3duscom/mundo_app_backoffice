@@ -15,6 +15,8 @@ class CredenciamentoPessoaModel extends Model
         'rg',
         'cpf',
         'whatsapp',
+        'status',
+        'motivo_rejeicao',
     ];
 
     protected $useTimestamps    = true;
@@ -105,5 +107,70 @@ class CredenciamentoPessoaModel extends Model
         }
         
         return $this->contaPorTipo($credenciamentoId, $tipo) < $limite;
+    }
+
+    /**
+     * Aprovar pessoa
+     */
+    public function aprovar(int $id): bool
+    {
+        return $this->update($id, [
+            'status' => 'aprovado',
+            'motivo_rejeicao' => null,
+        ]);
+    }
+
+    /**
+     * Rejeitar pessoa
+     */
+    public function rejeitar(int $id, ?string $motivo = null): bool
+    {
+        return $this->update($id, [
+            'status' => 'rejeitado',
+            'motivo_rejeicao' => $motivo,
+        ]);
+    }
+
+    /**
+     * Aprovar todas as pessoas do credenciamento
+     */
+    public function aprovarTodas(int $credenciamentoId): bool
+    {
+        return $this->where('credenciamento_id', $credenciamentoId)
+            ->set(['status' => 'aprovado', 'motivo_rejeicao' => null])
+            ->update();
+    }
+
+    /**
+     * Resetar status de todas as pessoas para pendente
+     */
+    public function resetarStatus(int $credenciamentoId): bool
+    {
+        return $this->where('credenciamento_id', $credenciamentoId)
+            ->set(['status' => 'pendente', 'motivo_rejeicao' => null])
+            ->update();
+    }
+
+    /**
+     * Verifica se todas as pessoas estão aprovadas
+     */
+    public function todasAprovadas(int $credenciamentoId): bool
+    {
+        $total = $this->where('credenciamento_id', $credenciamentoId)->countAllResults();
+        $aprovadas = $this->where('credenciamento_id', $credenciamentoId)
+            ->where('status', 'aprovado')
+            ->countAllResults();
+        
+        return $total > 0 && $total === $aprovadas;
+    }
+
+    /**
+     * Conta por status
+     */
+    public function contaPorStatus(int $credenciamentoId, string $status): int
+    {
+        return $this->where('credenciamento_id', $credenciamentoId)
+            ->where('status', $status)
+            ->countAllResults();
     }
 }
