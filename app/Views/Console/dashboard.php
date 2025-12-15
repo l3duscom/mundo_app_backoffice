@@ -18,6 +18,14 @@
 
 <?php if (usuario_logado()->is_parceiro) : ?>
 <div class="container-fluid py-4">
+
+    <?php if (!isset($expositor) || !$expositor) : ?>
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Seu cadastro de expositor ainda não está vinculado à sua conta. Entre em contato com o suporte.
+    </div>
+    <?php else : ?>
+
     <!-- Header de boas-vindas -->
     <div class="row mb-4">
         <div class="col-12">
@@ -36,13 +44,6 @@
             </div>
         </div>
     </div>
-
-    <?php if (!$expositor) : ?>
-    <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        Seu cadastro de expositor ainda não está vinculado à sua conta. Entre em contato com o suporte.
-    </div>
-    <?php else : ?>
 
     <!-- Abas de Eventos -->
     <ul class="nav nav-tabs mb-4" id="eventosTab" role="tablist">
