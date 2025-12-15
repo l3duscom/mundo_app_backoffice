@@ -161,12 +161,16 @@ class Console extends BaseController
 
         // ========== DADOS DO PARCEIRO ==========
         if ($usuario->is_parceiro) {
+            log_message('debug', '[Dashboard Parceiro] Usuario ID: ' . $id . ' é parceiro');
+            
             $expositorModel = new \App\Models\ExpositorModel();
             $contratoModel = new \App\Models\ContratoModel();
             $contratoParcelaModel = new \App\Models\ContratoParcelaModel();
             
             // Busca o expositor vinculado ao usuário logado
             $expositor = $expositorModel->where('usuario_id', $id)->first();
+            
+            log_message('debug', '[Dashboard Parceiro] Expositor encontrado: ' . ($expositor ? 'Sim (ID: ' . $expositor->id . ')' : 'Não'));
             
             if ($expositor) {
                 $data['expositor'] = $expositor;
