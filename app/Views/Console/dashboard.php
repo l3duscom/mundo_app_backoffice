@@ -49,6 +49,12 @@
 </style>
 <?php else : ?>
 
+<div class="alert alert-info mb-3" role="alert">
+    <strong><i class="bi bi-info-circle me-2"></i>Debug - Grupos do Usuário:</strong><br>
+    is_cliente = <?= usuario_logado()->is_cliente ? 'true' : 'false' ?> (está no grupo 2)<br>
+    is_parceiro = <?= usuario_logado()->is_parceiro ? 'true' : 'false' ?> (está no grupo 4)
+</div>
+
 <div class="row g-4 align-items-start">
     <!-- Coluna lateral esquerda -->
     <div class="col-lg-4 col-xl-3">
