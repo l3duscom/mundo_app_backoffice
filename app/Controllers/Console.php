@@ -49,30 +49,15 @@ class Console extends BaseController
 		unset($_SESSION['carrinho']);
 
 		$id = $this->usuarioLogado()->id;
+		$usuario = $this->usuarioLogado();
+		$convite = $usuario->codigo;
 
-		$convite = $this->usuarioLogado()->codigo;
-
-		$cli = $this->clienteModel->withDeleted(true)->where('usuario_id', $id)->first();
-
-		// Se é parceiro e não tem cliente associado, cria um cliente básico para não dar erro
-		if (!$cli && $this->usuarioLogado()->is_parceiro) {
-			// Parceiro sem cliente - cria dados mínimos para exibir a dashboard
+		// ========== DASHBOARD DO PARCEIRO ==========
+		if ($usuario->is_parceiro) {
 			$data = [
 				'titulo' => 'Dashboard de Parceiro',
-				'cliente' => null,
-				'card' => null,
-				'temingresso' => false,
-				'convite' => $convite,
-				'indicacoes' => 0,
-				'ingressos_atuais' => [],
-				'ingressos_anteriores' => [],
-				'perfil_incompleto' => false,
-				'campos_faltando' => [],
-				'enderecos_lista' => [],
 			];
 
-			// Buscar dados do parceiro
-			$usuario = $this->usuarioLogado();
 			try {
 				$expositorModel = new \App\Models\ExpositorModel();
 				$contratoModel = new \App\Models\ContratoModel();
@@ -148,7 +133,9 @@ class Console extends BaseController
 			return view('Console/dashboard', $data);
 		}
 
-		// Usuário normal precisa ter cliente
+		// ========== DASHBOARD DO CLIENTE NORMAL ==========
+		$cli = $this->clienteModel->withDeleted(true)->where('usuario_id', $id)->first();
+		
 		if (!$cli) {
 			return redirect()->to('/')->with('erro', 'Perfil de cliente não encontrado.');
 		}
