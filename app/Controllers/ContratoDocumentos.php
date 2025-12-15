@@ -406,10 +406,8 @@ class ContratoDocumentos extends BaseController
             // Atualiza status do contrato para aguardando_credenciamento
             $contrato = $this->contratoModel->find($documento->contrato_id);
             if ($contrato) {
-                $this->contratoModel->skipValidation(true)->protect(false)->update($contrato->id, [
-                    'situacao' => 'aguardando_credenciamento',
-                    'data_assinatura' => date('Y-m-d')
-                ]);
+                $db = \Config\Database::connect();
+                $db->query("UPDATE contratos SET situacao = 'aguardando_credenciamento', data_assinatura = ? WHERE id = ?", [date('Y-m-d'), $contrato->id]);
             }
 
             // Busca dados do expositor e evento para enviar o email
