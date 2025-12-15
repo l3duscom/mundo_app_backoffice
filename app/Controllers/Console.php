@@ -88,7 +88,19 @@ class Console extends BaseController
 					$valorPago = $contrato->valor_pago ?? 0;
 					$valorRestante = $valorTotal - $valorPago;
 					$porcentagemPaga = $valorTotal > 0 ? round(($valorPago / $valorTotal) * 100, 1) : 0;
-					$pagamentoCompleto = $valorRestante <= 0;
+					
+					// Verifica se todas as parcelas estão pagas
+					$pagamentoCompleto = true;
+					if (empty($parcelas)) {
+						$pagamentoCompleto = false; // Sem parcelas = não está pago
+					} else {
+						foreach ($parcelas as $parcela) {
+							if ($parcela->status_local !== 'pago') {
+								$pagamentoCompleto = false;
+								break;
+							}
+						}
+					}
 					
 					$eventId = $contrato->event_id;
 					if (!isset($contratosPorEvento[$eventId])) {
