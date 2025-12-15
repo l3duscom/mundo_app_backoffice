@@ -388,6 +388,49 @@
                         </div>
                         <?php endif; ?>
                     </div>
+
+                    <!-- CREDENCIAMENTO -->
+                    <?php
+                    // Verifica se contrato está assinado (documento confirmado/assinado)
+                    $contratoAssinado = false;
+                    foreach ($documentos as $doc) {
+                        if (in_array($doc->status, ['confirmado', 'assinado'])) {
+                            $contratoAssinado = true;
+                            break;
+                        }
+                    }
+                    ?>
+                    <div class="mt-4">
+                        <h6 class="mb-3"><i class="bi bi-person-badge text-primary me-2"></i>Credenciamento</h6>
+                        
+                        <?php if (!$contratoAssinado) : ?>
+                        <div class="alert alert-secondary py-2 small">
+                            <i class="bi bi-lock-fill me-2"></i>
+                            O credenciamento será liberado após a assinatura do contrato.
+                        </div>
+                        <div class="item-card d-flex justify-content-between align-items-center opacity-50" style="pointer-events: none;">
+                            <div>
+                                <i class="bi bi-person-badge text-secondary me-2"></i>
+                                <span>Credenciamento de funcionários e veículos</span>
+                                <span class="badge bg-secondary ms-2">Bloqueado</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                <i class="bi bi-arrow-right me-1"></i>Acessar
+                            </button>
+                        </div>
+                        <?php else : ?>
+                        <div class="item-card d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-person-badge text-primary me-2"></i>
+                                <span>Credenciamento de funcionários e veículos</span>
+                                <span class="badge bg-success ms-2">Liberado</span>
+                            </div>
+                            <a href="<?= site_url('credenciamento/index/' . $contrato->id) ?>" class="btn btn-sm btn-primary">
+                                <i class="bi bi-arrow-right me-1"></i>Acessar
+                            </a>
+                        </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
             <?php endforeach; ?>
