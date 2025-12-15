@@ -347,14 +347,16 @@
                             $statusClass = match($doc->status) {
                                 'confirmado' => 'bg-success',
                                 'assinado' => 'bg-primary',
-                                'pendente' => 'bg-warning text-dark',
+                                'pendente', 'pendente_assinatura' => 'bg-warning text-dark',
+                                'rascunho' => 'bg-secondary',
                                 'cancelado' => 'bg-danger',
                                 default => 'bg-secondary'
                             };
                             $statusLabel = match($doc->status) {
                                 'confirmado' => 'Confirmado',
                                 'assinado' => 'Assinado',
-                                'pendente' => 'Pendente de Assinatura',
+                                'pendente', 'pendente_assinatura' => 'Pendente de Assinatura',
+                                'rascunho' => 'Rascunho',
                                 'cancelado' => 'Cancelado',
                                 default => ucfirst($doc->status)
                             };
@@ -373,7 +375,7 @@
                                     <a href="<?= $doc->arquivo_url ?>" target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-download me-1"></i>Baixar
                                     </a>
-                                    <?php elseif ($doc->status === 'pendente' && $pagamentoCompleto && $doc->hash_assinatura) : ?>
+                                    <?php elseif (in_array($doc->status, ['pendente', 'pendente_assinatura']) && $pagamentoCompleto && $doc->hash_assinatura) : ?>
                                     <a href="<?= site_url('contratodocumentos/assinar/' . $doc->hash_assinatura) ?>" class="btn btn-sm btn-primary">
                                         <i class="bi bi-pen me-1"></i>Assinar
                                     </a>
