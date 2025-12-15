@@ -59,6 +59,7 @@ class Console extends BaseController
 			$contratoModel = new \App\Models\ContratoModel();
 			$contratoItemModel = new \App\Models\ContratoItemModel();
 			$contratoParcelaModel = new \App\Models\ContratoParcelaModel();
+			$documentoModel = new \App\Models\ContratoDocumentoModel();
 			
 			// Busca o expositor vinculado ao usuário
 			$expositor = $expositorModel->where('usuario_id', $usuario->id)->first();
@@ -77,6 +78,17 @@ class Console extends BaseController
 					// Busca itens e parcelas do contrato
 					$itens = $contratoItemModel->buscaPorContrato($contrato->id);
 					$parcelas = $contratoParcelaModel->buscaPorContrato($contrato->id);
+					$totaisParcelas = $contratoParcelaModel->calculaTotais($contrato->id);
+					
+					// Busca documentos do contrato
+					$documentos = $documentoModel->buscaPorContrato($contrato->id);
+					
+					// Calcula progresso do pagamento
+					$valorTotal = $contrato->valor_final ?? 0;
+					$valorPago = $contrato->valor_pago ?? 0;
+					$valorRestante = $valorTotal - $valorPago;
+					$porcentagemPaga = $valorTotal > 0 ? round(($valorPago / $valorTotal) * 100, 1) : 0;
+					$pagamentoCompleto = $valorRestante <= 0;
 					
 					$eventId = $contrato->event_id;
 					if (!isset($contratosPorEvento[$eventId])) {
@@ -89,6 +101,11 @@ class Console extends BaseController
 						'contrato' => $contrato,
 						'itens' => $itens,
 						'parcelas' => $parcelas,
+						'documentos' => $documentos,
+						'totais_parcelas' => $totaisParcelas,
+						'valor_restante' => $valorRestante,
+						'porcentagem_paga' => $porcentagemPaga,
+						'pagamento_completo' => $pagamentoCompleto,
 					];
 				}
 				
