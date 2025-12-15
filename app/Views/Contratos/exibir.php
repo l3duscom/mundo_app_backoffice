@@ -650,14 +650,14 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                 <h6 class="mb-0"><i class="bx bx-list-ul me-2"></i>Itens do Contrato</h6>
                 
                 <?php 
-                // Define as situações que permitem adicionar itens
-                $situacoesPermitidas = ['proposta_aceita', 'contrato_assinado'];
+                // Define as situações que permitem adicionar itens (apenas proposta_aceita)
+                $situacoesPermitidas = ['proposta_aceita'];
                 $podeAdicionarItens = in_array($contrato->situacao, $situacoesPermitidas);
                 $propostaAguardando = ($contrato->situacao === 'proposta');
                 $pagamentoAberto = in_array($contrato->situacao, ['pagamento_aberto', 'pagamento_andamento']);
                 $aguardandoContratoItens = ($contrato->situacao === 'aguardando_contrato');
                 $aguardandoCredenciamento = ($contrato->situacao === 'aguardando_credenciamento');
-                $contratoBloqueado = in_array($contrato->situacao, ['aguardando_contrato', 'pagamento_confirmado', 'aguardando_credenciamento', 'finalizado', 'cancelado', 'banido']);
+                $contratoBloqueado = in_array($contrato->situacao, ['contrato_assinado', 'aguardando_contrato', 'pagamento_confirmado', 'aguardando_credenciamento', 'finalizado', 'cancelado', 'banido']);
                 ?>
 
                 <?php if ($propostaAguardando): ?>
