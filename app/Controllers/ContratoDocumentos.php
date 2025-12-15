@@ -390,10 +390,10 @@ class ContratoDocumentos extends BaseController
         $documento->confirmado_por = $this->usuarioLogado()->id;
 
         if ($this->documentoModel->save($documento)) {
-            // Atualiza status do contrato para pagamento_confirmado
+            // Atualiza status do contrato para aguardando_credenciamento
             $contrato = $this->contratoModel->find($documento->contrato_id);
-            if ($contrato && $contrato->situacao === 'aguardando_contrato') {
-                $contrato->situacao = 'pagamento_confirmado';
+            if ($contrato && in_array($contrato->situacao, ['aguardando_contrato', 'contrato_assinado', 'proposta_aceita'])) {
+                $contrato->situacao = 'aguardando_credenciamento';
                 $contrato->data_assinatura = date('Y-m-d');
                 $this->contratoModel->save($contrato);
             }
