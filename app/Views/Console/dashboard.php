@@ -506,7 +506,7 @@
     </div>
 </div>
 
-<?php if (isset($perfil_incompleto) && $perfil_incompleto): ?>
+<?php if (isset($perfil_incompleto) && $perfil_incompleto && !usuario_logado()->is_parceiro): ?>
 <!-- Modal Bootstrap -->
 <div class="modal fade" id="modalPerfilIncompleto" tabindex="-1" aria-labelledby="modalPerfilIncompletoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
