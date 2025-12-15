@@ -105,6 +105,13 @@ class Webhook extends BaseController
             }
 
             if ($contrato) {
+                // Sincroniza todas as parcelas do Asaas antes de processar
+                $contratosController = new \App\Controllers\Contratos();
+                $contratosController->sincronizarParcelasAsaas($contrato);
+                
+                // Recarrega o contrato após sincronização
+                $contrato = $contratoModel->find($contrato->id);
+                
                 $this->processarPagamentoContrato($contrato, $payment_status, $payment_value, $payment_transactionReceiptUrl, $payment_id);
                 log_message('info', 'Contrato atualizado com sucesso: ' . $contrato->codigo);
             }

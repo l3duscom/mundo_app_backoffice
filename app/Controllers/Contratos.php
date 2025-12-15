@@ -313,6 +313,11 @@ class Contratos extends BaseController
 
         $contrato = $this->buscaContratoOu404($id);
 
+        // Sincroniza automaticamente com Asaas se houver cobrança
+        if (!empty($contrato->asaas_payment_id)) {
+            $this->sincronizarParcelasAsaas($contrato);
+        }
+
         // Busca dados relacionados
         $expositor = $this->expositorModel->find($contrato->expositor_id);
         $evento = $this->eventoModel->find($contrato->event_id);
@@ -1141,6 +1146,57 @@ class Contratos extends BaseController
         }
 
         return $contrato;
+    }
+
+    /**
+     * Sincroniza parcelas do Asaas automaticamente
+     * Chamado ao acessar o contrato e via webhook
+     */
+    public function sincronizarParcelasAsaas($contrato): bool
+    {
+        try {
+            if (empty($contrato->asaas_payment_id)) {
+                return false;
+            }
+
+            $asaasService = new \App\Services\AsaasService();
+
+            // Busca detalhes da cobrança
+            $cobranca = $asaasService->buscarCobranca($contrato->asaas_payment_id);
+
+            if (isset($cobranca['errors'])) {
+                log_message('error', 'Erro ao sincronizar Asaas: ' . json_encode($cobranca['errors']));
+                return false;
+            }
+
+            $parcelasParaSalvar = [];
+            $installmentId = null;
+
+            // Se é parcelamento, busca todas as parcelas
+            if (isset($cobranca['installment'])) {
+                $installmentId = $cobranca['installment'];
+                $parcelasAsaas = $asaasService->buscarParcelas($installmentId);
+                
+                if (isset($parcelasAsaas['data']) && is_array($parcelasAsaas['data'])) {
+                    $parcelasParaSalvar = $parcelasAsaas['data'];
+                }
+            } else {
+                // Cobrança única
+                $parcelasParaSalvar[] = $cobranca;
+            }
+
+            // Salva parcelas no banco de dados
+            $salvou = $this->parcelaModel->sincronizarDoAsaas($contrato->id, $parcelasParaSalvar, $installmentId);
+            
+            // Atualiza valores do contrato baseado nas parcelas sincronizadas
+            $this->atualizarValoresContratoPorParcelas($contrato);
+
+            return $salvou;
+
+        } catch (\Exception $e) {
+            log_message('error', 'Exceção ao sincronizar Asaas: ' . $e->getMessage());
+            return false;
+        }
     }
 }
 
