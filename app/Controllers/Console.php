@@ -161,78 +161,97 @@ class Console extends BaseController
 
         // ========== DADOS DO PARCEIRO ==========
         if ($usuario->is_parceiro) {
-            log_message('debug', '[Dashboard Parceiro] Usuario ID: ' . $id . ' é parceiro');
+            // Log manual em TXT para debug
+            $logFile = WRITEPATH . 'logs/parceiro_debug.txt';
+            $logMsg = date('Y-m-d H:i:s') . " - Usuario ID: {$id} é parceiro\n";
+            file_put_contents($logFile, $logMsg, FILE_APPEND);
             
-            $expositorModel = new \App\Models\ExpositorModel();
-            $contratoModel = new \App\Models\ContratoModel();
-            $contratoParcelaModel = new \App\Models\ContratoParcelaModel();
-            
-            // Busca o expositor vinculado ao usuário logado
-            $expositor = $expositorModel->where('usuario_id', $id)->first();
-            
-            log_message('debug', '[Dashboard Parceiro] Expositor encontrado: ' . ($expositor ? 'Sim (ID: ' . $expositor->id . ')' : 'Não'));
-            
-            if ($expositor) {
-                $data['expositor'] = $expositor;
+            try {
+                $expositorModel = new \App\Models\ExpositorModel();
+                $contratoModel = new \App\Models\ContratoModel();
+                $contratoParcelaModel = new \App\Models\ContratoParcelaModel();
                 
-                // Busca todos os contratos do expositor
-                $contratos = $contratoModel->buscaPorExpositor($expositor->id);
+                // Busca o expositor vinculado ao usuário logado
+                $expositor = $expositorModel->where('usuario_id', $id)->first();
                 
-                // Agrupa contratos por evento e separa em ativos/anteriores
-                $eventos_ativos = [];
-                $eventos_anteriores = [];
-                $hoje = date('Y-m-d');
+                $logMsg = date('Y-m-d H:i:s') . " - Expositor: " . ($expositor ? 'ID ' . $expositor->id : 'NULL') . "\n";
+                file_put_contents($logFile, $logMsg, FILE_APPEND);
                 
-                foreach ($contratos as $contrato) {
-                    // Busca dados do evento
-                    $evento = $this->eventoModel->find($contrato->event_id);
-                    if (!$evento) continue;
+                if ($expositor) {
+                    $data['expositor'] = $expositor;
                     
-                    $eventId = $contrato->event_id;
+                    // Busca todos os contratos do expositor
+                    $contratos = $contratoModel->buscaPorExpositor($expositor->id);
                     
-                    // Busca parcelas do contrato
-                    $parcelas = $contratoParcelaModel->buscaPorContrato($contrato->id);
-                    $totaisParcelas = $contratoParcelaModel->calculaTotais($contrato->id);
+                    $logMsg = date('Y-m-d H:i:s') . " - Contratos encontrados: " . count($contratos) . "\n";
+                    file_put_contents($logFile, $logMsg, FILE_APPEND);
                     
-                    // Prepara dados do contrato
-                    $contratoData = [
-                        'contrato' => $contrato,
-                        'parcelas' => $parcelas,
-                        'totais' => $totaisParcelas,
-                    ];
+                    // Agrupa contratos por evento e separa em ativos/anteriores
+                    $eventos_ativos = [];
+                    $eventos_anteriores = [];
+                    $hoje = date('Y-m-d');
                     
-                    // Determina se evento é ativo ou anterior
-                    $data_fim_evento = $evento->data_fim ?? null;
-                    $isAtivo = true;
-                    
-                    if ($data_fim_evento) {
-                        $limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
-                        $isAtivo = $data_fim_evento >= $limite;
+                    foreach ($contratos as $contrato) {
+                        // Busca dados do evento
+                        $evento = $this->eventoModel->find($contrato->event_id);
+                        if (!$evento) continue;
+                        
+                        $eventId = $contrato->event_id;
+                        
+                        // Busca parcelas do contrato
+                        $parcelas = $contratoParcelaModel->buscaPorContrato($contrato->id);
+                        $totaisParcelas = $contratoParcelaModel->calculaTotais($contrato->id);
+                        
+                        // Prepara dados do contrato
+                        $contratoData = [
+                            'contrato' => $contrato,
+                            'parcelas' => $parcelas,
+                            'totais' => $totaisParcelas,
+                        ];
+                        
+                        // Determina se evento é ativo ou anterior
+                        $data_fim_evento = $evento->data_fim ?? null;
+                        $isAtivo = true;
+                        
+                        if ($data_fim_evento) {
+                            $limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
+                            $isAtivo = $data_fim_evento >= $limite;
+                        }
+                        
+                        // Agrupa por evento
+                        if ($isAtivo) {
+                            if (!isset($eventos_ativos[$eventId])) {
+                                $eventos_ativos[$eventId] = [
+                                    'evento' => $evento,
+                                    'contratos' => [],
+                                ];
+                            }
+                            $eventos_ativos[$eventId]['contratos'][] = $contratoData;
+                        } else {
+                            if (!isset($eventos_anteriores[$eventId])) {
+                                $eventos_anteriores[$eventId] = [
+                                    'evento' => $evento,
+                                    'contratos' => [],
+                                ];
+                            }
+                            $eventos_anteriores[$eventId]['contratos'][] = $contratoData;
+                        }
                     }
                     
-                    // Agrupa por evento
-                    if ($isAtivo) {
-                        if (!isset($eventos_ativos[$eventId])) {
-                            $eventos_ativos[$eventId] = [
-                                'evento' => $evento,
-                                'contratos' => [],
-                            ];
-                        }
-                        $eventos_ativos[$eventId]['contratos'][] = $contratoData;
-                    } else {
-                        if (!isset($eventos_anteriores[$eventId])) {
-                            $eventos_anteriores[$eventId] = [
-                                'evento' => $evento,
-                                'contratos' => [],
-                            ];
-                        }
-                        $eventos_anteriores[$eventId]['contratos'][] = $contratoData;
-                    }
+                    $data['eventos_ativos'] = array_values($eventos_ativos);
+                    $data['eventos_anteriores'] = array_values($eventos_anteriores);
+                    
+                    $logMsg = date('Y-m-d H:i:s') . " - Eventos ativos: " . count($data['eventos_ativos']) . ", anteriores: " . count($data['eventos_anteriores']) . "\n";
+                    file_put_contents($logFile, $logMsg, FILE_APPEND);
+                } else {
+                    $data['expositor'] = null;
+                    $data['eventos_ativos'] = [];
+                    $data['eventos_anteriores'] = [];
                 }
+            } catch (\Exception $e) {
+                $logMsg = date('Y-m-d H:i:s') . " - ERRO: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
+                file_put_contents($logFile, $logMsg, FILE_APPEND);
                 
-                $data['eventos_ativos'] = array_values($eventos_ativos);
-                $data['eventos_anteriores'] = array_values($eventos_anteriores);
-            } else {
                 $data['expositor'] = null;
                 $data['eventos_ativos'] = [];
                 $data['eventos_anteriores'] = [];
