@@ -53,8 +53,40 @@ class Console extends BaseController
 		if ($usuario->is_parceiro) {
 			$data = [
 				'titulo' => 'Dashboard de Parceiro',
-				'mensagem' => 'OI',
 			];
+
+			$expositorModel = new \App\Models\ExpositorModel();
+			$contratoModel = new \App\Models\ContratoModel();
+			
+			// Busca o expositor vinculado ao usuário
+			$expositor = $expositorModel->where('usuario_id', $usuario->id)->first();
+			$data['expositor'] = $expositor;
+			
+			if ($expositor) {
+				// Busca contratos do expositor
+				$contratos = $contratoModel->buscaPorExpositor($expositor->id);
+				
+				// Agrupa contratos por evento
+				$contratosPorEvento = [];
+				foreach ($contratos as $contrato) {
+					$evento = $this->eventoModel->find($contrato->event_id);
+					if (!$evento) continue;
+					
+					$eventId = $contrato->event_id;
+					if (!isset($contratosPorEvento[$eventId])) {
+						$contratosPorEvento[$eventId] = [
+							'evento' => $evento,
+							'contratos' => [],
+						];
+					}
+					$contratosPorEvento[$eventId]['contratos'][] = $contrato;
+				}
+				
+				$data['contratos_por_evento'] = array_values($contratosPorEvento);
+			} else {
+				$data['contratos_por_evento'] = [];
+			}
+			
 			return view('Console/dashboard_parceiro', $data);
 		}
 
