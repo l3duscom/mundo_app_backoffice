@@ -57,6 +57,8 @@ class Console extends BaseController
 
 			$expositorModel = new \App\Models\ExpositorModel();
 			$contratoModel = new \App\Models\ContratoModel();
+			$contratoItemModel = new \App\Models\ContratoItemModel();
+			$contratoParcelaModel = new \App\Models\ContratoParcelaModel();
 			
 			// Busca o expositor vinculado ao usuário
 			$expositor = $expositorModel->where('usuario_id', $usuario->id)->first();
@@ -72,6 +74,10 @@ class Console extends BaseController
 					$evento = $this->eventoModel->find($contrato->event_id);
 					if (!$evento) continue;
 					
+					// Busca itens e parcelas do contrato
+					$itens = $contratoItemModel->buscaPorContrato($contrato->id);
+					$parcelas = $contratoParcelaModel->buscaPorContrato($contrato->id);
+					
 					$eventId = $contrato->event_id;
 					if (!isset($contratosPorEvento[$eventId])) {
 						$contratosPorEvento[$eventId] = [
@@ -79,7 +85,11 @@ class Console extends BaseController
 							'contratos' => [],
 						];
 					}
-					$contratosPorEvento[$eventId]['contratos'][] = $contrato;
+					$contratosPorEvento[$eventId]['contratos'][] = [
+						'contrato' => $contrato,
+						'itens' => $itens,
+						'parcelas' => $parcelas,
+					];
 				}
 				
 				$data['contratos_por_evento'] = array_values($contratosPorEvento);
