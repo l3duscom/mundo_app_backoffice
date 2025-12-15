@@ -271,7 +271,11 @@ class Credenciamento extends BaseController
             'rg' => $this->request->getPost('rg'),
             'cpf' => preg_replace('/\D/', '', $this->request->getPost('cpf')),
             'whatsapp' => preg_replace('/\D/', '', $this->request->getPost('whatsapp')),
+            'status' => 'pendente',
         ];
+
+        // Log para debug
+        log_message('info', 'Salvando pessoa: ' . json_encode($dados));
 
         if ($pessoaId) {
             $dados['id'] = $pessoaId;
@@ -282,7 +286,11 @@ class Credenciamento extends BaseController
             return $this->response->setJSON(['success' => true, 'message' => 'Dados salvos com sucesso!']);
         }
 
-        return $this->response->setJSON(['success' => false, 'message' => 'Erro ao salvar dados.', 'errors' => $this->pessoaModel->errors()]);
+        return $this->response->setJSON([
+            'success' => false, 
+            'message' => 'Erro ao salvar dados: ' . implode(', ', $this->pessoaModel->errors()),
+            'errors' => $this->pessoaModel->errors()
+        ]);
     }
 
     /**

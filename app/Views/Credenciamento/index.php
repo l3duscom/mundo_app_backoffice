@@ -423,10 +423,15 @@ const URLS = {
     excluirPessoa: '<?= site_url("credenciamento/excluirPessoa") ?>',
 };
 
+// CSRF Token
+const csrfName = '<?= csrf_token() ?>';
+let csrfToken = '<?= csrf_hash() ?>';
+
 // Veículo
 document.getElementById('formVeiculo')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const formData = new FormData(this);
+    formData.append(csrfName, csrfToken);
     
     try {
         const response = await fetch(URLS.salvarVeiculo, { method: 'POST', body: formData });
@@ -438,6 +443,7 @@ document.getElementById('formVeiculo')?.addEventListener('submit', async functio
             alert(result.message || 'Erro ao salvar veículo');
         }
     } catch (error) {
+        console.error(error);
         alert('Erro ao salvar veículo');
     }
 });
@@ -458,7 +464,9 @@ document.querySelectorAll('.btn-excluir-veiculo').forEach(btn => {
         if (!confirm('Deseja excluir este veículo?')) return;
         
         try {
-            const response = await fetch(URLS.excluirVeiculo + '/' + this.dataset.id, { method: 'POST' });
+            const formData = new FormData();
+            formData.append(csrfName, csrfToken);
+            const response = await fetch(URLS.excluirVeiculo + '/' + this.dataset.id, { method: 'POST', body: formData });
             const result = await response.json();
             
             if (result.success) {
@@ -506,6 +514,7 @@ document.querySelectorAll('.btn-editar-pessoa').forEach(btn => {
 document.getElementById('formPessoa')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const formData = new FormData(this);
+    formData.append(csrfName, csrfToken);
     
     try {
         const response = await fetch(URLS.salvarPessoa, { method: 'POST', body: formData });
@@ -526,7 +535,9 @@ document.querySelectorAll('.btn-excluir-pessoa').forEach(btn => {
         if (!confirm('Deseja excluir esta pessoa?')) return;
         
         try {
-            const response = await fetch(URLS.excluirPessoa + '/' + this.dataset.id, { method: 'POST' });
+            const formData = new FormData();
+            formData.append(csrfName, csrfToken);
+            const response = await fetch(URLS.excluirPessoa + '/' + this.dataset.id, { method: 'POST', body: formData });
             const result = await response.json();
             
             if (result.success) {

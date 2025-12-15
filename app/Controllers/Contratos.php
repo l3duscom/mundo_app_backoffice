@@ -56,6 +56,9 @@ class Contratos extends BaseController
         
         // Carregar modelo de documentos
         $documentoModel = new \App\Models\ContratoDocumentoModel();
+        
+        // Carregar modelo de credenciamento
+        $credenciamentoModel = new \App\Models\CredenciamentoModel();
 
         foreach ($contratos as $contrato) {
             $nomeExpositor = !empty($contrato->expositor_fantasia) 
@@ -102,6 +105,14 @@ class Contratos extends BaseController
                 $documentoBadge = $documento->getBadgeStatus();
             }
 
+            // Busca credenciamento do contrato
+            $credenciamento = $credenciamentoModel->buscaPorContrato($contrato->id);
+            if ($credenciamento) {
+                $credBadge = $credenciamento->getBadgeStatus();
+            } else {
+                $credBadge = '<span class="badge bg-light text-muted">-</span>';
+            }
+
             // Verifica se tem parcela vencida (baseado na data, não no status_local)
             // Considera vencido apenas APÓS o dia de vencimento (data_vencimento < hoje)
             $hoje = date('Y-m-d');
@@ -141,6 +152,7 @@ class Contratos extends BaseController
                 'valor_pago' => $valorPagoFormatado,
                 'situacao' => $contrato->exibeSituacao() . '<span class="d-none">' . esc($contrato->situacao) . '</span>',
                 'documento' => $documentoBadge,
+                'credenciamento' => $credBadge,
                 'parcela' => $vencidoBadge ?: '<span class="badge bg-light text-muted">-</span>',
             ];
         }

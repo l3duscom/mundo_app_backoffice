@@ -166,6 +166,7 @@
                                 <th>Pago</th>
                                 <th>Situação</th>
                                 <th>Documento</th>
+                                <th>Credenc.</th>
                                 <th>Parcela</th>
                             </tr>
                         </thead>
@@ -281,6 +282,7 @@ $(document).ready(function() {
             { "data": "valor_pago" },
             { "data": "situacao" },
             { "data": "documento" },
+            { "data": "credenciamento" },
             { "data": "parcela" },
         ],
         "order": [],
@@ -315,7 +317,7 @@ $(document).ready(function() {
     // Filtro por Parcela
     $('#filtroParcela').on('change', function() {
         var valor = $(this).val();
-        table.column(9).search(valor).draw();
+        table.column(10).search(valor).draw();
     });
 
     // Limpar Filtros
