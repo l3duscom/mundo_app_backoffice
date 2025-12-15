@@ -16,6 +16,38 @@
 
 <?php echo $this->section('conteudo') ?>
 
+<?php if (usuario_logado()->is_parceiro) : ?>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%);">
+                <div class="card-body text-center py-5 px-4">
+                    <div class="mb-4">
+                        <i class="bi bi-gear-wide-connected text-warning" style="font-size: 5rem; animation: spin 4s linear infinite;"></i>
+                    </div>
+                    <h2 class="text-white mb-3">Estamos em Manutenção</h2>
+                    <p class="text-muted mb-4" style="font-size: 1.1rem;">
+                        O painel do expositor está passando por melhorias para oferecer uma experiência ainda melhor para você.
+                    </p>
+                    <div class="alert alert-warning d-inline-block mb-4" style="background: rgba(255, 193, 7, 0.15); border: 1px solid rgba(255, 193, 7, 0.3);">
+                        <i class="bi bi-clock-history me-2"></i>
+                        <strong>Previsão:</strong> Em breve estaremos de volta!
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Em caso de dúvidas, entre em contato pelo e-mail: <a href="mailto:suporte@mundodream.com.br" class="text-primary">suporte@mundodream.com.br</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+<?php else : ?>
 
 <div class="row g-4 align-items-start">
     <!-- Coluna lateral esquerda -->
@@ -503,6 +535,8 @@
     </div>
   </div>
 </div>
+<?php endif; ?>
+
 <?php endif; ?>
 
 <?php echo $this->endSection() ?>
