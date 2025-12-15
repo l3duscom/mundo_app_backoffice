@@ -50,7 +50,7 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="ativos-tab" data-bs-toggle="tab" data-bs-target="#ativos" type="button" role="tab" aria-controls="ativos" aria-selected="true">
                 <i class="bi bi-calendar-check me-2"></i>Eventos Ativos
-                <?php if (!empty($eventos_ativos)) : ?>
+                <?php if (isset($eventos_ativos) && !empty($eventos_ativos)) : ?>
                 <span class="badge bg-primary ms-1"><?= count($eventos_ativos) ?></span>
                 <?php endif; ?>
             </button>
@@ -58,7 +58,7 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="anteriores-tab" data-bs-toggle="tab" data-bs-target="#anteriores-eventos" type="button" role="tab" aria-controls="anteriores-eventos" aria-selected="false">
                 <i class="bi bi-calendar-x me-2"></i>Eventos Anteriores
-                <?php if (!empty($eventos_anteriores)) : ?>
+                <?php if (isset($eventos_anteriores) && !empty($eventos_anteriores)) : ?>
                 <span class="badge bg-secondary ms-1"><?= count($eventos_anteriores) ?></span>
                 <?php endif; ?>
             </button>
@@ -68,7 +68,7 @@
     <div class="tab-content" id="eventosTabContent">
         <!-- Eventos Ativos -->
         <div class="tab-pane fade show active" id="ativos" role="tabpanel" aria-labelledby="ativos-tab">
-            <?php if (empty($eventos_ativos)) : ?>
+            <?php if (!isset($eventos_ativos) || empty($eventos_ativos)) : ?>
             <div class="text-center py-5">
                 <i class="bi bi-calendar-plus text-muted" style="font-size: 4rem;"></i>
                 <h5 class="mt-3 text-muted">Nenhum evento ativo no momento</h5>
@@ -206,7 +206,7 @@
 
         <!-- Eventos Anteriores -->
         <div class="tab-pane fade" id="anteriores-eventos" role="tabpanel" aria-labelledby="anteriores-tab">
-            <?php if (empty($eventos_anteriores)) : ?>
+            <?php if (!isset($eventos_anteriores) || empty($eventos_anteriores)) : ?>
             <div class="text-center py-5">
                 <i class="bi bi-archive text-muted" style="font-size: 4rem;"></i>
                 <h5 class="mt-3 text-muted">Nenhum evento anterior encontrado</h5>
