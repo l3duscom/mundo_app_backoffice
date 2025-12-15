@@ -20,6 +20,95 @@ class Credenciamento extends BaseController
     }
 
     /**
+     * Listagem de todos os credenciamentos (admin)
+     */
+    public function listar()
+    {
+        $eventoModel = new \App\Models\EventoModel();
+
+        $data = [
+            'titulo' => 'Credenciamentos',
+            'eventos' => $eventoModel->orderBy('id', 'DESC')->findAll(),
+        ];
+
+        return view('Credenciamento/listar', $data);
+    }
+
+    /**
+     * Recupera credenciamentos via AJAX
+     */
+    public function recuperaCredenciamentos()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $eventoId = $this->request->getGet('evento_id');
+
+        // Query base
+        $db = \Config\Database::connect();
+        $builder = $db->table('credenciamentos c')
+            ->select('c.*, ct.codigo as contrato_codigo, ct.expositor_id, ct.event_id,
+                      e.nome as expositor_nome, e.nome_fantasia as expositor_fantasia,
+                      ev.nome as evento_nome')
+            ->join('contratos ct', 'ct.id = c.contrato_id', 'left')
+            ->join('expositores e', 'e.id = ct.expositor_id', 'left')
+            ->join('eventos ev', 'ev.id = ct.event_id', 'left')
+            ->where('c.deleted_at', null);
+
+        if (!empty($eventoId)) {
+            $builder->where('ct.event_id', $eventoId);
+        }
+
+        $credenciamentos = $builder->orderBy('c.id', 'DESC')->get()->getResult();
+
+        $data = [];
+        foreach ($credenciamentos as $cred) {
+            // Conta pessoas
+            $totalPessoas = $this->pessoaModel->where('credenciamento_id', $cred->id)->countAllResults();
+            $aprovadas = $this->pessoaModel->where('credenciamento_id', $cred->id)->where('status', 'aprovado')->countAllResults();
+            $rejeitadas = $this->pessoaModel->where('credenciamento_id', $cred->id)->where('status', 'rejeitado')->countAllResults();
+            
+            // Conta veículos
+            $veiculos = $this->veiculoModel->where('credenciamento_id', $cred->id)->countAllResults();
+
+            // Badge de status
+            $statusBadge = match($cred->status) {
+                'pendente' => '<span class="badge bg-warning text-dark">Pendente</span>',
+                'em_andamento' => '<span class="badge bg-info">Em Andamento</span>',
+                'completo' => '<span class="badge bg-primary">Completo</span>',
+                'aprovado' => '<span class="badge bg-success">Aprovado</span>',
+                'bloqueado' => '<span class="badge bg-danger">Bloqueado</span>',
+                default => '<span class="badge bg-secondary">' . ucfirst($cred->status ?? 'pendente') . '</span>',
+            };
+
+            // Nome do expositor
+            $nomeExpositor = !empty($cred->expositor_fantasia) ? $cred->expositor_fantasia : $cred->expositor_nome;
+
+            // Progresso
+            $progresso = $totalPessoas > 0 ? round(($aprovadas / $totalPessoas) * 100) : 0;
+            $progressoHtml = '<div class="progress" style="height: 6px;">
+                <div class="progress-bar bg-success" style="width: ' . $progresso . '%;"></div>
+            </div>
+            <small class="text-muted">' . $aprovadas . '/' . $totalPessoas . ' aprovados</small>';
+
+            $data[] = [
+                'id' => $cred->id,
+                'contrato' => anchor("contratos/exibir/{$cred->contrato_id}", esc($cred->contrato_codigo ?? '#' . $cred->contrato_id)),
+                'expositor' => esc($nomeExpositor ?? 'N/A'),
+                'evento' => esc($cred->evento_nome ?? 'N/A'),
+                'veiculos' => '<span class="badge bg-secondary"><i class="bx bx-car me-1"></i>' . $veiculos . '</span>',
+                'pessoas' => '<span class="badge bg-secondary"><i class="bx bx-group me-1"></i>' . $totalPessoas . '</span>',
+                'progresso' => $progressoHtml,
+                'status' => $statusBadge,
+                'acoes' => '<a href="' . site_url("contratos/exibir/{$cred->contrato_id}") . '#credenciamento" class="btn btn-sm btn-outline-primary"><i class="bx bx-show"></i></a>',
+            ];
+        }
+
+        return $this->response->setJSON(['data' => $data]);
+    }
+
+    /**
      * Página principal do credenciamento
      */
     public function index($contratoId)
