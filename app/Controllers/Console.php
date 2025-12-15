@@ -54,6 +54,105 @@ class Console extends BaseController
 
 		$cli = $this->clienteModel->withDeleted(true)->where('usuario_id', $id)->first();
 
+		// Se é parceiro e não tem cliente associado, cria um cliente básico para não dar erro
+		if (!$cli && $this->usuarioLogado()->is_parceiro) {
+			// Parceiro sem cliente - cria dados mínimos para exibir a dashboard
+			$data = [
+				'titulo' => 'Dashboard de Parceiro',
+				'cliente' => null,
+				'card' => null,
+				'temingresso' => false,
+				'convite' => $convite,
+				'indicacoes' => 0,
+				'ingressos_atuais' => [],
+				'ingressos_anteriores' => [],
+				'perfil_incompleto' => false,
+				'campos_faltando' => [],
+				'enderecos_lista' => [],
+			];
+
+			// Buscar dados do parceiro
+			$usuario = $this->usuarioLogado();
+			try {
+				$expositorModel = new \App\Models\ExpositorModel();
+				$contratoModel = new \App\Models\ContratoModel();
+				$contratoParcelaModel = new \App\Models\ContratoParcelaModel();
+				
+				$expositor = $expositorModel->where('usuario_id', $id)->first();
+				
+				if ($expositor) {
+					$data['expositor'] = $expositor;
+					
+					$contratos = $contratoModel->buscaPorExpositor($expositor->id);
+					
+					$eventos_ativos = [];
+					$eventos_anteriores = [];
+					$hoje = date('Y-m-d');
+					
+					foreach ($contratos as $contrato) {
+						$evento = $this->eventoModel->find($contrato->event_id);
+						if (!$evento) continue;
+						
+						$eventId = $contrato->event_id;
+						
+						$parcelas = $contratoParcelaModel->buscaPorContrato($contrato->id);
+						$totaisParcelas = $contratoParcelaModel->calculaTotais($contrato->id);
+						
+						$contratoData = [
+							'contrato' => $contrato,
+							'parcelas' => $parcelas,
+							'totais' => $totaisParcelas,
+						];
+						
+						$data_fim_evento = $evento->data_fim ?? null;
+						$isAtivo = true;
+						
+						if ($data_fim_evento) {
+							$limite = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
+							$isAtivo = $data_fim_evento >= $limite;
+						}
+						
+						if ($isAtivo) {
+							if (!isset($eventos_ativos[$eventId])) {
+								$eventos_ativos[$eventId] = [
+									'evento' => $evento,
+									'contratos' => [],
+								];
+							}
+							$eventos_ativos[$eventId]['contratos'][] = $contratoData;
+						} else {
+							if (!isset($eventos_anteriores[$eventId])) {
+								$eventos_anteriores[$eventId] = [
+									'evento' => $evento,
+									'contratos' => [],
+								];
+							}
+							$eventos_anteriores[$eventId]['contratos'][] = $contratoData;
+						}
+					}
+					
+					$data['eventos_ativos'] = array_values($eventos_ativos);
+					$data['eventos_anteriores'] = array_values($eventos_anteriores);
+				} else {
+					$data['expositor'] = null;
+					$data['eventos_ativos'] = [];
+					$data['eventos_anteriores'] = [];
+				}
+			} catch (\Exception $e) {
+				log_message('error', 'Erro ao carregar dados do parceiro: ' . $e->getMessage());
+				$data['expositor'] = null;
+				$data['eventos_ativos'] = [];
+				$data['eventos_anteriores'] = [];
+			}
+
+			return view('Console/dashboard', $data);
+		}
+
+		// Usuário normal precisa ter cliente
+		if (!$cli) {
+			return redirect()->to('/')->with('erro', 'Perfil de cliente não encontrado.');
+		}
+
 		$cliente = $this->buscaclienteOu404($cli->id);
 
 		$indicacoes = $this->pedidoModel->where('convite', $convite)->whereIn('status', ['CONFIRMED', 'RECEIVED', 'paid'])->countAllResults();
