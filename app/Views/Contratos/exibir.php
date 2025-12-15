@@ -748,6 +748,122 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
             </div>
         </div>
         <?php endif; ?>
+
+        <!-- Card Credenciamento -->
+        <div class="card shadow radius-10 mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bx bx-id-card me-2"></i>Credenciamento</h6>
+                <?php if (isset($credenciamento) && $credenciamento): ?>
+                <?= $credenciamento['credenciamento']->getBadgeStatus() ?>
+                <?php endif; ?>
+            </div>
+            <div class="card-body">
+                <?php if (!isset($credenciamento) || !$credenciamento): ?>
+                <p class="text-muted mb-0">
+                    <i class="bx bx-info-circle me-1"></i>
+                    Nenhum credenciamento preenchido para este contrato.
+                </p>
+                <?php else: ?>
+                
+                <!-- Veículo -->
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="bx bxs-car me-1"></i> Veículo</h6>
+                    <?php if (empty($credenciamento['veiculos'])): ?>
+                    <p class="text-muted small">Nenhum veículo cadastrado.</p>
+                    <?php else: ?>
+                    <?php foreach ($credenciamento['veiculos'] as $veiculo): ?>
+                    <div class="p-2 bg-light rounded mb-2">
+                        <strong><?= esc($veiculo->marca) ?> <?= esc($veiculo->modelo) ?></strong>
+                        - <?= esc($veiculo->cor) ?>
+                        <span class="badge bg-secondary ms-2"><?= $veiculo->getPlacaFormatada() ?></span>
+                    </div>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Responsável -->
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="bx bxs-user-badge me-1"></i> Responsável</h6>
+                    <?php if (!$credenciamento['responsavel']): ?>
+                    <p class="text-muted small">Nenhum responsável cadastrado.</p>
+                    <?php else: ?>
+                    <?php $resp = $credenciamento['responsavel']; ?>
+                    <div class="p-2 bg-light rounded">
+                        <strong><?= esc($resp->nome) ?></strong>
+                        <small class="d-block text-muted">
+                            CPF: <?= $resp->getCpfFormatado() ?> | 
+                            RG: <?= esc($resp->rg) ?> | 
+                            WhatsApp: <?= $resp->getWhatsappFormatado() ?>
+                        </small>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Funcionários -->
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="bx bxs-group me-1"></i> Funcionários (<?= count($credenciamento['funcionarios']) ?>)</h6>
+                    <?php if (empty($credenciamento['funcionarios'])): ?>
+                    <p class="text-muted small">Nenhum funcionário cadastrado.</p>
+                    <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>CPF</th>
+                                    <th>RG</th>
+                                    <th>WhatsApp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($credenciamento['funcionarios'] as $func): ?>
+                                <tr>
+                                    <td><?= esc($func->nome) ?></td>
+                                    <td><?= $func->getCpfFormatado() ?></td>
+                                    <td><?= esc($func->rg) ?></td>
+                                    <td><?= $func->getWhatsappFormatado() ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Suplentes -->
+                <div>
+                    <h6 class="text-primary"><i class="bx bxs-user-plus me-1"></i> Suplentes (<?= count($credenciamento['suplentes']) ?>)</h6>
+                    <?php if (empty($credenciamento['suplentes'])): ?>
+                    <p class="text-muted small mb-0">Nenhum suplente cadastrado.</p>
+                    <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>CPF</th>
+                                    <th>RG</th>
+                                    <th>WhatsApp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($credenciamento['suplentes'] as $sup): ?>
+                                <tr>
+                                    <td><?= esc($sup->nome) ?></td>
+                                    <td><?= $sup->getCpfFormatado() ?></td>
+                                    <td><?= esc($sup->rg) ?></td>
+                                    <td><?= $sup->getWhatsappFormatado() ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
 </div>
 

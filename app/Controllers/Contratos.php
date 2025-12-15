@@ -309,6 +309,24 @@ class Contratos extends BaseController
         $parcelasBanco = $this->parcelaModel->buscaPorContrato($id);
         $totaisParcelas = $this->parcelaModel->calculaTotais($id);
 
+        // Busca credenciamento do contrato
+        $credenciamentoModel = new \App\Models\CredenciamentoModel();
+        $veiculoModel = new \App\Models\CredenciamentoVeiculoModel();
+        $pessoaModel = new \App\Models\CredenciamentoPessoaModel();
+        
+        $credenciamento = $credenciamentoModel->buscaPorContrato($id);
+        $credenciamentoData = null;
+        
+        if ($credenciamento) {
+            $credenciamentoData = [
+                'credenciamento' => $credenciamento,
+                'veiculos' => $veiculoModel->buscaPorCredenciamento($credenciamento->id),
+                'responsavel' => $pessoaModel->buscaResponsavel($credenciamento->id),
+                'funcionarios' => $pessoaModel->buscaFuncionarios($credenciamento->id),
+                'suplentes' => $pessoaModel->buscaSuplentes($credenciamento->id),
+            ];
+        }
+
         $data = [
             'titulo' => "Detalhando o contrato " . esc($contrato->codigo ?? '#' . $contrato->id),
             'contrato' => $contrato,
@@ -316,6 +334,7 @@ class Contratos extends BaseController
             'evento' => $evento,
             'parcelas' => $parcelasBanco,
             'totais_parcelas' => $totaisParcelas,
+            'credenciamento' => $credenciamentoData,
         ];
 
         return view('Contratos/exibir', $data);
