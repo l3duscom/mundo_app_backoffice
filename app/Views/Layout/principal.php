@@ -315,7 +315,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo site_url('/credenciamento/admin'); ?>">
+                        <a href="<?php echo site_url('/credenciamento/listar'); ?>">
                             <div class="parent-icon"><i class="bx bx-id-card"></i>
                             </div>
                             <div class="menu-title">Credenciamentos</div>
