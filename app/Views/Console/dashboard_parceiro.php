@@ -440,7 +440,44 @@
                         <?php 
                         // Busca espaços reservados pelo model
                         $espacoModel = new \App\Models\EspacoModel();
+                        
+                        // Busca imagem do mapa (pega do primeiro espaço que tiver imagem)
+                        $tiposDoContrato = array_unique(array_column($itens, 'tipo_item'));
+                        $imagemMapa = null;
+                        foreach ($tiposDoContrato as $tipoCheck) {
+                            $espacosDoTipo = $espacoModel->buscaPorEventoETipo($contrato->event_id, $tipoCheck);
+                            foreach ($espacosDoTipo as $esp) {
+                                if (!empty($esp->imagem)) {
+                                    $imagemMapa = $esp->imagem;
+                                    break 2;
+                                }
+                            }
+                        }
                         ?>
+                        
+                        <?php if ($imagemMapa): ?>
+                        <div class="mb-3 text-center">
+                            <a href="javascript:void(0);" class="d-inline-block" data-bs-toggle="modal" data-bs-target="#modalMapaEspacos">
+                                <img src="<?= site_url($imagemMapa) ?>" alt="Mapa de Espaços" class="img-fluid rounded shadow-sm" style="max-height: 300px; cursor: zoom-in;">
+                            </a>
+                            <small class="text-muted d-block mt-1"><i class="bi bi-zoom-in me-1"></i>Clique para ampliar</small>
+                        </div>
+                        
+                        <!-- Modal para visualizar mapa -->
+                        <div class="modal fade" id="modalMapaEspacos" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-xl modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title"><i class="bi bi-map me-2"></i>Mapa dos Espaços</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-center p-2">
+                                        <img src="<?= site_url($imagemMapa) ?>" alt="Mapa de Espaços" class="img-fluid" style="max-height: 80vh;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                         
                         <?php foreach ($itens as $item) : ?>
                         <?php 
