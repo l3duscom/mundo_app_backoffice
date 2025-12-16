@@ -40,15 +40,24 @@ class EspacoModel extends Model
     }
 
     /**
-     * Busca espaços por evento e tipo de item
+     * Busca espaços por evento e tipo de item com JOIN para dados do expositor
      * Suporta tipo_item armazenado como JSON array ou string simples
      */
     public function buscaPorEventoETipo(int $eventId, string $tipoItem): array
     {
-        return $this->where('event_id', $eventId)
-            ->like('tipo_item', $tipoItem)
-            ->orderBy('nome', 'ASC')
-            ->findAll();
+        $db = \Config\Database::connect();
+        
+        $sql = "SELECT e.*, 
+                       exp.instagram
+                FROM espacos e 
+                LEFT JOIN contrato_itens ci ON e.contrato_item_id = ci.id 
+                LEFT JOIN contratos c ON ci.contrato_id = c.id 
+                LEFT JOIN expositores exp ON c.expositor_id = exp.id 
+                WHERE e.event_id = ? 
+                AND e.tipo_item LIKE ? 
+                ORDER BY e.nome ASC";
+        
+        return $db->query($sql, [$eventId, '%' . $tipoItem . '%'])->getResult();
     }
 
     /**

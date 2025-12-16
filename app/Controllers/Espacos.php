@@ -323,40 +323,34 @@ class Espacos extends BaseController
         // Log para debug
         log_message('debug', "buscarLivres: event_id={$eventId}, tipo_item={$tipoItem}, contrato_item_id={$contratoItemId}");
 
-        // Busca TODOS os espaços do evento e tipo (não só livres)
+        // Busca TODOS os espaços do evento e tipo (com JOIN para dados do expositor)
         $espacos = $this->espacoModel->buscaPorEventoETipo($eventId, $tipoItem);
         
-        // Models auxiliares
-        $contratoItemModel = new \App\Models\ContratoItemModel();
-        $contratoModel = new \App\Models\ContratoModel();
-        $expositorModel = new \App\Models\ExpositorModel();
-
         // Verifica espaço reservado pelo item atual
         $espacoReservadoAtual = null;
         if ($contratoItemId) {
             $espacoReservadoAtual = $this->espacoModel->buscaPorContratoItem($contratoItemId);
         }
 
+        // Tipos que mostram descrição do expositor
+        $tiposComDescricao = ['Artist Alley', 'Vila dos Artesãos', 'Artesãos'];
+        $mostrarDescricao = in_array($tipoItem, $tiposComDescricao);
+
         $data = [];
         foreach ($espacos as $espaco) {
             $nomeExpositor = null;
             $reservadoPorMim = false;
             
-            // Se está reservado, busca quem reservou
+            // Se está reservado, usa dados do JOIN
             if ($espaco->status === 'reservado' && $espaco->contrato_item_id) {
                 if ($espacoReservadoAtual && $espaco->id === $espacoReservadoAtual->id) {
                     $reservadoPorMim = true;
                 } else {
-                    // Busca o expositor que reservou
-                    $item = $contratoItemModel->find($espaco->contrato_item_id);
-                    if ($item) {
-                        $contrato = $contratoModel->find($item->contrato_id);
-                        if ($contrato && $contrato->expositor_id) {
-                            $expositor = $expositorModel->find($contrato->expositor_id);
-                            if ($expositor) {
-                                $nomeExpositor = $expositor->nome_fantasia ?? $expositor->nome ?? 'Reservado';
-                            }
-                        }
+                    // Para Artist Alley ou Vila dos Artesãos, mostra o instagram
+                    if ($mostrarDescricao && !empty($espaco->instagram)) {
+                        $nomeExpositor = $espaco->instagram;
+                    } else {
+                        $nomeExpositor = 'Reservado';
                     }
                 }
             }
