@@ -178,6 +178,7 @@ $(document).ready(function() {
         },
         "responsive": true,
         "pagingType": $(window).width() < 768 ? "simple" : "simple_numbers",
+        "pageLength": 100,
     });
 
     // Filtro por Tipo de Expositor

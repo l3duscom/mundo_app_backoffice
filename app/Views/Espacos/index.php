@@ -296,7 +296,8 @@ $(document).ready(function() {
             { data: 'acoes', className: 'text-center' }
         ],
         order: [[0, 'asc'], [1, 'asc']],
-        language: { url: '<?= site_url('recursos/vendor/datatables/pt-BR.json') ?>' }
+        language: { url: '<?= site_url('recursos/vendor/datatables/pt-BR.json') ?>' },
+        pageLength: 100
     });
     <?php endif; ?>
 

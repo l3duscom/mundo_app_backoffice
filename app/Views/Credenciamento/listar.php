@@ -93,7 +93,7 @@ $(document).ready(function() {
         language: {
             url: '<?= site_url('recursos/datatable-pt-BR.json'); ?>'
         },
-        pageLength: 25,
+        pageLength: 100,
         responsive: true
     });
 
