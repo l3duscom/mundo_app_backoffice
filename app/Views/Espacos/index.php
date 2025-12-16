@@ -140,7 +140,8 @@
                     <input type="hidden" name="event_id" value="<?= $eventIdSelecionado ?>">
                     <input type="hidden" name="tipo_item_edit" id="tipo_item_edit">
 
-                    <div class="mb-3">
+                    <!-- Campo tipo só aparece no cadastro novo -->
+                    <div class="mb-3" id="divTipoItem">
                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
                         <select class="form-select" name="tipo_item" id="tipo_item" required>
                             <option value="">Selecione...</option>
@@ -393,9 +394,9 @@ $(document).ready(function() {
         e.preventDefault();
         // Primeiro preenche os campos
         $('#espaco_id').val($(this).data('id'));
-        $('#tipo_item').val($(this).data('tipo-item'));
         $('#tipo_item_edit').val($(this).data('tipo-item')); // Campo hidden para enviar valor
-        $('#tipo_item').prop('disabled', true); // Bloqueia campo tipo na edição
+        $('#divTipoItem').hide(); // Esconde campo tipo na edição
+        $('#tipo_item').prop('required', false); // Remove required
         $('#nome').val($(this).data('nome'));
         $('#descricao').val($(this).data('descricao'));
         $('#status').val($(this).data('status'));
@@ -410,7 +411,8 @@ $(document).ready(function() {
         if (!$(this).data('editing')) {
             $('#formEspaco')[0].reset();
             $('#espaco_id').val('');
-            $('#tipo_item').prop('disabled', false); // Libera campo tipo para novo
+            $('#divTipoItem').show(); // Mostra campo tipo para novo
+            $('#tipo_item').prop('required', true); // Adiciona required
             $('#modalEspacoTitulo').text('Novo Espaço');
             $('#previewImagemEspaco').hide();
             $('#alertaImagemTipo').hide();

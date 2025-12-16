@@ -65,15 +65,9 @@ class Espacos extends BaseController
 
         $post = $this->request->getPost();
         
-        // Se tipo_item está vazio (campo disabled na edição), usa o tipo_item_edit
-        if (empty($post['tipo_item']) && !empty($post['tipo_item_edit'])) {
-            $post['tipo_item'] = $post['tipo_item_edit'];
-        }
-
         $espaco = new \App\Entities\Espaco();
-        $espaco->fill($post);
 
-        // Se é edição, busca o espaço existente
+        // Se é edição, busca o espaço existente e mantém o tipo_item original
         if (!empty($post['id'])) {
             $espacoExistente = $this->espacoModel->find($post['id']);
             if (!$espacoExistente) {
@@ -81,7 +75,11 @@ class Espacos extends BaseController
                 return $this->response->setJSON($retorno);
             }
             $espaco->id = $post['id'];
+            // Mantém o tipo_item original na edição
+            $post['tipo_item'] = $espacoExistente->tipo_item;
         }
+
+        $espaco->fill($post);
 
         // Processa upload de imagem se houver
         $imagemPath = null;
