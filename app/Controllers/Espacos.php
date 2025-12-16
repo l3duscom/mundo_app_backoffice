@@ -348,7 +348,12 @@ class Espacos extends BaseController
                 } else {
                     // Para Artist Alley ou Vila dos Artesãos, mostra o instagram
                     if ($mostrarDescricao && !empty($espaco->instagram)) {
-                        $nomeExpositor = $espaco->instagram;
+                        $instagram = $espaco->instagram;
+                        // Adiciona @ se não tiver
+                        if (strpos($instagram, '@') !== 0) {
+                            $instagram = '@' . $instagram;
+                        }
+                        $nomeExpositor = $instagram;
                     } else {
                         $nomeExpositor = 'Reservado';
                     }
