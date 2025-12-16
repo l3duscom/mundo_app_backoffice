@@ -55,7 +55,9 @@ class EspacoModel extends Model
                 LEFT JOIN expositores exp ON c.expositor_id = exp.id 
                 WHERE e.event_id = ? 
                 AND e.tipo_item LIKE ? 
-                ORDER BY e.nome ASC";
+                ORDER BY 
+                    REGEXP_REPLACE(e.nome, '[0-9]+', '') ASC,
+                    CAST(REGEXP_REPLACE(e.nome, '[^0-9]', '') AS UNSIGNED) ASC";
         
         return $db->query($sql, [$eventId, '%' . $tipoItem . '%'])->getResult();
     }
