@@ -132,6 +132,41 @@ class ContratoDocumentos extends BaseController
     }
 
     /**
+     * Visualiza um documento por hash (público para o expositor)
+     * Apenas documentos assinados ou confirmados podem ser visualizados
+     */
+    public function visualizarPorHash(string $hash = null)
+    {
+        if (empty($hash)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Link inválido");
+        }
+
+        $documento = $this->documentoModel->buscaPorHash($hash);
+
+        if (!$documento) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Documento não encontrado");
+        }
+
+        // Só permite visualizar documentos assinados ou confirmados
+        if (!in_array($documento->status, ['assinado', 'confirmado'])) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Documento ainda não assinado");
+        }
+
+        $contrato = $this->contratoModel->find($documento->contrato_id);
+        $expositor = $this->expositorModel->find($contrato->expositor_id);
+        $evento = $this->eventoModel->find($contrato->event_id);
+
+        $data = [
+            'titulo' => 'Visualizar Contrato',
+            'documento' => $documento,
+            'contrato' => $contrato,
+            'expositor' => $expositor,
+            'evento' => $evento,
+        ];
+
+        return view('ContratoDocumentos/visualizar_publico', $data);
+    }
+    /**
      * Edita o conteúdo de um documento
      */
     public function editar(int $id = null)
