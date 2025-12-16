@@ -457,7 +457,7 @@
                                     data-item-id="<?= $item->id ?>" 
                                     data-contrato-id="<?= $contrato->id ?>"
                                     data-event-id="<?= $contrato->event_id ?>"
-                                    data-tipo-item="<?= urlencode($item->tipo_item) ?>"
+                                    data-tipo-item="<?= esc($item->tipo_item) ?>"
                                     data-espaco-id="<?= $espacoReservado ? $espacoReservado->id : '' ?>"
                                     style="min-width: 140px;">
                                     <option value="">Carregando...</option>
@@ -499,7 +499,7 @@ $(document).ready(function() {
     // Função para carregar espaços disponíveis
     function carregarEspacosSelectParceiro(select) {
         var eventId = select.data('event-id');
-        var tipoItem = decodeURIComponent(select.data('tipo-item'));
+        var tipoItem = select.data('tipo-item');
         var itemId = select.data('item-id');
         var espacoIdSelecionado = select.data('espaco-id');
         

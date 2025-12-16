@@ -40,29 +40,25 @@ class EspacoModel extends Model
 
     /**
      * Busca espaços por evento e tipo de item
-     * Suporta tipo_item armazenado como JSON array
+     * Suporta tipo_item armazenado como JSON array ou string simples
      */
     public function buscaPorEventoETipo(int $eventId, string $tipoItem): array
     {
         return $this->where('event_id', $eventId)
-            ->groupStart()
-                ->like('tipo_item', '"' . $tipoItem . '"')
-                ->orWhere('tipo_item', $tipoItem)
-            ->groupEnd()
+            ->like('tipo_item', $tipoItem)
             ->orderBy('nome', 'ASC')
             ->findAll();
     }
 
     /**
      * Busca espaços livres por evento e tipo de item
-     * Suporta tipo_item armazenado como JSON array
+     * Suporta tipo_item armazenado como JSON array ou string simples
      */
     public function buscaLivresPorEventoETipo(int $eventId, string $tipoItem): array
     {
         return $this->where('event_id', $eventId)
             ->groupStart()
-                ->like('tipo_item', '"' . $tipoItem . '"')
-                ->orWhere('tipo_item', $tipoItem)
+                ->like('tipo_item', $tipoItem)
             ->groupEnd()
             ->where('status', 'livre')
             ->orderBy('nome', 'ASC')

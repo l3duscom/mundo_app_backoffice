@@ -240,6 +240,9 @@ class Espacos extends BaseController
         $tipoItem = $this->request->getGet('tipo_item');
         $contratoItemId = $this->request->getGet('contrato_item_id');
 
+        // Log para debug
+        log_message('debug', "buscarLivres: event_id={$eventId}, tipo_item={$tipoItem}, contrato_item_id={$contratoItemId}");
+
         $espacos = $this->espacoModel->buscaLivresPorEventoETipo($eventId, $tipoItem);
 
         // Inclui também o espaço já reservado por este item (se houver)
@@ -261,7 +264,14 @@ class Espacos extends BaseController
             ];
         }
 
-        return $this->response->setJSON(['data' => $data]);
+        return $this->response->setJSON([
+            'data' => $data,
+            'debug' => [
+                'event_id' => $eventId,
+                'tipo_item' => $tipoItem,
+                'total_encontrados' => count($espacos),
+            ]
+        ]);
     }
 
     /**
