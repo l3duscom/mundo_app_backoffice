@@ -123,6 +123,8 @@ class ContratoDocumentoModelo extends Entity
             'contrato_valor_original' => 'Valor Original',
             'contrato_valor_desconto' => 'Valor de Desconto',
             'contrato_valor_final' => 'Valor Final',
+            'contrato_valor_pago' => 'Valor Total Pago',
+            'contrato_valor_em_aberto' => 'Valor em Aberto',
             'contrato_parcelas' => 'Quantidade de Parcelas',
             'contrato_valor_parcela' => 'Valor da Parcela',
             'contrato_forma_pagamento' => 'Forma de Pagamento',
@@ -143,7 +145,7 @@ class ContratoDocumentoModelo extends Entity
             'evento_local' => 'Local do Evento',
             
             // Itens do Contrato
-            'itens_lista' => 'Lista de Itens (tabela HTML)',
+            'itens_lista' => 'Lista de Itens com descrição, valor, desconto e total',
             'itens_total' => 'Total dos Itens',
             
             // Data atual

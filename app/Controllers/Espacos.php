@@ -64,6 +64,11 @@ class Espacos extends BaseController
         $retorno['token'] = csrf_hash();
 
         $post = $this->request->getPost();
+        
+        // Se tipo_item está vazio (campo disabled na edição), usa o tipo_item_edit
+        if (empty($post['tipo_item']) && !empty($post['tipo_item_edit'])) {
+            $post['tipo_item'] = $post['tipo_item_edit'];
+        }
 
         $espaco = new \App\Entities\Espaco();
         $espaco->fill($post);
@@ -78,9 +83,57 @@ class Espacos extends BaseController
             $espaco->id = $post['id'];
         }
 
+        // Processa upload de imagem se houver
+        $imagemPath = null;
+        $imagem = $this->request->getFile('imagem');
+        if ($imagem && $imagem->isValid() && !$imagem->hasMoved()) {
+            // Valida tipo e tamanho
+            $validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!in_array($imagem->getMimeType(), $validTypes)) {
+                $retorno['erro'] = 'Formato de imagem inválido. Use JPG ou PNG.';
+                return $this->response->setJSON($retorno);
+            }
+            if ($imagem->getSizeByUnit('mb') > 5) {
+                $retorno['erro'] = 'Imagem muito grande. Máximo 5MB.';
+                return $this->response->setJSON($retorno);
+            }
+
+            // Cria diretório se não existir
+            $eventId = $post['event_id'];
+            $uploadPath = FCPATH . 'uploads/espacos/' . $eventId;
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            // Gera nome único e move
+            $newName = 'mapa_' . time() . '_' . $imagem->getRandomName();
+            $imagem->move($uploadPath, $newName);
+            $imagemPath = 'uploads/espacos/' . $eventId . '/' . $newName;
+            
+            $espaco->imagem = $imagemPath;
+        }
+
         if ($this->espacoModel->save($espaco)) {
-            $retorno['sucesso'] = 'Espaço salvo com sucesso!';
-            $retorno['id'] = $espaco->id ?? $this->espacoModel->getInsertID();
+            $espacoId = $espaco->id ?? $this->espacoModel->getInsertID();
+            
+            // Se tem imagem, propaga para todos espaços do mesmo tipo
+            if ($imagemPath) {
+                $tipoItem = $post['tipo_item'];
+                $eventId = $post['event_id'];
+                
+                // Atualiza todos espaços do mesmo tipo e evento
+                $this->espacoModel
+                    ->where('event_id', $eventId)
+                    ->like('tipo_item', $tipoItem)
+                    ->set(['imagem' => $imagemPath])
+                    ->update();
+                    
+                $retorno['sucesso'] = 'Espaço salvo e imagem aplicada a todos do tipo "' . $tipoItem . '"!';
+            } else {
+                $retorno['sucesso'] = 'Espaço salvo com sucesso!';
+            }
+            
+            $retorno['id'] = $espacoId;
             return $this->response->setJSON($retorno);
         }
 

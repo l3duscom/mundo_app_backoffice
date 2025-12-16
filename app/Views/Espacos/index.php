@@ -134,10 +134,11 @@
                 <h5 class="modal-title" id="modalEspacoTitulo">Novo Espaço</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="formEspaco">
+            <form id="formEspaco" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" name="id" id="espaco_id">
                     <input type="hidden" name="event_id" value="<?= $eventIdSelecionado ?>">
+                    <input type="hidden" name="tipo_item_edit" id="tipo_item_edit">
 
                     <div class="mb-3">
                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
@@ -165,6 +166,18 @@
                             <option value="livre">Livre</option>
                             <option value="bloqueado">Bloqueado</option>
                         </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bx bx-image me-1"></i>Mapa/Planta</label>
+                        <input type="file" class="form-control" name="imagem" id="imagemEspaco" accept="image/jpeg,image/png">
+                        <div id="previewImagemEspaco" class="mt-2" style="display: none;">
+                            <img src="" alt="Preview" class="img-thumbnail" style="max-height: 100px;">
+                        </div>
+                        <div class="alert alert-warning mt-2 mb-0 py-2 small" id="alertaImagemTipo" style="display: none;">
+                            <i class="bx bx-info-circle me-1"></i>
+                            A imagem será aplicada a <strong>todos os espaços</strong> do mesmo tipo neste evento.
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -286,14 +299,36 @@ $(document).ready(function() {
     });
     <?php endif; ?>
 
-    // Salvar espaço
+    // Preview de imagem no modal de edição
+    $('#imagemEspaco').on('change', function() {
+        var file = this.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#previewImagemEspaco img').attr('src', e.target.result);
+                $('#previewImagemEspaco').show();
+                $('#alertaImagemTipo').show();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('#previewImagemEspaco').hide();
+            $('#alertaImagemTipo').hide();
+        }
+    });
+
+    // Salvar espaço (com FormData para suportar upload)
     $('#formEspaco').on('submit', function(e) {
         e.preventDefault();
+        
+        var formData = new FormData(this);
+        formData.append(csrfName, csrfToken);
         
         $.ajax({
             type: 'POST',
             url: '<?= site_url('espacos/salvar') ?>',
-            data: $(this).serialize() + '&' + csrfName + '=' + csrfToken,
+            data: formData,
+            processData: false,
+            contentType: false,
             dataType: 'json',
             success: function(response) {
                 if (response.token) csrfToken = response.token;
@@ -354,23 +389,37 @@ $(document).ready(function() {
     });
 
     // Editar
-    $(document).on('click', '.btn-editar', function() {
+    $(document).on('click', '.btn-editar', function(e) {
+        e.preventDefault();
+        // Primeiro preenche os campos
         $('#espaco_id').val($(this).data('id'));
         $('#tipo_item').val($(this).data('tipo-item'));
+        $('#tipo_item_edit').val($(this).data('tipo-item')); // Campo hidden para enviar valor
+        $('#tipo_item').prop('disabled', true); // Bloqueia campo tipo na edição
         $('#nome').val($(this).data('nome'));
         $('#descricao').val($(this).data('descricao'));
         $('#status').val($(this).data('status'));
         $('#modalEspacoTitulo').text('Editar Espaço');
+        // Marca que é edição
+        $('#modalEspaco').data('editing', true);
         $('#modalEspaco').modal('show');
     });
 
-    // Limpar modal ao abrir novo
+    // Limpar modal ao abrir novo (apenas se não for edição)
     $('#modalEspaco').on('show.bs.modal', function(e) {
-        if (!$(e.relatedTarget).hasClass('btn-editar')) {
+        if (!$(this).data('editing')) {
             $('#formEspaco')[0].reset();
             $('#espaco_id').val('');
+            $('#tipo_item').prop('disabled', false); // Libera campo tipo para novo
             $('#modalEspacoTitulo').text('Novo Espaço');
+            $('#previewImagemEspaco').hide();
+            $('#alertaImagemTipo').hide();
         }
+    });
+    
+    // Resetar flag ao fechar modal
+    $('#modalEspaco').on('hidden.bs.modal', function() {
+        $(this).data('editing', false);
     });
 
     // Bloquear

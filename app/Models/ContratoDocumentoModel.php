@@ -140,7 +140,7 @@ class ContratoDocumentoModel extends Model
             
             log_message('info', 'gerarDocumento: Gerando documento para contrato ' . $contratoId . ' com modelo ' . $modelo->id);
 
-        // Monta tabela de itens
+        // Monta tabela de itens com desconto
         $tabelaItens = '<table class="tabela-itens" style="width:100%; border-collapse: collapse; margin: 10px 0;">
             <thead>
                 <tr style="background-color: #f5f5f5;">
@@ -148,26 +148,43 @@ class ContratoDocumentoModel extends Model
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrição</th>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Qtd</th>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Valor Unit.</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Desconto</th>
                     <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th>
                 </tr>
             </thead>
             <tbody>';
 
         foreach ($itens as $item) {
+            $desconto = $item->valor_desconto ?? 0;
+            $descontoFormatado = 'R$ ' . number_format($desconto, 2, ',', '.');
+            
             $tabelaItens .= '<tr>
                 <td style="border: 1px solid #ddd; padding: 8px;">' . esc($item->tipo_item) . '</td>
                 <td style="border: 1px solid #ddd; padding: 8px;">' . esc($item->descricao) . ' ' . esc($item->localizacao) . '</td>
                 <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . $item->quantidade . '</td>
                 <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">' . $item->getValorUnitarioFormatado() . '</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; color: #28a745;">' . ($desconto > 0 ? '-' . $descontoFormatado : '-') . '</td>
                 <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">' . $item->getValorTotalFormatado() . '</td>
             </tr>';
         }
 
         $tabelaItens .= '</tbody>
             <tfoot>
+                <tr style="background-color: #f9f9f9;">
+                    <td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: right;">Subtotal:</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">' . $contrato->getValorOriginalFormatado() . '</td>
+                </tr>
+                <tr style="background-color: #f9f9f9; color: #28a745;">
+                    <td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: right;">Desconto Total:</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">-' . $contrato->getValorDescontoFormatado() . '</td>
+                </tr>
                 <tr style="background-color: #f5f5f5; font-weight: bold;">
-                    <td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: right;">TOTAL:</td>
+                    <td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: right;">TOTAL:</td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">' . $contrato->getValorFinalFormatado() . '</td>
+                </tr>
+                <tr style="background-color: #e3f2fd;">
+                    <td colspan="5" style="border: 1px solid #ddd; padding: 8px; text-align: right;">Valor Pago:</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">R$ ' . number_format($contrato->valor_pago ?? 0, 2, ',', '.') . '</td>
                 </tr>
             </tfoot>
         </table>';
@@ -181,6 +198,8 @@ class ContratoDocumentoModel extends Model
             'contrato_valor_original'   => $contrato->getValorOriginalFormatado(),
             'contrato_valor_desconto'   => $contrato->getValorDescontoFormatado(),
             'contrato_valor_final'      => $contrato->getValorFinalFormatado(),
+            'contrato_valor_pago'       => 'R$ ' . number_format($contrato->valor_pago ?? 0, 2, ',', '.'),
+            'contrato_valor_em_aberto'  => 'R$ ' . number_format($contrato->valor_em_aberto ?? 0, 2, ',', '.'),
             'contrato_parcelas'         => $contrato->quantidade_parcelas ?? 1,
             'contrato_valor_parcela'    => $contrato->getValorParcelaFormatado(),
             'contrato_forma_pagamento'  => $contrato->forma_pagamento ?? 'Não definida',
