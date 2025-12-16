@@ -101,7 +101,7 @@ class Credenciamento extends BaseController
                 'pessoas' => '<span class="badge bg-secondary"><i class="bx bx-group me-1"></i>' . $totalPessoas . '</span>',
                 'progresso' => $progressoHtml,
                 'status' => $statusBadge,
-                'acoes' => '<a href="' . site_url("contratos/exibir/{$cred->contrato_id}") . '#credenciamento" class="btn btn-sm btn-outline-primary"><i class="bx bx-show"></i></a>',
+                'acoes' => '<a href="' . site_url("credenciamento/exibir/{$cred->id}") . '" class="btn btn-sm btn-outline-primary" title="Ver Detalhes"><i class="bx bx-show"></i></a>',
             ];
         }
 
@@ -314,6 +314,60 @@ class Credenciamento extends BaseController
         }
 
         return $this->response->setJSON(['success' => false, 'message' => 'Erro ao excluir pessoa.']);
+    }
+
+    // =====================================================
+    // VISUALIZAÇÃO ADMIN
+    // =====================================================
+
+    /**
+     * Exibe detalhes do credenciamento (admin)
+     */
+    public function exibir($id)
+    {
+        $credenciamento = $this->credenciamentoModel->find($id);
+        
+        if (!$credenciamento) {
+            return redirect()->to('credenciamento/listar')->with('error', 'Credenciamento não encontrado.');
+        }
+
+        $contrato = $this->contratoModel->find($credenciamento->contrato_id);
+        
+        if (!$contrato) {
+            return redirect()->to('credenciamento/listar')->with('error', 'Contrato não encontrado.');
+        }
+
+        // Busca dados
+        $veiculos = $this->veiculoModel->buscaPorCredenciamento($credenciamento->id);
+        $responsavel = $this->pessoaModel->buscaResponsavel($credenciamento->id);
+        $funcionarios = $this->pessoaModel->buscaFuncionarios($credenciamento->id);
+        $suplentes = $this->pessoaModel->buscaSuplentes($credenciamento->id);
+        
+        // Busca expositor
+        $expositorModel = new \App\Models\ExpositorModel();
+        $expositor = $expositorModel->find($contrato->expositor_id);
+
+        // Busca evento
+        $eventoModel = new \App\Models\EventoModel();
+        $evento = $eventoModel->find($contrato->event_id);
+
+        // Obtém limites
+        $limites = $this->credenciamentoModel->getLimitePessoas($credenciamento->contrato_id);
+
+        $data = [
+            'titulo' => 'Detalhes do Credenciamento',
+            'credenciamento' => $credenciamento,
+            'contrato' => $contrato,
+            'expositor' => $expositor,
+            'evento' => $evento,
+            'veiculos' => $veiculos,
+            'responsavel' => $responsavel,
+            'funcionarios' => $funcionarios,
+            'suplentes' => $suplentes,
+            'limites' => $limites,
+        ];
+
+        return view('Credenciamento/exibir', $data);
     }
 
     // =====================================================
