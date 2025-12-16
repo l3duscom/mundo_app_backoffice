@@ -35,6 +35,9 @@ $routes->setAutoRoute(true);
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
 
+// Rota para exibir imagens de espaços (aceita subpaths como espacos/20/arquivo.jpg)
+$routes->get('espacos/imagem/(:any)', 'Espacos::imagem/$1');
+
 
 $routes->get('login', 'Login::novo');
 $routes->get('logout', 'Login::logout');
