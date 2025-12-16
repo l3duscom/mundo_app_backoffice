@@ -154,12 +154,34 @@
                     </div>
 
                     <?php if (!empty($expositor->celular)) : ?>
+                    <?php $celularLimpo = preg_replace('/[^0-9]/', '', $expositor->celular); ?>
                     <div class="col-12">
                         <div class="d-flex align-items-center info-item">
-                            <i class="bx bx-mobile text-primary me-2"></i>
+                            <i class="bx bxl-whatsapp text-success me-2"></i>
                             <div>
-                                <small class="text-muted">Celular:</small>
-                                <p class="mb-0"><?php echo esc($expositor->celular); ?></p>
+                                <small class="text-muted">Celular/WhatsApp:</small>
+                                <p class="mb-0">
+                                    <a href="https://wa.me/55<?= $celularLimpo ?>" target="_blank" class="text-success text-decoration-none">
+                                        <?php echo esc($expositor->celular); ?> <i class="bx bx-link-external"></i>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($expositor->instagram)) : ?>
+                    <?php $instagramHandle = ltrim($expositor->instagram, '@'); ?>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center info-item">
+                            <i class="bx bxl-instagram text-danger me-2"></i>
+                            <div>
+                                <small class="text-muted">Instagram:</small>
+                                <p class="mb-0">
+                                    <a href="https://instagram.com/<?= $instagramHandle ?>" target="_blank" class="text-decoration-none" style="color: #E1306C;">
+                                        @<?= $instagramHandle ?> <i class="bx bx-link-external"></i>
+                                    </a>
+                                </p>
                             </div>
                         </div>
                     </div>
