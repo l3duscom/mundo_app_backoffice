@@ -98,17 +98,12 @@ class Espacos extends BaseController
                 return $this->response->setJSON($retorno);
             }
 
-            // Cria diretório se não existir
+            // Usa store() igual aos concursos - salva em writable/uploads/espacos/
             $eventId = $post['event_id'];
-            $uploadPath = FCPATH . 'uploads/espacos/' . $eventId;
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
-            // Gera nome único e move
-            $newName = 'mapa_' . time() . '_' . $imagem->getRandomName();
-            $imagem->move($uploadPath, $newName);
-            $imagemPath = 'uploads/espacos/' . $eventId . '/' . $newName;
+            $caminhoImagem = $imagem->store('espacos/' . $eventId);
+            
+            // Caminho relativo para o banco (usado com imagem() helper)
+            $imagemPath = $caminhoImagem;
             
             $espaco->imagem = $imagemPath;
         }
@@ -186,16 +181,8 @@ class Espacos extends BaseController
                 return $this->response->setJSON($retorno);
             }
 
-            // Cria diretório se não existir
-            $uploadPath = FCPATH . 'uploads/espacos/' . $eventId;
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
-            // Gera nome único e move
-            $newName = 'mapa_' . time() . '_' . $imagem->getRandomName();
-            $imagem->move($uploadPath, $newName);
-            $imagemPath = 'uploads/espacos/' . $eventId . '/' . $newName;
+            // Usa store() igual aos concursos - salva em writable/uploads/espacos/
+            $imagemPath = $imagem->store('espacos/' . $eventId);
         }
 
         $criados = 0;
@@ -379,6 +366,8 @@ class Espacos extends BaseController
                 $label .= ' (Sua reserva)';
             } elseif ($nomeExpositor) {
                 $label .= ' - ' . $nomeExpositor;
+            } elseif ($espaco->status === 'bloqueado') {
+                $label .= ' (Bloqueado)';
             }
             
             $data[] = [
@@ -448,7 +437,7 @@ class Espacos extends BaseController
             // Formata imagem
             $imagemDisplay = '-';
             if (!empty($espaco->imagem)) {
-                $imagemDisplay = '<a href="' . site_url($espaco->imagem) . '" target="_blank" class="btn btn-sm btn-outline-info" title="Ver imagem"><i class="bx bx-image"></i></a>';
+                $imagemDisplay = '<a href="' . site_url('espacos/imagem/' . $espaco->imagem) . '" target="_blank" class="btn btn-sm btn-outline-info" title="Ver imagem"><i class="bx bx-image"></i></a>';
             }
 
             $data[] = [
@@ -558,8 +547,34 @@ class Espacos extends BaseController
         $this->espacoModel->update($espacoId, ['imagem' => $imagemPath]);
 
         $retorno['sucesso'] = 'Imagem atualizada com sucesso!';
-        $retorno['imagem_url'] = site_url($imagemPath);
+        $retorno['imagem_url'] = site_url('espacos/imagem/' . $imagemPath);
 
         return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Exibe imagem do espaço (arquivos em writable/uploads/)
+     */
+    public function imagem($path = null)
+    {
+        if (!$path) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Caminho completo do arquivo
+        $filePath = WRITEPATH . 'uploads/' . $path;
+
+        if (!file_exists($filePath)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // Detecta mime type
+        $mimeType = mime_content_type($filePath);
+
+        // Retorna a imagem
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($filePath) . '"')
+            ->setBody(file_get_contents($filePath));
     }
 }
