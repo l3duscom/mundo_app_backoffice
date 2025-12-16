@@ -554,8 +554,8 @@ $(document).ready(function() {
                 if (response.data && response.data.length > 0) {
                     $.each(response.data, function(i, espaco) {
                         var selected = (espaco.id == espacoIdSelecionado || espaco.selecionado) ? ' selected' : '';
-                        var statusLabel = espaco.status === 'reservado' ? ' (Atual)' : '';
-                        options += '<option value="' + espaco.id + '"' + selected + '>' + espaco.nome + statusLabel + '</option>';
+                        var disabled = espaco.desabilitado ? ' disabled' : '';
+                        options += '<option value="' + espaco.id + '"' + selected + disabled + '>' + espaco.nome + '</option>';
                     });
                 } else {
                     options += '<option value="" disabled>Nenhum espaço disponível</option>';

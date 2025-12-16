@@ -1563,11 +1563,13 @@ $(document).ready(function() {
     });
     
     // Alterar situação via AJAX
-    $('.btn-alterar-situacao').on('click', function(e) {
+    $(document).on('click', '.btn-alterar-situacao', function(e) {
         e.preventDefault();
         
         var novaSituacao = $(this).data('situacao');
-        var confirmar = confirm('Deseja realmente alterar a situação do contrato?');
+        console.log('Alterando situação para:', novaSituacao);
+        
+        var confirmar = confirm('Deseja realmente alterar a situação do contrato para "' + novaSituacao + '"?');
         
         if (!confirmar) return;
         
@@ -1581,6 +1583,7 @@ $(document).ready(function() {
             },
             dataType: 'json',
             success: function(response) {
+                console.log('Resposta:', response);
                 if (response.token) csrfToken = response.token;
                 if (response.sucesso) {
                     location.reload();
@@ -1588,7 +1591,8 @@ $(document).ready(function() {
                     alert(response.erro || 'Erro ao alterar situação');
                 }
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.log('Erro AJAX:', xhr, status, error);
                 alert('Erro ao processar a solicitação');
             }
         });
@@ -1690,8 +1694,8 @@ $(document).ready(function() {
                 if (response.data && response.data.length > 0) {
                     $.each(response.data, function(i, espaco) {
                         var selected = (espaco.id == espacoIdSelecionado || espaco.selecionado) ? ' selected' : '';
-                        var statusLabel = espaco.status === 'reservado' ? ' (Atual)' : '';
-                        options += '<option value="' + espaco.id + '"' + selected + '>' + espaco.nome + statusLabel + '</option>';
+                        var disabled = espaco.desabilitado ? ' disabled' : '';
+                        options += '<option value="' + espaco.id + '"' + selected + disabled + '>' + espaco.nome + '</option>';
                     });
                 } else {
                     options += '<option value="" disabled>Nenhum espaço disponível</option>';

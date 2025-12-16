@@ -486,6 +486,8 @@ class Contratos extends BaseController
         }
 
         $retorno['erro'] = 'Erro ao alterar situação';
+        $retorno['erros_model'] = $this->contratoModel->errors();
+        log_message('error', 'alterarSituacao: Erro ao salvar - ID: ' . $post['id'] . ' - Situação: ' . $post['situacao'] . ' - Erros: ' . json_encode($this->contratoModel->errors()));
         return $this->response->setJSON($retorno);
     }
 

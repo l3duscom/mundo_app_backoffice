@@ -320,6 +320,7 @@ class Espacos extends BaseController
     /**
      * Busca espaços livres por evento e tipo (AJAX)
      * Usado pelos combobox de escolha de espaço
+     * Mostra todos os espaços e indica quem reservou cada um
      */
     public function buscarLivres()
     {
@@ -334,24 +335,59 @@ class Espacos extends BaseController
         // Log para debug
         log_message('debug', "buscarLivres: event_id={$eventId}, tipo_item={$tipoItem}, contrato_item_id={$contratoItemId}");
 
-        $espacos = $this->espacoModel->buscaLivresPorEventoETipo($eventId, $tipoItem);
+        // Busca TODOS os espaços do evento e tipo (não só livres)
+        $espacos = $this->espacoModel->buscaPorEventoETipo($eventId, $tipoItem);
+        
+        // Models auxiliares
+        $contratoItemModel = new \App\Models\ContratoItemModel();
+        $contratoModel = new \App\Models\ContratoModel();
+        $expositorModel = new \App\Models\ExpositorModel();
 
-        // Inclui também o espaço já reservado por este item (se houver)
+        // Verifica espaço reservado pelo item atual
+        $espacoReservadoAtual = null;
         if ($contratoItemId) {
-            $espacoReservado = $this->espacoModel->buscaPorContratoItem($contratoItemId);
-            if ($espacoReservado) {
-                // Adiciona no início da lista
-                array_unshift($espacos, $espacoReservado);
-            }
+            $espacoReservadoAtual = $this->espacoModel->buscaPorContratoItem($contratoItemId);
         }
 
         $data = [];
         foreach ($espacos as $espaco) {
+            $nomeExpositor = null;
+            $reservadoPorMim = false;
+            
+            // Se está reservado, busca quem reservou
+            if ($espaco->status === 'reservado' && $espaco->contrato_item_id) {
+                if ($espacoReservadoAtual && $espaco->id === $espacoReservadoAtual->id) {
+                    $reservadoPorMim = true;
+                } else {
+                    // Busca o expositor que reservou
+                    $item = $contratoItemModel->find($espaco->contrato_item_id);
+                    if ($item) {
+                        $contrato = $contratoModel->find($item->contrato_id);
+                        if ($contrato && $contrato->expositor_id) {
+                            $expositor = $expositorModel->find($contrato->expositor_id);
+                            if ($expositor) {
+                                $nomeExpositor = $expositor->nome_fantasia ?? $expositor->nome ?? 'Reservado';
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Monta label do espaço
+            $label = $espaco->nome;
+            if ($reservadoPorMim) {
+                $label .= ' (Sua reserva)';
+            } elseif ($nomeExpositor) {
+                $label .= ' - ' . $nomeExpositor;
+            }
+            
             $data[] = [
                 'id' => $espaco->id,
-                'nome' => $espaco->nome,
+                'nome' => $label,
                 'status' => $espaco->status,
-                'selecionado' => ($espacoReservado ?? null) && $espaco->id === $espacoReservado->id,
+                'reservado_por' => $nomeExpositor,
+                'selecionado' => $reservadoPorMim,
+                'desabilitado' => ($espaco->status !== 'livre' && !$reservadoPorMim),
             ];
         }
 
