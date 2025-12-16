@@ -105,9 +105,10 @@ class CredenciamentoModel extends Model
         }
         
         return [
-            'funcionarios' => $isLimitado ? 2 : 10,
-            'suplentes' => $isLimitado ? 2 : 10,
+            'funcionarios' => $isLimitado ? 1 : 10, // 1 editável + responsável automático
+            'suplentes' => $isLimitado ? 0 : 10,
             'veiculos' => 1,
+            'auto_responsavel_funcionario' => $isLimitado, // Flag para autopreenchimento
         ];
     }
 

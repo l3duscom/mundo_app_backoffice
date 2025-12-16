@@ -189,7 +189,11 @@
             <div class="card shadow-sm card-section <?= !$podeEditar ? 'bloqueado-overlay' : '' ?>">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-people text-primary me-2"></i>Responsável e Funcionários</h5>
+                    <?php if (!empty($limites['auto_responsavel_funcionario'])) : ?>
+                    <span class="limite-info">Limite: <?= $limites['funcionarios'] ?> funcionário + responsável (conta como 2º funcionário)</span>
+                    <?php else : ?>
                     <span class="limite-info">Limite: <?= $limites['funcionarios'] ?> funcionário(s)</span>
+                    <?php endif; ?>
                 </div>
                 <div class="card-body">
                     <!-- Responsável -->
