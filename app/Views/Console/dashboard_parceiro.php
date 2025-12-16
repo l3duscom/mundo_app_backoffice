@@ -458,7 +458,7 @@
                         <?php if ($imagemMapa): ?>
                         <div class="mb-3 text-center">
                             <a href="javascript:void(0);" class="d-inline-block" data-bs-toggle="modal" data-bs-target="#modalMapaEspacos">
-                                <img src="<?= site_url('espacos/imagem/' . $imagemMapa) ?>" alt="Mapa de Espaços" class="img-fluid rounded shadow-sm" style="max-height: 300px; cursor: zoom-in;">
+                                <img src="https://backoffice.mundodream.com.br/espacos/imagem/<?= $imagemMapa ?>" alt="Mapa de Espaços" class="img-fluid rounded shadow-sm" style="max-height: 300px; cursor: zoom-in;">
                             </a>
                             <small class="text-muted d-block mt-1"><i class="bi bi-zoom-in me-1"></i>Clique para ampliar</small>
                         </div>
@@ -472,7 +472,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body text-center p-2">
-                                        <img src="<?= site_url('espacos/imagem/' . $imagemMapa) ?>" alt="Mapa de Espaços" class="img-fluid" style="max-height: 80vh;">
+                                        <img src="https://backoffice.mundodream.com.br/espacos/imagem/<?= $imagemMapa ?>" alt="Mapa de Espaços" class="img-fluid" style="max-height: 80vh;">
                                     </div>
                                 </div>
                             </div>
