@@ -99,20 +99,16 @@ class Espacos extends BaseController
             }
 
             // Usa store() igual aos concursos - salva em writable/uploads/espacos/
-            $eventId = $post['event_id'];
-            $caminhoImagem = $imagem->store('espacos/' . $eventId);
+            $caminhoImagem = $imagem->store('espacos');
             
-            // Log para debug
-            log_message('info', 'Upload espaço: caminhoImagem=' . $caminhoImagem . ', WRITEPATH=' . WRITEPATH);
-            log_message('info', 'Upload espaço: arquivo existe? ' . (file_exists(WRITEPATH . 'uploads/' . $caminhoImagem) ? 'SIM' : 'NAO'));
-            
-            // Caminho relativo para o banco (usado com imagem() helper)
-            $imagemPath = $caminhoImagem;
+            // Salva apenas o nome do arquivo (igual concursos)
+            $imagemPath = $imagem->getName();
             
             $espaco->imagem = $imagemPath;
         } else {
             // Log quando não tem imagem ou imagem inválida
             log_message('info', 'Upload espaço: imagem não recebida ou inválida. hasMoved=' . ($imagem ? ($imagem->hasMoved() ? 'SIM' : 'NAO') : 'null'));
+        }
 
         if ($this->espacoModel->save($espaco)) {
             $espacoId = $espaco->id ?? $this->espacoModel->getInsertID();
@@ -188,7 +184,8 @@ class Espacos extends BaseController
             }
 
             // Usa store() igual aos concursos - salva em writable/uploads/espacos/
-            $imagemPath = $imagem->store('espacos/' . $eventId);
+            $imagem->store('espacos');
+            $imagemPath = $imagem->getName();
         }
 
         $criados = 0;
@@ -533,13 +530,14 @@ class Espacos extends BaseController
             return $this->response->setJSON($retorno);
         }
 
-        // Remove imagem antiga se existir (de writable/uploads/)
-        if (!empty($espaco->imagem) && file_exists(WRITEPATH . 'uploads/' . $espaco->imagem)) {
-            unlink(WRITEPATH . 'uploads/' . $espaco->imagem);
+        // Remove imagem antiga se existir (de writable/uploads/espacos/)
+        if (!empty($espaco->imagem) && file_exists(WRITEPATH . 'uploads/espacos/' . $espaco->imagem)) {
+            unlink(WRITEPATH . 'uploads/espacos/' . $espaco->imagem);
         }
 
         // Usa store() igual aos concursos - salva em writable/uploads/espacos/
-        $imagemPath = $imagem->store('espacos/' . $espaco->event_id);
+        $imagem->store('espacos');
+        $imagemPath = $imagem->getName();
 
         // Atualiza o espaço
         $this->espacoModel->update($espacoId, ['imagem' => $imagemPath]);
@@ -551,28 +549,13 @@ class Espacos extends BaseController
     }
 
     /**
-     * Exibe imagem do espaço (arquivos em writable/uploads/)
+     * Exibe imagem do espaço (arquivos em writable/uploads/espacos/)
+     * Igual ao padrão de concursos/imagem
      */
-    public function imagem($path = null)
+    public function imagem($imagem = null)
     {
-        if (!$path) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        if ($imagem != null) {
+            $this->exibeArquivo('espacos', $imagem);
         }
-
-        // Caminho completo do arquivo
-        $filePath = WRITEPATH . 'uploads/' . $path;
-
-        if (!file_exists($filePath)) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
-        }
-
-        // Detecta mime type
-        $mimeType = mime_content_type($filePath);
-
-        // Retorna a imagem
-        return $this->response
-            ->setHeader('Content-Type', $mimeType)
-            ->setHeader('Content-Disposition', 'inline; filename="' . basename($filePath) . '"')
-            ->setBody(file_get_contents($filePath));
     }
 }
