@@ -102,6 +102,10 @@ class Espacos extends BaseController
             $eventId = $post['event_id'];
             $caminhoImagem = $imagem->store('espacos/' . $eventId);
             
+            // Log para debug
+            log_message('info', 'Upload espaço: caminhoImagem=' . $caminhoImagem . ', WRITEPATH=' . WRITEPATH);
+            log_message('info', 'Upload espaço: arquivo existe? ' . (file_exists(WRITEPATH . 'uploads/' . $caminhoImagem) ? 'SIM' : 'NAO'));
+            
             // Caminho relativo para o banco (usado com imagem() helper)
             $imagemPath = $caminhoImagem;
             
