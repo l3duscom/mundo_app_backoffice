@@ -28,14 +28,28 @@ class ContratoItens extends BaseController
 
         $itens = $this->contratoItemModel->buscaPorContrato($contratoId);
 
+        // Busca o contrato para pegar o event_id
+        $contrato = $this->contratoModel->find($contratoId);
+        $eventId = $contrato ? $contrato->event_id : null;
+
+        // Inicializa model de espaços
+        $espacoModel = new \App\Models\EspacoModel();
+
         $data = [];
 
         foreach ($itens as $item) {
+            // Busca espaço reservado por este item
+            $espacoReservado = $espacoModel->buscaPorContratoItem($item->id);
+            
             $data[] = [
                 'id' => $item->id,
                 'tipo_item' => $item->getBadgeTipoItem(),
+                'tipo_item_raw' => $item->tipo_item,
                 'descricao' => esc($item->descricao ?? '-'),
                 'localizacao' => esc($item->localizacao ?? '-'),
+                'localizacao_raw' => $item->localizacao ?? '',
+                'espaco_id' => $espacoReservado ? $espacoReservado->id : null,
+                'event_id' => $eventId,
                 'metragem' => esc($item->metragem ?? '-'),
                 'quantidade' => $item->quantidade,
                 'valor_unitario' => $item->getValorUnitarioFormatado(),

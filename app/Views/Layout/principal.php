@@ -322,6 +322,13 @@
                         </a>
                     </li>
                     <li>
+                        <a href="<?php echo site_url('/espacos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-map-pin"></i>
+                            </div>
+                            <div class="menu-title">Espaços</div>
+                        </a>
+                    </li>
+                    <li>
                         <a href="<?php echo site_url('/contratodocumentos/modelos'); ?>">
                             <div class="parent-icon"><i class="bx bx-file-blank"></i>
                             </div>

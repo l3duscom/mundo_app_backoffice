@@ -431,6 +431,46 @@
                         </div>
                         <?php endif; ?>
                     </div>
+
+                    <!-- ESCOLHA DE ESPAÇO -->
+                    <?php if ($contratoAssinado && !empty($itens)) : ?>
+                    <div class="mt-4">
+                        <h6 class="mb-3"><i class="bi bi-geo-alt text-primary me-2"></i>Escolha de Espaço</h6>
+                        
+                        <?php 
+                        // Busca espaços reservados pelo model
+                        $espacoModel = new \App\Models\EspacoModel();
+                        ?>
+                        
+                        <?php foreach ($itens as $item) : ?>
+                        <?php 
+                        // Busca espaço reservado por este item
+                        $espacoReservado = $espacoModel->buscaPorContratoItem($item->id);
+                        ?>
+                        <div class="item-card d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge bg-primary me-2"><?= esc($item->tipo_item) ?></span>
+                                <?= esc($item->descricao ?? '') ?>
+                            </div>
+                            <div>
+                                <select class="form-select form-select-sm select-espaco-parceiro" 
+                                    data-item-id="<?= $item->id ?>" 
+                                    data-contrato-id="<?= $contrato->id ?>"
+                                    data-event-id="<?= $contrato->event_id ?>"
+                                    data-tipo-item="<?= urlencode($item->tipo_item) ?>"
+                                    data-espaco-id="<?= $espacoReservado ? $espacoReservado->id : '' ?>"
+                                    style="min-width: 140px;">
+                                    <option value="">Carregando...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                        
+                        <small class="text-muted mt-2 d-block">
+                            <i class="bi bi-info-circle me-1"></i>Selecione o espaço desejado para cada item contratado.
+                        </small>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -446,4 +486,90 @@
 <?php echo $this->endSection() ?>
 
 <?php echo $this->section('scripts') ?>
+<script>
+$(document).ready(function() {
+    var csrfToken = '<?php echo csrf_hash(); ?>';
+    var csrfName = '<?php echo csrf_token(); ?>';
+    
+    // Carrega espaços para cada select na inicialização
+    $('.select-espaco-parceiro').each(function() {
+        carregarEspacosSelectParceiro($(this));
+    });
+    
+    // Função para carregar espaços disponíveis
+    function carregarEspacosSelectParceiro(select) {
+        var eventId = select.data('event-id');
+        var tipoItem = decodeURIComponent(select.data('tipo-item'));
+        var itemId = select.data('item-id');
+        var espacoIdSelecionado = select.data('espaco-id');
+        
+        $.ajax({
+            type: 'GET',
+            url: '<?php echo site_url('espacos/buscarLivres'); ?>',
+            data: {
+                event_id: eventId,
+                tipo_item: tipoItem,
+                contrato_item_id: itemId
+            },
+            dataType: 'json',
+            success: function(response) {
+                var options = '<option value="">Selecione...</option>';
+                if (response.data && response.data.length > 0) {
+                    $.each(response.data, function(i, espaco) {
+                        var selected = (espaco.id == espacoIdSelecionado || espaco.selecionado) ? ' selected' : '';
+                        var statusLabel = espaco.status === 'reservado' ? ' (Atual)' : '';
+                        options += '<option value="' + espaco.id + '"' + selected + '>' + espaco.nome + statusLabel + '</option>';
+                    });
+                } else {
+                    options += '<option value="" disabled>Nenhum espaço disponível</option>';
+                }
+                select.html(options);
+            },
+            error: function() {
+                select.html('<option value="">Erro ao carregar</option>');
+            }
+        });
+    }
+    
+    // Handler para mudança de espaço/localização
+    $(document).on('change', '.select-espaco-parceiro', function() {
+        var itemId = $(this).data('item-id');
+        var espacoId = $(this).val();
+        var select = $(this);
+        
+        select.prop('disabled', true);
+        
+        $.ajax({
+            type: 'POST',
+            url: '<?php echo site_url('contratos/atualizarLocalizacaoItem'); ?>',
+            data: {
+                item_id: itemId,
+                espaco_id: espacoId,
+                [csrfName]: csrfToken
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.token) csrfToken = response.token;
+                select.prop('disabled', false);
+                
+                if (response.sucesso) {
+                    select.addClass('is-valid');
+                    setTimeout(function() { select.removeClass('is-valid'); }, 2000);
+                    select.data('espaco-id', espacoId);
+                } else {
+                    alert(response.erro || 'Erro ao atualizar localização');
+                    select.addClass('is-invalid');
+                    setTimeout(function() { select.removeClass('is-invalid'); }, 2000);
+                    // Recarrega os espaços para mostrar o estado real
+                    carregarEspacosSelectParceiro(select);
+                }
+            },
+            error: function() {
+                select.prop('disabled', false);
+                alert('Erro ao processar a solicitação');
+            }
+        });
+    });
+});
+</script>
 <?php echo $this->endSection() ?>

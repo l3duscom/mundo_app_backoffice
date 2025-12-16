@@ -1239,6 +1239,8 @@ $(document).ready(function() {
     var csrfName = '<?php echo csrf_token(); ?>';
     var contratoId = <?php echo $contrato->id; ?>;
     var podeAdicionarItens = <?php echo $podeAdicionarItens ? 'true' : 'false'; ?>;
+    // Pode escolher espaço após contrato assinado e documento confirmado (mesmo critério do credenciamento)
+    var podeEscolherEspaco = <?php echo (isset($credenciamento) && $credenciamento) || in_array($contrato->situacao, ['aguardando_credenciamento', 'finalizado', 'pagamento_confirmado']) ? 'true' : 'false'; ?>;
 
     // Máscara para valores monetários
     $('.money').mask('#.##0,00', {reverse: true});
@@ -1615,11 +1617,25 @@ $(document).ready(function() {
                 } else {
                     $.each(response.data, function(index, item) {
                         var acoes = podeAdicionarItens ? '<td class="text-center">' + item.acoes + '</td>' : '';
+                        
+                        // Monta célula de localização com combobox se permitido escolher espaço
+                        var localizacaoCell = '';
+                        if (podeEscolherEspaco && item.event_id) {
+                            // Placeholder que será preenchido via AJAX
+                            localizacaoCell = '<select class="form-select form-select-sm select-localizacao" data-item-id="' + item.id + 
+                                '" data-event-id="' + item.event_id + 
+                                '" data-tipo-item="' + encodeURIComponent(item.tipo_item_raw) + 
+                                '" data-espaco-id="' + (item.espaco_id || '') + 
+                                '"><option value="">Carregando...</option></select>';
+                        } else {
+                            localizacaoCell = item.localizacao;
+                        }
+                        
                         tbody.append(
                             '<tr>' +
                                 '<td>' + item.tipo_item + '</td>' +
                                 '<td>' + item.descricao + '</td>' +
-                                '<td>' + item.localizacao + '</td>' +
+                                '<td>' + localizacaoCell + '</td>' +
                                 '<td>' + item.metragem + '</td>' +
                                 '<td class="text-center">' + item.quantidade + '</td>' +
                                 '<td class="text-end">' + item.valor_unitario + '</td>' +
@@ -1629,6 +1645,13 @@ $(document).ready(function() {
                             '</tr>'
                         );
                     });
+                    
+                    // Carrega espaços para cada select
+                    if (podeEscolherEspaco) {
+                        $('.select-localizacao').each(function() {
+                            carregarEspacosSelect($(this));
+                        });
+                    }
                 }
 
                 // Atualiza totais
@@ -1645,6 +1668,82 @@ $(document).ready(function() {
             }
         });
     }
+
+    // Carrega espaços disponíveis para um select
+    function carregarEspacosSelect(select) {
+        var eventId = select.data('event-id');
+        var tipoItem = decodeURIComponent(select.data('tipo-item'));
+        var itemId = select.data('item-id');
+        var espacoIdSelecionado = select.data('espaco-id');
+        
+        $.ajax({
+            type: 'GET',
+            url: '<?php echo site_url('espacos/buscarLivres'); ?>',
+            data: {
+                event_id: eventId,
+                tipo_item: tipoItem,
+                contrato_item_id: itemId
+            },
+            dataType: 'json',
+            success: function(response) {
+                var options = '<option value="">Selecione...</option>';
+                if (response.data && response.data.length > 0) {
+                    $.each(response.data, function(i, espaco) {
+                        var selected = (espaco.id == espacoIdSelecionado || espaco.selecionado) ? ' selected' : '';
+                        var statusLabel = espaco.status === 'reservado' ? ' (Atual)' : '';
+                        options += '<option value="' + espaco.id + '"' + selected + '>' + espaco.nome + statusLabel + '</option>';
+                    });
+                } else {
+                    options += '<option value="" disabled>Nenhum espaço disponível</option>';
+                }
+                select.html(options);
+            },
+            error: function() {
+                select.html('<option value="">Erro ao carregar</option>');
+            }
+        });
+    }
+
+    // Handler para mudança de localização via combobox
+    $(document).on('change', '.select-localizacao', function() {
+        var itemId = $(this).data('item-id');
+        var espacoId = $(this).val();
+        var select = $(this);
+        
+        select.prop('disabled', true);
+        
+        $.ajax({
+            type: 'POST',
+            url: '<?php echo site_url('contratos/atualizarLocalizacaoItem'); ?>',
+            data: {
+                item_id: itemId,
+                espaco_id: espacoId,
+                [csrfName]: csrfToken
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.token) csrfToken = response.token;
+                select.prop('disabled', false);
+                
+                if (response.sucesso) {
+                    select.addClass('is-valid');
+                    setTimeout(function() { select.removeClass('is-valid'); }, 2000);
+                    // Atualiza o data-espaco-id para manter consistência
+                    select.data('espaco-id', espacoId);
+                } else {
+                    alert(response.erro || 'Erro ao atualizar localização');
+                    select.addClass('is-invalid');
+                    setTimeout(function() { select.removeClass('is-invalid'); }, 2000);
+                    // Recarrega os espaços para mostrar o estado real
+                    carregarEspacosSelect(select);
+                }
+            },
+            error: function() {
+                select.prop('disabled', false);
+                alert('Erro ao processar a solicitação');
+            }
+        });
+    });
 
     // Limpa modal ao abrir para novo item
     $('#modalItem').on('show.bs.modal', function(e) {

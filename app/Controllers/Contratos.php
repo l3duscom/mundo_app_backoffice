@@ -490,6 +490,75 @@ class Contratos extends BaseController
     }
 
     /**
+     * Atualiza a localização de um item do contrato (escolha de espaço)
+     * Usa reserva atômica para evitar que 2 usuários selecionem o mesmo espaço
+     */
+    public function atualizarLocalizacaoItem()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $post = $this->request->getPost();
+        $itemId = $post['item_id'] ?? null;
+        $espacoId = $post['espaco_id'] ?? null;
+
+        if (!$itemId) {
+            $retorno['erro'] = 'Item não informado';
+            return $this->response->setJSON($retorno);
+        }
+
+        $contratoItemModel = new \App\Models\ContratoItemModel();
+        $espacoModel = new \App\Models\EspacoModel();
+        
+        $item = $contratoItemModel->find($itemId);
+
+        if (!$item) {
+            $retorno['erro'] = 'Item não encontrado';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Libera espaço anterior se houver
+        $espacoAnterior = $espacoModel->buscaPorContratoItem($itemId);
+        if ($espacoAnterior) {
+            $espacoModel->liberar($espacoAnterior->id);
+        }
+
+        // Se selecionou um novo espaço, tenta reservar
+        if ($espacoId) {
+            $espaco = $espacoModel->find($espacoId);
+            
+            if (!$espaco) {
+                $retorno['erro'] = 'Espaço não encontrado';
+                return $this->response->setJSON($retorno);
+            }
+
+            // Tenta reservar atomicamente
+            $resultado = $espacoModel->reservar($espacoId, $itemId);
+            
+            if ($resultado !== true) {
+                $retorno['erro'] = is_string($resultado) ? $resultado : 'Erro ao reservar espaço';
+                return $this->response->setJSON($retorno);
+            }
+
+            // Atualiza a localização no item
+            $contratoItemModel->update($itemId, ['localizacao' => $espaco->nome]);
+            
+            $retorno['sucesso'] = 'Espaço reservado com sucesso!';
+            $retorno['localizacao'] = $espaco->nome;
+        } else {
+            // Limpou a seleção
+            $contratoItemModel->update($itemId, ['localizacao' => null]);
+            $retorno['sucesso'] = 'Localização removida!';
+            $retorno['localizacao'] = null;
+        }
+
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
      * Receber pagamento em dinheiro (integrado com Asaas)
      * Aceita pagamentos parciais que diluem nas parcelas
      */
