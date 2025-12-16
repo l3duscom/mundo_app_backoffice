@@ -118,6 +118,33 @@ class Espacos extends BaseController
             return $this->response->setJSON($retorno);
         }
 
+        // Processa upload de imagem se houver
+        $imagemPath = null;
+        $imagem = $this->request->getFile('imagem');
+        if ($imagem && $imagem->isValid() && !$imagem->hasMoved()) {
+            // Valida tipo e tamanho
+            $validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!in_array($imagem->getMimeType(), $validTypes)) {
+                $retorno['erro'] = 'Formato de imagem inválido. Use JPG ou PNG.';
+                return $this->response->setJSON($retorno);
+            }
+            if ($imagem->getSizeByUnit('mb') > 5) {
+                $retorno['erro'] = 'Imagem muito grande. Máximo 5MB.';
+                return $this->response->setJSON($retorno);
+            }
+
+            // Cria diretório se não existir
+            $uploadPath = FCPATH . 'uploads/espacos/' . $eventId;
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            // Gera nome único e move
+            $newName = 'mapa_' . time() . '_' . $imagem->getRandomName();
+            $imagem->move($uploadPath, $newName);
+            $imagemPath = 'uploads/espacos/' . $eventId . '/' . $newName;
+        }
+
         $criados = 0;
         $erros = [];
 
@@ -135,12 +162,19 @@ class Espacos extends BaseController
                 ->first();
             
             if (!$existe) {
-                $espaco = new \App\Entities\Espaco([
+                $espacoData = [
                     'event_id' => $eventId,
                     'tipo_item' => $tipoItemValue,
                     'nome' => $nome,
                     'status' => 'livre',
-                ]);
+                ];
+                
+                // Adiciona imagem se foi enviada
+                if ($imagemPath) {
+                    $espacoData['imagem'] = $imagemPath;
+                }
+                
+                $espaco = new \App\Entities\Espaco($espacoData);
                 
                 if ($this->espacoModel->save($espaco)) {
                     $criados++;
@@ -152,7 +186,11 @@ class Espacos extends BaseController
 
         if ($criados > 0) {
             $tiposStr = count($tiposItem) > 1 ? implode(', ', $tiposItem) : $tiposItem[0];
-            $retorno['sucesso'] = "{$criados} espaço(s) criado(s) para: {$tiposStr}";
+            $msg = "{$criados} espaço(s) criado(s) para: {$tiposStr}";
+            if ($imagemPath) {
+                $msg .= ' (com imagem)';
+            }
+            $retorno['sucesso'] = $msg;
         } else {
             $retorno['erro'] = 'Nenhum espaço foi criado. Verifique se já existem.';
         }
@@ -318,10 +356,17 @@ class Espacos extends BaseController
                 $tipoItemDisplay = '<span class="badge bg-primary">' . esc($espaco->tipo_item) . '</span>';
             }
 
+            // Formata imagem
+            $imagemDisplay = '-';
+            if (!empty($espaco->imagem)) {
+                $imagemDisplay = '<a href="' . site_url($espaco->imagem) . '" target="_blank" class="btn btn-sm btn-outline-info" title="Ver imagem"><i class="bx bx-image"></i></a>';
+            }
+
             $data[] = [
                 'id' => $espaco->id,
                 'tipo_item' => $tipoItemDisplay,
                 'nome' => esc($espaco->nome),
+                'imagem' => $imagemDisplay,
                 'descricao' => esc($espaco->descricao ?? '-'),
                 'status' => $espaco->getBadgeStatus(),
                 'contrato' => $contratoInfo,
@@ -365,5 +410,67 @@ class Espacos extends BaseController
 
         $btns .= '</div>';
         return $btns;
+    }
+
+    /**
+     * Atualiza imagem de um espaço (AJAX)
+     */
+    public function atualizarImagem()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $espacoId = $this->request->getPost('espaco_id');
+        $espaco = $this->espacoModel->find($espacoId);
+
+        if (!$espaco) {
+            $retorno['erro'] = 'Espaço não encontrado';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Processa upload de imagem
+        $imagem = $this->request->getFile('imagem');
+        if (!$imagem || !$imagem->isValid()) {
+            $retorno['erro'] = 'Selecione uma imagem válida';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Valida tipo e tamanho
+        $validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!in_array($imagem->getMimeType(), $validTypes)) {
+            $retorno['erro'] = 'Formato inválido. Use JPG ou PNG.';
+            return $this->response->setJSON($retorno);
+        }
+        if ($imagem->getSizeByUnit('mb') > 5) {
+            $retorno['erro'] = 'Imagem muito grande. Máximo 5MB.';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Cria diretório se não existir
+        $uploadPath = FCPATH . 'uploads/espacos/' . $espaco->event_id;
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+
+        // Remove imagem antiga se existir
+        if (!empty($espaco->imagem) && file_exists(FCPATH . $espaco->imagem)) {
+            unlink(FCPATH . $espaco->imagem);
+        }
+
+        // Gera nome único e move
+        $newName = 'mapa_' . time() . '_' . $imagem->getRandomName();
+        $imagem->move($uploadPath, $newName);
+        $imagemPath = 'uploads/espacos/' . $espaco->event_id . '/' . $newName;
+
+        // Atualiza o espaço
+        $this->espacoModel->update($espacoId, ['imagem' => $imagemPath]);
+
+        $retorno['sucesso'] = 'Imagem atualizada com sucesso!';
+        $retorno['imagem_url'] = site_url($imagemPath);
+
+        return $this->response->setJSON($retorno);
     }
 }

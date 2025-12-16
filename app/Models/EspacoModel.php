@@ -14,6 +14,7 @@ class EspacoModel extends Model
         'tipo_item',
         'nome',
         'descricao',
+        'imagem',
         'status',
         'contrato_item_id',
     ];

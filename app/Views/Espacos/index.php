@@ -106,6 +106,7 @@
                     <tr>
                         <th>Tipo</th>
                         <th>Nome</th>
+                        <th class="text-center">Imagem</th>
                         <th>Descrição</th>
                         <th>Status</th>
                         <th>Contrato</th>
@@ -183,7 +184,7 @@
                 <h5 class="modal-title">Criar Espaços em Lote</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="formLote">
+            <form id="formLote" enctype="multipart/form-data">
                 <div class="modal-body">
                     <input type="hidden" name="event_id" value="<?= $eventIdSelecionado ?>">
 
@@ -218,6 +219,15 @@
                                 <label class="form-label">Fim <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" name="fim" value="20" min="1" max="100" required>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bx bx-image me-1"></i>Mapa/Planta dos Espaços</label>
+                        <input type="file" class="form-control" name="imagem" id="imagemLote" accept="image/jpeg,image/png">
+                        <small class="text-muted">Opcional. JPG ou PNG, máximo 5MB. Será aplicada a todos os espaços criados.</small>
+                        <div id="previewImagemLote" class="mt-2" style="display: none;">
+                            <img src="" alt="Preview" class="img-thumbnail" style="max-height: 150px;">
                         </div>
                     </div>
 
@@ -265,6 +275,7 @@ $(document).ready(function() {
         columns: [
             { data: 'tipo_item' },
             { data: 'nome' },
+            { data: 'imagem', className: 'text-center' },
             { data: 'descricao' },
             { data: 'status' },
             { data: 'contrato' },
@@ -298,14 +309,34 @@ $(document).ready(function() {
         });
     });
 
-    // Criar em lote
+    // Preview de imagem no modal lote
+    $('#imagemLote').on('change', function() {
+        var file = this.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#previewImagemLote img').attr('src', e.target.result);
+                $('#previewImagemLote').show();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('#previewImagemLote').hide();
+        }
+    });
+
+    // Criar em lote (com FormData para suportar upload de arquivo)
     $('#formLote').on('submit', function(e) {
         e.preventDefault();
+        
+        var formData = new FormData(this);
+        formData.append(csrfName, csrfToken);
         
         $.ajax({
             type: 'POST',
             url: '<?= site_url('espacos/salvarLote') ?>',
-            data: $(this).serialize() + '&' + csrfName + '=' + csrfToken,
+            data: formData,
+            processData: false,
+            contentType: false,
             dataType: 'json',
             success: function(response) {
                 if (response.token) csrfToken = response.token;
