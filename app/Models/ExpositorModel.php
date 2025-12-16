@@ -30,6 +30,7 @@ class ExpositorModel extends Model
         'tipo_expositor',
         'segmento',
         'observacoes',
+        'instagram',
         'ativo',
         'asaas_customer_id',
         'usuario_id',

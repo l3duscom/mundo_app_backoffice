@@ -174,6 +174,11 @@
     </div>
 
     <div class="form-group col-md-6">
+        <label class="form-control-label"><i class="bx bxl-instagram me-1"></i>Instagram</label>
+        <input type="text" name="instagram" placeholder="@usuario" class="form-control" value="<?php echo esc($expositor->instagram); ?>">
+    </div>
+
+    <div class="form-group col-md-6">
         <div class="custom-control custom-checkbox mt-4">
             <input type="hidden" name="ativo" value="0">
             <input type="checkbox" name="ativo" value="1" class="custom-control-input" id="ativo" <?php if (($expositor->ativo ?? 1) == true): ?> checked <?php endif; ?>>
