@@ -337,17 +337,23 @@ class ContratoDocumentos extends BaseController
             $expositor = $this->expositorModel->find($contrato->expositor_id);
             $evento = $this->eventoModel->find($contrato->event_id);
 
-            // Muda situação do contrato para contrato_assinado
-            if (in_array($contrato->situacao, ['aguardando_contrato', 'proposta', 'proposta_aceita'])) {
-                $contrato->situacao = 'contrato_assinado';
+            // Confirma automaticamente o documento (sem necessidade de ação manual do admin)
+            $documento->status = 'confirmado';
+            $documento->data_confirmacao = date('Y-m-d H:i:s');
+            $documento->confirmado_por = null; // Confirmação automática
+            $this->documentoModel->save($documento);
+
+            // Muda situação do contrato para aguardando_credenciamento (auto-confirmado)
+            if (in_array($contrato->situacao, ['aguardando_contrato', 'proposta', 'proposta_aceita', 'contrato_assinado'])) {
+                $contrato->situacao = 'aguardando_credenciamento';
                 $contrato->data_assinatura = date('Y-m-d');
                 $this->contratoModel->save($contrato);
             }
 
-            // Envia email de notificação para a equipe de relacionamento
-            $this->enviaEmailNotificacaoAssinatura($documento, $contrato, $expositor, $evento);
+            // Envia email de confirmação para o expositor
+            $this->enviaEmailConfirmacao($documento, $contrato, $expositor, $evento);
 
-            $retorno['sucesso'] = 'Documento assinado com sucesso! Aguarde a confirmação pelo organizador.';
+            $retorno['sucesso'] = 'Documento assinado e confirmado com sucesso! Você já pode escolher seu espaço.';
             return $this->response->setJSON($retorno);
         }
 
