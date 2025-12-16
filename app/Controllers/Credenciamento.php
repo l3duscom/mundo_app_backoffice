@@ -94,7 +94,7 @@ class Credenciamento extends BaseController
 
             $data[] = [
                 'id' => $cred->id,
-                'contrato' => anchor("contratos/exibir/{$cred->contrato_id}", esc($cred->contrato_codigo ?? '#' . $cred->contrato_id)),
+                'contrato' => anchor("credenciamento/exibir/{$cred->id}", esc($cred->contrato_codigo ?? '#' . $cred->contrato_id)),
                 'expositor' => esc($nomeExpositor ?? 'N/A'),
                 'evento' => esc($cred->evento_nome ?? 'N/A'),
                 'veiculos' => '<span class="badge bg-secondary"><i class="bx bx-car me-1"></i>' . $veiculos . '</span>',

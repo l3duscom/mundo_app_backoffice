@@ -64,7 +64,7 @@
                     if (!empty($instagram) && strpos($instagram, '@') !== 0) {
                         $instagram = '@' . $instagram;
                     }
-                    $nomeExpositor = !empty($expositor->nome_fantasia) ? $expositor->nome_fantasia : (!empty($expositor->nome) ? $expositor->nome : 'Expositor');
+                    $nomeExpositor = $expositor->nome ?? 'Expositor';
                     $tituloCredenciamento = !empty($instagram) ? "{$instagram} - {$nomeExpositor}" : $nomeExpositor;
                     ?>
                     <h4 class="mb-1"><i class="bi bi-person-badge me-2"></i>Credenciamento de <?= esc($tituloCredenciamento) ?></h4>
@@ -208,7 +208,7 @@
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Expositor</small>
-                        <p class="mb-0"><?= esc($expositor->nome_fantasia ?? $expositor->nome ?? 'N/A') ?></p>
+                        <p class="mb-0"><?= esc($expositor->nome ?? 'N/A') ?></p>
                     </div>
                     <div class="mb-3">
                         <small class="text-muted">Evento</small>
