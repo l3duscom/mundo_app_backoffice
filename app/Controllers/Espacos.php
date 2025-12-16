@@ -110,7 +110,9 @@ class Espacos extends BaseController
             $imagemPath = $caminhoImagem;
             
             $espaco->imagem = $imagemPath;
-        }
+        } else {
+            // Log quando não tem imagem ou imagem inválida
+            log_message('info', 'Upload espaço: imagem não recebida ou inválida. hasMoved=' . ($imagem ? ($imagem->hasMoved() ? 'SIM' : 'NAO') : 'null'));
 
         if ($this->espacoModel->save($espaco)) {
             $espacoId = $espaco->id ?? $this->espacoModel->getInsertID();
