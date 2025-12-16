@@ -527,21 +527,13 @@ class Espacos extends BaseController
             return $this->response->setJSON($retorno);
         }
 
-        // Cria diretório se não existir
-        $uploadPath = FCPATH . 'uploads/espacos/' . $espaco->event_id;
-        if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0755, true);
+        // Remove imagem antiga se existir (de writable/uploads/)
+        if (!empty($espaco->imagem) && file_exists(WRITEPATH . 'uploads/' . $espaco->imagem)) {
+            unlink(WRITEPATH . 'uploads/' . $espaco->imagem);
         }
 
-        // Remove imagem antiga se existir
-        if (!empty($espaco->imagem) && file_exists(FCPATH . $espaco->imagem)) {
-            unlink(FCPATH . $espaco->imagem);
-        }
-
-        // Gera nome único e move
-        $newName = 'mapa_' . time() . '_' . $imagem->getRandomName();
-        $imagem->move($uploadPath, $newName);
-        $imagemPath = 'uploads/espacos/' . $espaco->event_id . '/' . $newName;
+        // Usa store() igual aos concursos - salva em writable/uploads/espacos/
+        $imagemPath = $imagem->store('espacos/' . $espaco->event_id);
 
         // Atualiza o espaço
         $this->espacoModel->update($espacoId, ['imagem' => $imagemPath]);
