@@ -433,7 +433,11 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                 <div class="row g-3">
                     <div class="col-md-3">
                         <small class="text-muted">Parcelas:</small>
-                        <p class="mb-0 fw-bold"><?php echo $contrato->quantidade_parcelas; ?>x de <?php echo $contrato->getValorParcelaFormatado(); ?></p>
+                        <?php 
+                        // Calcula valor da parcela considerando desconto PIX à vista
+                        $valorParcelaReal = $valorAPagar / $contrato->quantidade_parcelas;
+                        ?>
+                        <p class="mb-0 fw-bold"><?php echo $contrato->quantidade_parcelas; ?>x de R$ <?php echo number_format($valorParcelaReal, 2, ',', '.'); ?></p>
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted">Forma de Pagamento:</small>

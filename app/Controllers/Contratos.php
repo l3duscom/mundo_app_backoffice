@@ -1049,12 +1049,13 @@ class Contratos extends BaseController
                 return $this->response->setJSON($retorno);
             }
 
-            // Calcula valor com desconto de 10% para PIX
+            // Calcula valor com desconto de 10% para PIX À VISTA (apenas 1 parcela)
             $valorCobranca = (float) $contrato->valor_final;
             $descontoPix = 0;
+            $isPixAVista = ($billingType === 'PIX') && ($contrato->quantidade_parcelas == 1);
             
-            if ($billingType === 'PIX') {
-                $descontoPix = $valorCobranca * 0.10; // 10% de desconto
+            if ($isPixAVista) {
+                $descontoPix = $valorCobranca * 0.10; // 10% de desconto apenas para PIX à vista
                 $valorCobranca = $valorCobranca - $descontoPix;
             }
 
