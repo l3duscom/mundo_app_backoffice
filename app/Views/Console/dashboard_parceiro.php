@@ -375,8 +375,8 @@
                                     <a href="<?= $doc->arquivo_url ?>" target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-download me-1"></i>Baixar
                                     </a>
-                                    <?php elseif (in_array($doc->status, ['confirmado', 'assinado']) && $doc->hash_assinatura) : ?>
-                                    <a href="<?= site_url('contratodocumentos/visualizarPorHash/' . $doc->hash_assinatura) ?>" target="_blank" class="btn btn-sm btn-outline-success">
+                                    <?php elseif (in_array($doc->status, ['confirmado', 'assinado'])) : ?>
+                                    <a href="<?= site_url('contratodocumentos/visualizar/' . $doc->id) ?>" target="_blank" class="btn btn-sm btn-outline-success">
                                         <i class="bi bi-eye me-1"></i>Visualizar
                                     </a>
                                     <?php elseif (in_array($doc->status, ['pendente', 'pendente_assinatura']) && $pagamentoCompleto && $doc->hash_assinatura) : ?>
