@@ -26,15 +26,8 @@
         <div class="card shadow radius-10">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0"><i class="bx bx-id-card me-2"></i>Credenciamentos de Expositores</h6>
-                <div class="d-flex align-items-center gap-2">
-                    <label class="form-label mb-0 me-2">Evento:</label>
-                    <select class="form-select form-select-sm" id="filtroEvento" style="width: 250px;">
-                        <option value="">Todos os eventos</option>
-                        <?php foreach ($eventos as $evento): ?>
-                        <option value="<?= $evento->id ?>"><?= esc($evento->nome) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                <?php $eventoIdUrl = $_GET['evento_id'] ?? ''; ?>
+                <input type="hidden" id="filtroEvento" value="<?php echo esc($eventoIdUrl); ?>">
             </div>
             <div class="card-body">
                 <div class="table-responsive">
