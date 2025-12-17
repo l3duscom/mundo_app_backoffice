@@ -41,13 +41,19 @@ class Contratos extends BaseController
             return redirect()->back();
         }
 
-        $contratos = $this->contratoModel
+        $eventId = $this->request->getGet('event_id');
+
+        $builder = $this->contratoModel
             ->select('contratos.*, expositores.nome as expositor_nome, expositores.nome_fantasia as expositor_fantasia, eventos.nome as evento_nome')
             ->join('expositores', 'expositores.id = contratos.expositor_id', 'left')
             ->join('eventos', 'eventos.id = contratos.event_id', 'left')
-            ->withDeleted(true)
-            ->orderBy('contratos.id', 'DESC')
-            ->findAll();
+            ->withDeleted(true);
+
+        if (!empty($eventId)) {
+            $builder->where('contratos.event_id', $eventId);
+        }
+
+        $contratos = $builder->orderBy('contratos.id', 'DESC')->findAll();
 
         $data = [];
 

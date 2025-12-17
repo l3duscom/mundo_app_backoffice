@@ -111,13 +111,13 @@
             <div class="card-body">
                 
                 <!-- Filtros -->
-                <div class="row mb-4">
                     <div class="col-md-3">
                         <label class="form-label fw-bold"><i class="bx bx-calendar me-1"></i>Evento</label>
+                        <?php $eventoIdUrl = $_GET['evento_id'] ?? ''; ?>
                         <select id="filtroEvento" class="form-select">
                             <option value="">Todos os eventos</option>
                             <?php foreach ($eventos as $evento): ?>
-                                <option value="<?php echo $evento->id; ?>"><?php echo esc($evento->nome); ?></option>
+                                <option value="<?php echo $evento->id; ?>" <?php echo ($eventoIdUrl == $evento->id) ? 'selected' : ''; ?>><?php echo esc($evento->nome); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -273,7 +273,12 @@ $(document).ready(function() {
     // Inicializa DataTable
     var table = $('#ajaxTable').DataTable({
         "oLanguage": DATATABLE_PTBR,
-        "ajax": "<?php echo site_url('contratos/recuperacontratos'); ?>",
+        "ajax": {
+            "url": "<?php echo site_url('contratos/recuperacontratos'); ?>",
+            "data": function(d) {
+                d.event_id = $('#filtroEvento').val();
+            }
+        },
         "columns": [
             { "data": "codigo" },
             { "data": "expositor" },
@@ -301,13 +306,9 @@ $(document).ready(function() {
     // Carrega totais ao iniciar
     carregarTotais();
 
-    // Filtro por Evento
+    // Filtro por Evento - recarrega via AJAX
     $('#filtroEvento').on('change', function() {
-        var valor = $(this).find('option:selected').text();
-        if ($(this).val() === '') {
-            valor = '';
-        }
-        table.column(2).search(valor).draw();
+        table.ajax.reload();
         carregarTotais();
     });
 
