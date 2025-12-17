@@ -22,68 +22,54 @@
     </div>
 </div>
 
-<!-- Filtro e Cards de Resumo -->
+<!-- Evento selecionado via URL -->
+<?php $eventIdSelecionado = $eventIdSelecionado ?? ($_GET['event_id'] ?? ''); ?>
+<input type="hidden" id="filtroEvento" value="<?php echo esc($eventIdSelecionado); ?>">
+
+<?php if ($eventIdSelecionado): ?>
+<!-- Cards de Resumo -->
 <div class="row mb-4">
     <div class="col-md-4">
-        <div class="card shadow radius-10">
+        <div class="card shadow radius-10 border-start border-success border-4">
             <div class="card-body">
-                <label class="form-label fw-bold">Selecione o Evento</label>
-                <select class="form-select" id="filtroEvento">
-                    <option value="">Selecione...</option>
-                    <?php foreach ($eventos as $evt): ?>
-                    <option value="<?= $evt->id ?>"<?= ($eventIdSelecionado == $evt->id) ? ' selected' : '' ?>><?= esc($evt->nome) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <?php if ($eventIdSelecionado): ?>
-    <div class="col-md-8">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card shadow radius-10 border-start border-success border-4">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div>
-                                <p class="mb-0 text-secondary">Livres</p>
-                                <h4 class="my-1 text-success"><?= $contagem['livre'] ?></h4>
-                            </div>
-                            <div class="ms-auto fs-1 text-success"><i class="bx bx-check-circle"></i></div>
-                        </div>
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">Livres</p>
+                        <h4 class="my-1 text-success"><?= $contagem['livre'] ?></h4>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card shadow radius-10 border-start border-warning border-4">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div>
-                                <p class="mb-0 text-secondary">Reservados</p>
-                                <h4 class="my-1 text-warning"><?= $contagem['reservado'] ?></h4>
-                            </div>
-                            <div class="ms-auto fs-1 text-warning"><i class="bx bx-bookmark"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card shadow radius-10 border-start border-secondary border-4">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div>
-                                <p class="mb-0 text-secondary">Bloqueados</p>
-                                <h4 class="my-1 text-secondary"><?= $contagem['bloqueado'] ?></h4>
-                            </div>
-                            <div class="ms-auto fs-1 text-secondary"><i class="bx bx-block"></i></div>
-                        </div>
-                    </div>
+                    <div class="ms-auto fs-1 text-success"><i class="bx bx-check-circle"></i></div>
                 </div>
             </div>
         </div>
     </div>
-    <?php endif; ?>
+    <div class="col-md-4">
+        <div class="card shadow radius-10 border-start border-warning border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">Reservados</p>
+                        <h4 class="my-1 text-warning"><?= $contagem['reservado'] ?></h4>
+                    </div>
+                    <div class="ms-auto fs-1 text-warning"><i class="bx bx-bookmark"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow radius-10 border-start border-secondary border-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">Bloqueados</p>
+                        <h4 class="my-1 text-secondary"><?= $contagem['bloqueado'] ?></h4>
+                    </div>
+                    <div class="ms-auto fs-1 text-secondary"><i class="bx bx-block"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<?php endif; ?>
 
 <?php if ($eventIdSelecionado): ?>
 <!-- Card Principal -->
