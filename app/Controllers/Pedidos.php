@@ -66,13 +66,20 @@ class Pedidos extends BaseController
 		}
 
 		$card = $this->cartaoModel->withDeleted(true)->where('user_id', $id)->first();
-		//dd($ingressos);
+		
+		// Buscar informações de refunds
+		$refoundModel = new \App\Models\RefoundModel();
+		$refoundsPendentes = $refoundModel->contaRefoundsPendentesPorCliente($cli->id);
+		$refoundsTotal = count($refoundModel->listaRefoundsPorCliente($cli->id) ?? []);
+		
 		$data = [
 			'titulo' => 'Dashboard de ' . esc($cliente->nome),
 			'cliente' => $cliente,
 			'card' => $card,
 			'proximos' => $proximos,
 			'anteriores' => $anteriores,
+			'refoundsPendentes' => $refoundsPendentes,
+			'refoundsTotal' => $refoundsTotal,
 		];
 
 
@@ -1205,4 +1212,61 @@ class Pedidos extends BaseController
 
 		return null;
 	}
+
+	/**
+	 * Lista todas as solicitações de reembolso do usuário logado
+	 */
+	public function meusRefounds()
+	{
+		$id = $this->usuarioLogado()->id;
+
+		$cli = $this->clienteModel->withDeleted(true)->where('usuario_id', $id)->first();
+
+		if (!$cli) {
+			return redirect()->back()->with('erro', 'Cliente não encontrado.');
+		}
+
+		$refoundModel = new \App\Models\RefoundModel();
+		$refounds = $refoundModel->listaRefoundsPorCliente($cli->id);
+
+		$data = [
+			'titulo' => 'Minhas Solicitações de Reembolso',
+			'refounds' => $refounds,
+		];
+
+		return view('Pedidos/meus_refounds', $data);
+	}
+
+	/**
+	 * Exibe detalhes de uma solicitação de reembolso específica
+	 */
+	public function meuRefoundDetalhe(int $id = null)
+	{
+		if (!$id) {
+			return redirect()->to(site_url('pedidos/meus-refounds'))->with('erro', 'ID inválido.');
+		}
+
+		$userId = $this->usuarioLogado()->id;
+		$cli = $this->clienteModel->withDeleted(true)->where('usuario_id', $userId)->first();
+
+		if (!$cli) {
+			return redirect()->back()->with('erro', 'Cliente não encontrado.');
+		}
+
+		$refoundModel = new \App\Models\RefoundModel();
+		$refound = $refoundModel->find($id);
+
+		// Verifica se o refund pertence ao cliente logado
+		if (!$refound || $refound->cliente_id != $cli->id) {
+			return redirect()->to(site_url('pedidos/meus-refounds'))->with('erro', 'Solicitação não encontrada.');
+		}
+
+		$data = [
+			'titulo' => 'Detalhes da Solicitação #' . $id,
+			'refound' => $refound,
+		];
+
+		return view('Pedidos/meu_refound_detalhe', $data);
+	}
 }
+

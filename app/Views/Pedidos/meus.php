@@ -8,7 +8,11 @@
 
 <link rel="stylesheet" type="text/css" href="<?php echo site_url('recursos/vendor/datatable/datatables-combinado.min.css') ?>" />
 
-
+<style>
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+</style>
 
 <?php echo $this->endSection() ?>
 
@@ -19,6 +23,37 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-12 col-xl-12">
+    
+        <!-- Card de Destaque - Minhas Solicitações -->
+        <?php if (isset($refoundsTotal) && $refoundsTotal > 0): ?>
+        <div class="card shadow-sm border-0 mb-4" style="border-left: 4px solid #6f42c1 !important;">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="d-flex align-items-center justify-content-center bg-purple rounded-circle" style="width:50px; height:50px;">
+                            <i class="bx bx-refresh text-white" style="font-size:1.5rem;"></i>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h6 class="mb-1 fw-bold">Minhas Solicitações</h6>
+                        <p class="mb-0 text-muted small">
+                            Você tem 
+                            <?php if ($refoundsPendentes > 0): ?>
+                                <span class="badge bg-warning text-dark"><?= $refoundsPendentes ?> pendente(s)</span>
+                            <?php endif; ?>
+                            <?= $refoundsTotal ?> solicitação(ões) no total
+                        </p>
+                    </div>
+                    <div class="col-auto">
+                        <a href="<?= site_url('pedidos/meus-refounds') ?>" class="btn btn-outline-primary btn-sm">
+                            <i class="bx bx-show me-1"></i>Ver Solicitações
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+    
         <div class="d-flex align-items-center mb-4">
             <i class="bi bi-bag-check-fill text-primary me-2" style="font-size:2rem;"></i>
             <h2 class="mb-0 fw-bold" style="letter-spacing:0.5px;">Meus Pedidos</h2>

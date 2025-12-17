@@ -383,6 +383,24 @@ $routes->group('api/ingressos', ['filter' => 'secureApi'], function ($routes) {
 });
 
 
+// ========================================
+// ROTAS DE REFUNDS/REEMBOLSOS (ADMIN)
+// ========================================
+$routes->group('refounds', function ($routes) {
+    $routes->get('/', 'Refounds::index');
+    $routes->get('recuperaRefounds', 'Refounds::recuperaRefounds');
+    $routes->get('recuperaEstatisticas', 'Refounds::recuperaEstatisticas');
+    $routes->get('exibir/(:num)', 'Refounds::exibir/$1');
+    $routes->post('atualizarStatus', 'Refounds::atualizarStatus');
+});
+
+// ========================================
+// ROTAS DE REFUNDS/REEMBOLSOS (USUÁRIO)
+// ========================================
+$routes->get('pedidos/meus-refounds', 'Pedidos::meusRefounds');
+$routes->get('pedidos/meus-refounds/(:num)', 'Pedidos::meuRefoundDetalhe/$1');
+
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing
