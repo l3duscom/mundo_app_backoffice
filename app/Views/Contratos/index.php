@@ -111,20 +111,14 @@
             <div class="card-body">
                 
                 <!-- Filtros -->
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold"><i class="bx bx-calendar me-1"></i>Evento</label>
-                        <?php $eventoIdUrl = $_GET['evento_id'] ?? ''; ?>
-                        <select id="filtroEvento" class="form-select">
-                            <option value="">Todos os eventos</option>
-                            <?php foreach ($eventos as $evento): ?>
-                                <option value="<?php echo $evento->id; ?>" <?php echo ($eventoIdUrl == $evento->id) ? 'selected' : ''; ?>><?php echo esc($evento->nome); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold"><i class="bx bx-check-circle me-1"></i>Situação</label>
-                        <select id="filtroSituacao" class="form-select">
-                            <option value="">Todas as situações</option>
+                <?php $eventoIdUrl = $_GET['evento_id'] ?? ''; ?>
+                <input type="hidden" id="filtroEvento" value="<?php echo esc($eventoIdUrl); ?>">
+                
+                <div class="d-flex flex-wrap gap-3 mb-4 align-items-end">
+                    <div>
+                        <label class="form-label fw-bold small mb-1"><i class="bx bx-check-circle me-1"></i>Situação</label>
+                        <select id="filtroSituacao" class="form-select form-select-sm" style="min-width: 180px;">
+                            <option value="">Todas</option>
                             <option value="proposta">Proposta</option>
                             <option value="proposta_aceita">Proposta Aceita</option>
                             <option value="aguardando_contrato">Aguardando Contrato</option>
@@ -138,16 +132,16 @@
                             <option value="banido">Banido</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold"><i class="bx bx-time-five me-1"></i>Parcela</label>
-                        <select id="filtroParcela" class="form-select">
+                    <div>
+                        <label class="form-label fw-bold small mb-1"><i class="bx bx-time-five me-1"></i>Parcela</label>
+                        <select id="filtroParcela" class="form-select form-select-sm" style="min-width: 150px;">
                             <option value="">Todas</option>
                             <option value="Vencido">🔴 Vencidas</option>
-                            <option value="Próximo">🟡 Próximas a vencer</option>
+                            <option value="Próximo">🟡 Próximas</option>
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary">
+                    <div>
+                        <button type="button" id="btnLimparFiltros" class="btn btn-outline-secondary btn-sm">
                             <i class="bx bx-x me-1"></i>Limpar
                         </button>
                     </div>
