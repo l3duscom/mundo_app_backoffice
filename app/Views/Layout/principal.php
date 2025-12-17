@@ -297,6 +297,13 @@
                     <?php if (evento_selecionado()) : ?>
                         <li class="menu-label">EVENTO ATUAL</li>
                         <li>
+                            <a href="<?php echo site_url('/dashboard-vendas'); ?>">
+                                <div class="parent-icon"><i class="bi bi-graph-up-arrow"></i>
+                                </div>
+                                <div class="menu-title">Tempo Real</div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo site_url('/ingressos/add'); ?>">
                                 <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
                                 </div>
@@ -308,13 +315,6 @@
                                 <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
                                 </div>
                                 <div class="menu-title">Pedidos</div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo site_url('/dashboard-vendas'); ?>">
-                                <div class="parent-icon"><i class="bi bi-graph-up-arrow"></i>
-                                </div>
-                                <div class="menu-title">Dashboard Vendas</div>
                             </a>
                         </li>
                         <li>
