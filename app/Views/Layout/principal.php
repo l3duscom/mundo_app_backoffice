@@ -308,13 +308,6 @@
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo site_url('/contratos'); ?>">
-                            <div class="parent-icon"><i class="bx bx-file"></i>
-                            </div>
-                            <div class="menu-title">Contratos</div>
-                        </a>
-                    </li>
-                    <li>
                         <a href="<?php echo site_url('/credenciamento/listar'); ?>">
                             <div class="parent-icon"><i class="bx bx-id-card"></i>
                             </div>
@@ -329,13 +322,6 @@
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo site_url('/contratodocumentos/modelos'); ?>">
-                            <div class="parent-icon"><i class="bx bx-file-blank"></i>
-                            </div>
-                            <div class="menu-title">Modelos de Contrato</div>
-                        </a>
-                    </li>
-                    <li>
                         <a href="<?php echo site_url('/itenscatalogo'); ?>">
                             <div class="parent-icon"><i class="bx bx-box"></i>
                             </div>
@@ -343,24 +329,10 @@
                         </a>
                     </li>
                     <li>
-                        <a href="<?php echo site_url('/eventos'); ?>">
-                            <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
+                        <a href="<?php echo site_url('/refounds'); ?>">
+                            <div class="parent-icon"><i class="bx bx-refresh"></i>
                             </div>
-                            <div class="menu-title">Eventos</div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?php echo site_url('/usuarios'); ?>">
-                            <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
-                            </div>
-                            <div class="menu-title">Usuários</div>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="<?php echo site_url('/grupos'); ?>">
-                            <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
-                            </div>
-                            <div class="menu-title">Permissões</div>
+                            <div class="menu-title">Reembolsos</div>
                         </a>
                     </li>
                     <hr>
@@ -394,7 +366,44 @@
                                 <div class="menu-title">Concursos</div>
                             </a>
                         </li>
+                        <li>
+                            <a href="<?php echo site_url('/contratos?evento_id=' . evento_selecionado()); ?>">
+                                <div class="parent-icon"><i class="bx bx-file"></i>
+                                </div>
+                                <div class="menu-title">Contratos</div>
+                            </a>
+                        </li>
                     <?php endif; ?>
+                    <hr>
+                    <li class="menu-label">CONFIGURAÇÕES</li>
+                    <li>
+                        <a href="<?php echo site_url('/eventos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-calendar-event"></i>
+                            </div>
+                            <div class="menu-title">Eventos</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('/usuarios'); ?>">
+                            <div class="parent-icon"><i class="bx bx-user"></i>
+                            </div>
+                            <div class="menu-title">Usuários</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('/grupos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-lock-alt"></i>
+                            </div>
+                            <div class="menu-title">Permissões</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('/contratodocumentos/modelos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-file-blank"></i>
+                            </div>
+                            <div class="menu-title">Modelos de Contrato</div>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <!-- Tab links 
