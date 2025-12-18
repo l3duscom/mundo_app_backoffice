@@ -398,7 +398,9 @@ class Credenciamento extends BaseController
             $this->contratoModel->update($contrato->id, ['situacao' => 'finalizado']);
         }
 
-        return redirect()->to("credenciamento/exibir/{$credenciamentoId}")->with('success', 'Credenciamento aprovado com sucesso!');
+        // Redireciona para a listagem com o filtro de evento
+        $eventoId = $contrato ? $contrato->event_id : '';
+        return redirect()->to("credenciamento/listar?evento_id={$eventoId}")->with('success', 'Credenciamento aprovado com sucesso!');
     }
 
     /**
