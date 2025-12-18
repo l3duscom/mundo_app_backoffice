@@ -383,7 +383,7 @@ class Credenciamento extends BaseController
         
         $credenciamento = $this->credenciamentoModel->find($credenciamentoId);
         if (!$credenciamento) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Credenciamento não encontrado.']);
+            return redirect()->back()->with('error', 'Credenciamento não encontrado.');
         }
 
         // Aprova todas as pessoas
@@ -398,7 +398,7 @@ class Credenciamento extends BaseController
             $this->contratoModel->update($contrato->id, ['situacao' => 'finalizado']);
         }
 
-        return $this->response->setJSON(['success' => true, 'message' => 'Credenciamento aprovado com sucesso!']);
+        return redirect()->to("credenciamento/exibir/{$credenciamentoId}")->with('success', 'Credenciamento aprovado com sucesso!');
     }
 
     /**
@@ -459,7 +459,7 @@ class Credenciamento extends BaseController
         
         $credenciamento = $this->credenciamentoModel->find($credenciamentoId);
         if (!$credenciamento) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Credenciamento não encontrado.']);
+            return redirect()->back()->with('error', 'Credenciamento não encontrado.');
         }
 
         // Reseta status de todas as pessoas
@@ -471,6 +471,6 @@ class Credenciamento extends BaseController
             'observacoes' => $observacao,
         ]);
 
-        return $this->response->setJSON(['success' => true, 'message' => 'Credenciamento devolvido para correção.']);
+        return redirect()->to("credenciamento/exibir/{$credenciamentoId}")->with('success', 'Credenciamento devolvido para correção.');
     }
 }
