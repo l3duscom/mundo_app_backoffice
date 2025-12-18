@@ -78,6 +78,13 @@ class RefoundModel extends Model
             'SUM(CASE WHEN tipo_solicitacao = "upgrade" THEN 1 ELSE 0 END) as upgrades',
             'SUM(CASE WHEN tipo_solicitacao = "reembolso" THEN 1 ELSE 0 END) as reembolsos',
             'SUM(pedido_valor_total) as valor_total',
+            // Valores por status
+            'SUM(CASE WHEN status = "pendente" THEN pedido_valor_total ELSE 0 END) as valor_pendentes',
+            'SUM(CASE WHEN status = "concluido" THEN pedido_valor_total ELSE 0 END) as valor_aprovados',
+            'SUM(CASE WHEN status = "cancelado" THEN pedido_valor_total ELSE 0 END) as valor_rejeitados',
+            // Valores por tipo
+            'SUM(CASE WHEN tipo_solicitacao = "upgrade" THEN pedido_valor_total ELSE 0 END) as valor_upgrades',
+            'SUM(CASE WHEN tipo_solicitacao = "reembolso" THEN pedido_valor_total ELSE 0 END) as valor_reembolsos',
         ]);
 
         if ($event_id) {

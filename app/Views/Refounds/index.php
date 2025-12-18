@@ -60,6 +60,7 @@
             <div class="card-body py-3">
                 <p class="text-muted mb-1 small text-uppercase fw-bold">Total</p>
                 <h2 class="mb-0 text-primary" id="totalRefounds">-</h2>
+                <small class="text-muted" id="valorTotal">R$ 0,00</small>
             </div>
         </div>
     </div>
@@ -68,6 +69,7 @@
             <div class="card-body py-3">
                 <p class="text-muted mb-1 small text-uppercase fw-bold">Pendentes</p>
                 <h2 class="mb-0 text-warning" id="pendentes">-</h2>
+                <small class="text-muted" id="valorPendentes">R$ 0,00</small>
             </div>
         </div>
     </div>
@@ -76,6 +78,7 @@
             <div class="card-body py-3">
                 <p class="text-muted mb-1 small text-uppercase fw-bold">Aprovados</p>
                 <h2 class="mb-0 text-success" id="aprovados">-</h2>
+                <small class="text-muted" id="valorAprovados">R$ 0,00</small>
             </div>
         </div>
     </div>
@@ -84,6 +87,7 @@
             <div class="card-body py-3">
                 <p class="text-muted mb-1 small text-uppercase fw-bold">Rejeitados</p>
                 <h2 class="mb-0 text-danger" id="rejeitados">-</h2>
+                <small class="text-muted" id="valorRejeitados">R$ 0,00</small>
             </div>
         </div>
     </div>
@@ -92,6 +96,7 @@
             <div class="card-body py-3">
                 <p class="text-muted mb-1 small text-uppercase fw-bold">Upgrades</p>
                 <h2 class="mb-0" style="color: #6f42c1;" id="upgrades">-</h2>
+                <small class="text-muted" id="valorUpgrades">R$ 0,00</small>
             </div>
         </div>
     </div>
@@ -100,6 +105,7 @@
             <div class="card-body py-3">
                 <p class="text-muted mb-1 small text-uppercase fw-bold">Reembolsos</p>
                 <h2 class="mb-0" style="color: #fd7e14;" id="reembolsos">-</h2>
+                <small class="text-muted" id="valorReembolsos">R$ 0,00</small>
             </div>
         </div>
     </div>
@@ -239,6 +245,11 @@ $(document).ready(function() {
     var acaoAtual = null;
     var idAtual = null;
 
+    // Função para formatar valor monetário
+    function formatarValor(valor) {
+        return 'R$ ' + parseFloat(valor || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
     // Função para carregar estatísticas
     function carregarEstatisticas() {
         var eventId = $('#filtroEvento').val();
@@ -249,15 +260,25 @@ $(document).ready(function() {
             data: { event_id: eventId },
             dataType: 'json',
             success: function(data) {
+                // Quantidades
                 $('#totalRefounds').text(data.total || 0);
                 $('#pendentes').text(data.pendentes || 0);
                 $('#aprovados').text(data.aprovados || 0);
                 $('#rejeitados').text(data.rejeitados || 0);
                 $('#upgrades').text(data.upgrades || 0);
                 $('#reembolsos').text(data.reembolsos || 0);
+                
+                // Valores
+                $('#valorTotal').text(formatarValor(data.valor_total));
+                $('#valorPendentes').text(formatarValor(data.valor_pendentes));
+                $('#valorAprovados').text(formatarValor(data.valor_aprovados));
+                $('#valorRejeitados').text(formatarValor(data.valor_rejeitados));
+                $('#valorUpgrades').text(formatarValor(data.valor_upgrades));
+                $('#valorReembolsos').text(formatarValor(data.valor_reembolsos));
             },
             error: function() {
                 $('#totalRefounds, #pendentes, #aprovados, #rejeitados, #upgrades, #reembolsos').text('-');
+                $('#valorTotal, #valorPendentes, #valorAprovados, #valorRejeitados, #valorUpgrades, #valorReembolsos').text('R$ 0,00');
             }
         });
     }
