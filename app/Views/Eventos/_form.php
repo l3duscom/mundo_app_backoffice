@@ -93,6 +93,42 @@
     </div>
     <div class="card shadow radius-10">
         <div class="card-body">
+            <h6 class="mb-0 text-uppercase">Imagens do Evento</h6>
+            <label class="form-control-label">Adicione as imagens de avatar e capa do evento.</label>
+            <hr />
+            <div class="row">
+                <!-- Avatar -->
+                <div class="form-group col-md-6">
+                    <label class="form-control-label"><i class="bx bx-user-circle me-1"></i>Avatar</label>
+                    <input type="file" name="avatar_file" class="form-control" accept="image/jpeg,image/png">
+                    <small class="text-muted">JPG ou PNG. Tamanho livre. Máximo 5MB.</small>
+                    <?php if (!empty($evento->avatar)): ?>
+                    <div class="mt-2">
+                        <img src="<?= site_url('eventos/imagem/' . $evento->avatar) ?>" 
+                             class="img-thumbnail" style="max-height: 100px;">
+                        <small class="d-block text-muted">Imagem atual</small>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Cover -->
+                <div class="form-group col-md-6">
+                    <label class="form-control-label"><i class="bx bx-image me-1"></i>Capa (Cover)</label>
+                    <input type="file" name="cover_file" class="form-control" accept="image/jpeg,image/png">
+                    <small class="text-muted">JPG ou PNG. Máximo 5MB. <strong class="text-primary">Dimensões: 1600 x 250 pixels</strong></small>
+                    <?php if (!empty($evento->cover)): ?>
+                    <div class="mt-2">
+                        <img src="<?= site_url('eventos/imagem/' . $evento->cover) ?>" 
+                             class="img-thumbnail" style="max-height: 100px;">
+                        <small class="d-block text-muted">Imagem atual</small>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow radius-10">
+        <div class="card-body">
             <h6 class="mb-0 text-uppercase">Descrição do evento</h6>
             <label class="form-control-label">Conte todos os detalhes do seu evento, como a programação e os diferenciais da sua produção!</label>
             <hr />

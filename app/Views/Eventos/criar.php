@@ -48,7 +48,7 @@
         </div>
 
 
-        <?php echo form_open('eventos/cadastrar', ['id' => 'form']) ?>
+        <?php echo form_open_multipart('eventos/cadastrar', ['id' => 'form']) ?>
         <?php echo $this->include('Eventos/_form'); ?>
         <div class="form-group mb-2">
             <div class="card shadow radius-10">

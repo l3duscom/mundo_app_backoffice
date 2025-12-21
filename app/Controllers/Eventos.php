@@ -119,6 +119,46 @@ class Eventos extends BaseController
             $post['data_fim'] = date('Y-m-d', strtotime(str_replace('/', '-', $post['data_fim'])));
         }
 
+        // Processa upload do Avatar
+        $avatarFile = $this->request->getFile('avatar_file');
+        if ($avatarFile && $avatarFile->isValid() && !$avatarFile->hasMoved()) {
+            $validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!in_array($avatarFile->getMimeType(), $validTypes)) {
+                return redirect()->back()->withInput()->with('atencao', 'Avatar: Formato de imagem inválido. Use JPG ou PNG.');
+            }
+            if ($avatarFile->getSizeByUnit('mb') > 5) {
+                return redirect()->back()->withInput()->with('atencao', 'Avatar: Imagem muito grande. Máximo 5MB.');
+            }
+            $avatarFile->store('eventos');
+            $post['avatar'] = $avatarFile->getName();
+        }
+
+        // Processa upload do Cover
+        $coverFile = $this->request->getFile('cover_file');
+        if ($coverFile && $coverFile->isValid() && !$coverFile->hasMoved()) {
+            $validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!in_array($coverFile->getMimeType(), $validTypes)) {
+                return redirect()->back()->withInput()->with('atencao', 'Cover: Formato de imagem inválido. Use JPG ou PNG.');
+            }
+            if ($coverFile->getSizeByUnit('mb') > 5) {
+                return redirect()->back()->withInput()->with('atencao', 'Cover: Imagem muito grande. Máximo 5MB.');
+            }
+            
+            // Valida dimensões do cover (1600 x 250)
+            $tmpPath = $coverFile->getTempName();
+            $imageInfo = getimagesize($tmpPath);
+            if ($imageInfo) {
+                $width = $imageInfo[0];
+                $height = $imageInfo[1];
+                if ($width != 1600 || $height != 250) {
+                    return redirect()->back()->withInput()->with('atencao', "Cover: Dimensões incorretas ({$width}x{$height}). Use exatamente 1600 x 250 pixels.");
+                }
+            }
+            
+            $coverFile->store('eventos');
+            $post['cover'] = $coverFile->getName();
+        }
+
         $evento = new EventoEntity($post);
 
         if ($this->eventoModel->save($evento)) {
@@ -179,6 +219,58 @@ class Eventos extends BaseController
         }
 
         $evento = $this->buscaEventoOu404($post['id']);
+
+        // Processa upload do Avatar
+        $avatarFile = $this->request->getFile('avatar_file');
+        if ($avatarFile && $avatarFile->isValid() && !$avatarFile->hasMoved()) {
+            $validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!in_array($avatarFile->getMimeType(), $validTypes)) {
+                return redirect()->back()->withInput()->with('atencao', 'Avatar: Formato de imagem inválido. Use JPG ou PNG.');
+            }
+            if ($avatarFile->getSizeByUnit('mb') > 5) {
+                return redirect()->back()->withInput()->with('atencao', 'Avatar: Imagem muito grande. Máximo 5MB.');
+            }
+            
+            // Remove avatar antigo se existir
+            if (!empty($evento->avatar) && file_exists(WRITEPATH . 'uploads/eventos/' . $evento->avatar)) {
+                unlink(WRITEPATH . 'uploads/eventos/' . $evento->avatar);
+            }
+            
+            $avatarFile->store('eventos');
+            $post['avatar'] = $avatarFile->getName();
+        }
+
+        // Processa upload do Cover
+        $coverFile = $this->request->getFile('cover_file');
+        if ($coverFile && $coverFile->isValid() && !$coverFile->hasMoved()) {
+            $validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!in_array($coverFile->getMimeType(), $validTypes)) {
+                return redirect()->back()->withInput()->with('atencao', 'Cover: Formato de imagem inválido. Use JPG ou PNG.');
+            }
+            if ($coverFile->getSizeByUnit('mb') > 5) {
+                return redirect()->back()->withInput()->with('atencao', 'Cover: Imagem muito grande. Máximo 5MB.');
+            }
+            
+            // Valida dimensões do cover (1600 x 250)
+            $tmpPath = $coverFile->getTempName();
+            $imageInfo = getimagesize($tmpPath);
+            if ($imageInfo) {
+                $width = $imageInfo[0];
+                $height = $imageInfo[1];
+                if ($width != 1600 || $height != 250) {
+                    return redirect()->back()->withInput()->with('atencao', "Cover: Dimensões incorretas ({$width}x{$height}). Use exatamente 1600 x 250 pixels.");
+                }
+            }
+            
+            // Remove cover antigo se existir
+            if (!empty($evento->cover) && file_exists(WRITEPATH . 'uploads/eventos/' . $evento->cover)) {
+                unlink(WRITEPATH . 'uploads/eventos/' . $evento->cover);
+            }
+            
+            $coverFile->store('eventos');
+            $post['cover'] = $coverFile->getName();
+        }
+
         $evento->fill($post);
 
         if ($evento->hasChanged() === false) {
@@ -251,6 +343,17 @@ class Eventos extends BaseController
         $cep = $this->request->getGet('cep');
 
         return $this->response->setJSON($this->consultaViaCep($cep));
+    }
+
+    /**
+     * Exibe imagem do evento (avatar ou cover)
+     * Arquivos em writable/uploads/eventos/
+     */
+    public function imagem($imagem = null)
+    {
+        if ($imagem != null) {
+            $this->exibeArquivo('eventos', $imagem);
+        }
     }
 
     /*--------------------------------Método privados-------------------------*/

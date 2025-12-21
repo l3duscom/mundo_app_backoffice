@@ -48,7 +48,7 @@
         </div>
 
 
-        <?php echo form_open('eventos/atualizar', ['id' => 'form']) ?>
+        <?php echo form_open_multipart('eventos/atualizar', ['id' => 'form']) ?>
         <input type="hidden" name="id" value="<?php echo $evento->id; ?>">
         <?php echo $this->include('Eventos/_form'); ?>
         <div class="form-group mb-2">

@@ -113,6 +113,29 @@
                             </div>
                         </div>
 
+                        <h5 class="card-title mt-4">Imagens do Evento</h5>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong><i class="bx bx-user-circle me-1"></i>Avatar</strong></p>
+                                <?php if (!empty($evento->avatar)): ?>
+                                    <img src="<?= site_url('eventos/imagem/' . $evento->avatar) ?>" 
+                                         class="img-thumbnail" style="max-height: 200px;">
+                                <?php else: ?>
+                                    <p class="text-muted">Nenhum avatar cadastrado</p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong><i class="bx bx-image me-1"></i>Capa (Cover)</strong></p>
+                                <?php if (!empty($evento->cover)): ?>
+                                    <img src="<?= site_url('eventos/imagem/' . $evento->cover) ?>" 
+                                         class="img-thumbnail" style="max-width: 100%;">
+                                <?php else: ?>
+                                    <p class="text-muted">Nenhuma capa cadastrada</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
                         <h5 class="card-title mt-4">Datas</h5>
                         <hr>
                         <div class="row">
