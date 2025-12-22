@@ -132,6 +132,7 @@ class Filters extends BaseConfig
             ],
             'except' => [
                 'api/*', // Exclui todas as rotas da API do filtro de login web
+                'eventos/imagem/*', // Imagens de eventos são públicas
             ],
         ],
         'visitante' => [

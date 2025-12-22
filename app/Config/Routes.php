@@ -422,6 +422,7 @@ $routes->group('codigo-bonus', function ($routes) {
     $routes->post('cadastrar', 'CodigoBonus::cadastrar');
     $routes->get('editar/(:num)', 'CodigoBonus::editar/$1');
     $routes->post('atualizar', 'CodigoBonus::atualizar');
+    $routes->post('atualizar-massa', 'CodigoBonus::atualizarMassa');
     $routes->get('excluir/(:num)', 'CodigoBonus::excluir/$1');
     $routes->get('recupera', 'CodigoBonus::recuperaCodigos');
     $routes->post('importar', 'CodigoBonus::importar');
