@@ -413,6 +413,22 @@ $routes->group('refounds', function ($routes) {
 $routes->get('pedidos/meus-refounds', 'Pedidos::meusRefounds');
 $routes->get('pedidos/meus-refounds/(:num)', 'Pedidos::meuRefoundDetalhe/$1');
 
+// ========================================
+// ROTAS DE CÓDIGOS BONUS
+// ========================================
+$routes->group('codigo-bonus', function ($routes) {
+    $routes->get('/', 'CodigoBonus::index');
+    $routes->get('novo', 'CodigoBonus::novo');
+    $routes->post('cadastrar', 'CodigoBonus::cadastrar');
+    $routes->get('editar/(:num)', 'CodigoBonus::editar/$1');
+    $routes->post('atualizar', 'CodigoBonus::atualizar');
+    $routes->get('excluir/(:num)', 'CodigoBonus::excluir/$1');
+    $routes->get('recupera', 'CodigoBonus::recuperaCodigos');
+    $routes->post('importar', 'CodigoBonus::importar');
+    $routes->get('liberar-expirados', 'CodigoBonus::liberarExpirados');
+    $routes->get('migrar-cinemark', 'CodigoBonus::migrarCinemarkEvento');
+});
+
 
 /*
  * --------------------------------------------------------------------

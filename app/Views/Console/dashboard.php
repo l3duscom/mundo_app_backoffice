@@ -583,16 +583,16 @@
                                                         </div>
                                                         <hr class="mt-2">
                                                         <div class="col-lg-12">
-                                                            <?php if ($i->cinemark != null) : ?>
+                                                            <?php 
+                                                            $bonusModel = new \App\Models\BonusModel();
+                                                            $bonus_cinemark = $bonusModel->getCinemarkPorIngresso($i->id);
+                                                            ?>
+                                                            <?php if ($bonus_cinemark != null) : ?>
                                                                 <strong style="color: #ffcc00">Seu ingresso CINEMARK já está disponível!</strong><br>
-                                                                Como usar o Cinemark Voucher:<br>
-                                                                1 - Atualize ou baixe o APP Cinemark no Google Play ou APP Store.<br>
-                                                                2 - Faça seu login, selecione o cinema, filme de sua preferência.<br>
-                                                                3 - Selecione o horário da sessão e os assentos;<br>
-                                                                4 - Selecione o tipo de ingresso como Voucher e quantidade de ingressos que irá utilizar;<br>
-                                                                5 - Após isso, digite o código <strong style="font-size: 16px; color: #ffcc00"> <?= $i->cinemark ?></strong> do voucher que irá utilizar.<br>
-                                                                6 - Apresente seu voucher online no celular diretamente na entrada da sala do cinema.<br>
-                                                                <strong>Validade de 20 dias</strong>
+                                                                <small class="text-muted">Como usar o Cinemark Voucher:</small><br>
+                                                                <?= nl2br(esc($bonus_cinemark->instrucoes)) ?><br>
+                                                                - Após isso, digite o código <strong style="font-size: 16px; color: #ffcc00"><?= esc($bonus_cinemark->codigo) ?></strong> do voucher que irá utilizar.<br>
+                                                                <span class="badge bg-success mt-2" style="font-size: 13px;"><i class="bi bi-check-circle-fill me-1"></i>Validade de 20 dias</span>
                                                                 <hr class="mt-2">
                                                             <?php endif ?>
                                                             <?php if ($i->frete == 1) : ?>
@@ -720,16 +720,16 @@
                             </div>
                                                 <hr class="mt-2">
                                                 <div class="col-lg-12">
-                                                    <?php if ($i->cinemark != null) : ?>
+                                                    <?php 
+                                                    $bonusModel = new \App\Models\BonusModel();
+                                                    $bonus_cinemark = $bonusModel->getCinemarkPorIngresso($i->id);
+                                                    ?>
+                                                    <?php if ($bonus_cinemark != null) : ?>
                                                         <strong style="color: #ffcc00">Seu ingresso CINEMARK já está disponível!</strong><br>
-                                                        Como usar o Cinemark Voucher:<br>
-                                                        1 - Atualize ou baixe o APP Cinemark no Google Play ou APP Store.<br>
-                                                        2 - Faça seu login, selecione o cinema, filme de sua preferência.<br>
-                                                        3 - Selecione o horário da sessão e os assentos;<br>
-                                                        4 - Selecione o tipo de ingresso como Voucher e quantidade de ingressos que irá utilizar;<br>
-                                                        5 - Após isso, digite o código <strong style="font-size: 16px; color: #ffcc00"> <?= $i->cinemark ?></strong> do voucher que irá utilizar.<br>
-                                                        6 - Apresente seu voucher online no celular diretamente na entrada da sala do cinema.<br>
-                                                        <strong>Validade de 20 dias</strong>
+                                                        <small class="text-muted">Como usar o Cinemark Voucher:</small><br>
+                                                        <?= nl2br(esc($bonus_cinemark->instrucoes)) ?><br>
+                                                        - Após isso, digite o código <strong style="font-size: 16px; color: #ffcc00"><?= esc($bonus_cinemark->codigo) ?></strong> do voucher que irá utilizar.<br>
+                                                        <span class="badge bg-success mt-2" style="font-size: 13px;"><i class="bi bi-check-circle-fill me-1"></i>Validade de 20 dias</span>
                                                         <hr class="mt-2">
                                                     <?php endif ?>
                                                     <?php if ($i->frete == 1) : ?>

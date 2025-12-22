@@ -31,6 +31,8 @@ class Ingressos extends BaseController
 	private $credencialModel;
 	private $eventolModel;
 	private $resendService;
+	private $bonusModel;
+	private $codigoBonusModel;
 
 
 	public function __construct()
@@ -44,6 +46,8 @@ class Ingressos extends BaseController
 		$this->credencialModel = new \App\Models\CredencialModel();
 		$this->eventoModel = new \App\Models\EventoModel();
 		$this->resendService = new ResendService();
+		$this->bonusModel = new \App\Models\BonusModel();
+		$this->codigoBonusModel = new \App\Models\CodigoBonusModel();
 	}
 
 	public function index()
@@ -141,20 +145,83 @@ class Ingressos extends BaseController
 		// Envio o hash do token do form
 		$retorno['token'] = csrf_hash();
 
-
-
-
 		// Recupero o post da requisição
 		$post = $this->request->getPost();
 
+		$codigoInformado = trim($post['cinemark']);
+
+		// ========================================
+		// VALIDAÇÃO: Verificar se código existe na tabela codigo_bonus
+		// ========================================
+		$codigoBonus = $this->codigoBonusModel->where('codigo', $codigoInformado)->first();
+
+		if (!$codigoBonus) {
+			$retorno['erro'] = 'Código não encontrado. Verifique se o código foi cadastrado corretamente no sistema.';
+			return $this->response->setJSON($retorno);
+		}
+
+		// Verificar se já existe um bonus para este ingresso (para permitir atualização)
+		$bonusExistente = $this->bonusModel
+			->where('ingresso_id', $post['ingresso_id'])
+			->where('tipo_bonus', 'cinemark')
+			->first();
+
+		// Se o código já foi usado E não é o mesmo que já está vinculado a este ingresso
+		if ($codigoBonus->usado == 1) {
+			// Se está atualizando para o mesmo código que já tinha, permitir
+			if ($bonusExistente && $bonusExistente->codigo === $codigoInformado) {
+				// OK - é o mesmo código, pode continuar
+			} else {
+				$retorno['erro'] = 'Este código já foi utilizado em outro ingresso. Por favor, informe um código disponível.';
+				return $this->response->setJSON($retorno);
+			}
+		}
+
 		$credencial = $this->ingressoModel->find($post['ingresso_id']);
 
-		$credencial->fill($post);
+		// Instruções padrão do Cinemark
+		$instrucoes = "1 - Atualize ou baixe o APP Cinemark no Google Play ou APP Store.\n" .
+			"2 - Faça seu login, selecione o cinema, filme de sua preferência.\n" .
+			"3 - Selecione o horário da sessão e os assentos;\n" .
+			"4 - Selecione o tipo de ingresso como Voucher e quantidade de ingressos que irá utilizar;\n" .
+			"5 - Apresente seu voucher online no celular diretamente na entrada da sala do cinema.";
 
+		$bonusData = [
+			'ingresso_id' => $post['ingresso_id'],
+			'user_id' => $credencial->user_id,
+			'tipo_bonus' => 'cinemark',
+			'codigo' => $codigoInformado,
+			'instrucoes' => $instrucoes,
+		];
 
+		// Se já existe, atualiza; senão, insere
+		if ($bonusExistente) {
+			// Se está trocando de código, liberar o código antigo
+			if ($bonusExistente->codigo !== $codigoInformado) {
+				$codigoAntigo = $this->codigoBonusModel->where('codigo', $bonusExistente->codigo)->first();
+				if ($codigoAntigo) {
+					$this->codigoBonusModel->update($codigoAntigo->id, ['usado' => 0, 'bonus_id' => null]);
+				}
+			}
+			$resultado = $this->bonusModel->update($bonusExistente->id, $bonusData);
+			$bonusId = $bonusExistente->id;
+			$mensagem = 'Cinemark atualizado com sucesso!';
+		} else {
+			$resultado = $this->bonusModel->insert($bonusData);
+			$bonusId = $this->bonusModel->getInsertID();
+			$mensagem = 'Cinemark vinculado com sucesso!';
+		}
 
-		if ($this->ingressoModel->save($credencial)) {
-			session()->setFlashdata('sucesso', 'Credencial vinculada com sucesso!');
+		if ($resultado) {
+			// ========================================
+			// MARCAR CÓDIGO COMO USADO na tabela codigo_bonus
+			// ========================================
+			$this->codigoBonusModel->update($codigoBonus->id, [
+				'usado' => 1,
+				'bonus_id' => $bonusId
+			]);
+
+			session()->setFlashdata('sucesso', $mensagem);
 
 			$atributos = [
 				'clientes.id',
@@ -169,15 +236,9 @@ class Ingressos extends BaseController
 				->where('usuario_id', $credencial->user_id)
 				->first();
 
-
-
-
-
 			$this->enviaEmailCinemark($cliente);
 
 			$retorno['id'] = $post['pedido_id'];
-
-
 
 			return $this->response->setJSON($retorno);
 		}
@@ -552,28 +613,22 @@ class Ingressos extends BaseController
 
 	public function cinemark($id)
 	{
-
-
-
-
-		//$pedidos = $this->pedidosModel->recuperaPedidosPorPedido($pedido_id);
 		$ingresso = $this->ingressoModel->recuperaIngresso($id);
-
-
 		$credencial = $this->ingressoModel->where('id', $id)->first();
 
-		//dd($endereco);
+		// Buscar bonus cinemark existente para este ingresso
+		$bonus_cinemark = $this->bonusModel
+			->where('ingresso_id', $id)
+			->where('tipo_bonus', 'cinemark')
+			->first();
+
 		$data = [
 			'titulo' => 'Vincular credencial',
 			'credencial' => $credencial,
 			'id' => $id,
-			'pedido' => $ingresso->pedido_id
-
-
+			'pedido' => $ingresso->pedido_id,
+			'bonus_cinemark' => $bonus_cinemark,
 		];
-
-
-
 
 		return view('Ingressos/cinemark', $data);
 	}

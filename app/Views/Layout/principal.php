@@ -405,6 +405,13 @@
                             <div class="menu-title">Modelos de Contrato</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('/codigo-bonus'); ?>">
+                            <div class="parent-icon"><i class="bx bx-barcode"></i>
+                            </div>
+                            <div class="menu-title">Códigos Bonus</div>
+                        </a>
+                    </li>
                 <?php endif; ?>
 
                 <!-- Tab links 

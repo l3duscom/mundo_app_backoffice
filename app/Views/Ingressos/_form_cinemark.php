@@ -4,7 +4,7 @@
 
     <div class="form-group col-md-6">
         <label class="form-control-label">Código do ingresso</label>
-        <input type="text" name="cinemark" autofocus class="form-control " value="<?php if ($credencial) echo esc($credencial->cinemark); ?>">
+        <input type="text" name="cinemark" autofocus class="form-control " value="<?php if (isset($bonus_cinemark) && $bonus_cinemark) echo esc($bonus_cinemark->codigo); ?>">
     </div>
 
 

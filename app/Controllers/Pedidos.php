@@ -21,6 +21,7 @@ class Pedidos extends BaseController
 	private $eventoModel;
 	private $resendService;
 	private $dadosEnvioModel;
+	private $bonusModel;
 
 
 
@@ -36,6 +37,7 @@ class Pedidos extends BaseController
 		$this->eventoModel = new \App\Models\EventoModel();
 		$this->resendService = new ResendService();
 		$this->dadosEnvioModel = new \App\Models\DadosEnvioModel();
+		$this->bonusModel = new \App\Models\BonusModel();
 	}
 
 	public function index()
@@ -440,6 +442,17 @@ class Pedidos extends BaseController
 			$telefone_limpo = $this->limparTelefone($pedido->telefone);
 			$whatsapp_link = $telefone_limpo ? "https://wa.me/55" . $telefone_limpo : $pedido->telefone;
 			
+			// Buscar bônus cinemark para este pedido (via tabela bonus)
+			$bonus_info = '';
+			$bonus_cinemark = $this->bonusModel->where('user_id', $pedido->user_id)
+				->where('tipo_bonus', 'cinemark')
+				->first();
+			if ($bonus_cinemark) {
+				$bonus_info = '<span class="badge bg-success">Entregue</span>';
+			} else {
+				$bonus_info = '<span class="badge bg-warning">Aguardando</span>';
+			}
+			
 			$data[] = [
 
 				'cod_pedido' => anchor("pedidos/ingressos/" . $pedido->id, esc($pedido->cod_pedido), 'title="Exibir usuário ' . esc($pedido->cod_pedido) . ' "'),
@@ -447,7 +460,7 @@ class Pedidos extends BaseController
 				'email' => esc($pedido->email),
 				'telefone' => $telefone_limpo ? anchor($whatsapp_link, esc($pedido->telefone), 'target="_blank" title="Abrir WhatsApp"') : esc($pedido->telefone),
 				'status' => esc($pedido->status),
-				'cinemark' => esc($pedido->cinemark),
+				'bonus' => $bonus_info,
 				'frete' => $pedido->frete,
 				'status_entrega' => esc($pedido->status_entrega),
 				'rastreio' => esc($pedido->rastreio),
@@ -477,6 +490,9 @@ class Pedidos extends BaseController
 			$telefone_limpo = $this->limparTelefone($pedido->telefone);
 			$whatsapp_link = $telefone_limpo ? "https://wa.me/55" . $telefone_limpo : $pedido->telefone;
 			
+			// Bonus já foi entregue nesta listagem
+			$bonus_info = '<span class="badge bg-success">Entregue</span>';
+			
 			$data[] = [
 
 				'cod_pedido' => anchor("pedidos/ingressos/" . $pedido->id, esc($pedido->cod_pedido), 'title="Exibir usuário ' . esc($pedido->cod_pedido) . ' "'),
@@ -484,7 +500,7 @@ class Pedidos extends BaseController
 				'email' => esc($pedido->email),
 				'telefone' => $telefone_limpo ? anchor($whatsapp_link, esc($pedido->telefone), 'target="_blank" title="Abrir WhatsApp"') : esc($pedido->telefone),
 				'status' => esc($pedido->status),
-				'cinemark' => esc($pedido->cinemark),
+				'bonus' => $bonus_info,
 				'frete' => $pedido->frete,
 				'status_entrega' => esc($pedido->status_entrega),
 				'rastreio' => esc($pedido->rastreio),
@@ -718,6 +734,9 @@ class Pedidos extends BaseController
 			$ultimoAcessoPorIngresso[$ingresso->id] = !empty($acessos) ? $acessos[0] : null;
 		}
 
+		// Buscar bônus do usuário indexados por ingresso_id
+		$bonus_por_ingresso = $this->bonusModel->getBonusPorUsuarioIndexado($pedido->user_id);
+
 		$data = [
 			'titulo' => 'Ingressos do pedido' . esc($pedido->cod_pedido),
 			'todos' => $todos,
@@ -728,6 +747,7 @@ class Pedidos extends BaseController
 			'credenciais' => $credenciais,
 			'acessosPorIngresso' => $acessosPorIngresso,
 			'ultimoAcessoPorIngresso' => $ultimoAcessoPorIngresso,
+			'bonus_por_ingresso' => $bonus_por_ingresso,
 		];
 
 
