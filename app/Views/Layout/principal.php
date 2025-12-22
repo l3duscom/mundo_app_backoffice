@@ -345,6 +345,12 @@
                                 <div class="menu-title">Espaços</div>
                             </a>
                         </li>
+                        <li>
+                            <a href="<?php echo site_url('/tickets?event_id=' . evento_selecionado()); ?>">
+                                <div class="parent-icon"><i class="bx bx-ticket"></i></div>
+                                <div class="menu-title">Ingressos</div>
+                            </a>
+                        </li>
                     <?php endif; ?>
                     <hr>
                     <li class="menu-label">RELATÓRIOS</li>

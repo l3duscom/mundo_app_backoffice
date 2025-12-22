@@ -17,6 +17,7 @@ class TicketModel extends Model
         'codigo',
         'tipo',
         'categoria',
+        'dia',
         'quantidade',
         'preco',
         'valor_unitario',

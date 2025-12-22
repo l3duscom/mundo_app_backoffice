@@ -384,6 +384,19 @@ $routes->group('api/ingressos', ['filter' => 'secureApi'], function ($routes) {
 
 
 // ========================================
+// Rotas para Tickets (Ingressos do Evento)
+// ========================================
+$routes->group('tickets', function ($routes) {
+    $routes->get('/', 'Tickets::index');
+    $routes->get('recuperaTickets', 'Tickets::recuperaTickets');
+    $routes->post('salvar', 'Tickets::salvar');
+    $routes->post('salvarLote', 'Tickets::salvarLote');
+    $routes->post('atualizarLote', 'Tickets::atualizarLote');
+    $routes->post('alterarStatus', 'Tickets::alterarStatus');
+    $routes->post('excluir', 'Tickets::excluir');
+});
+
+// ========================================
 // ROTAS DE REFUNDS/REEMBOLSOS (ADMIN)
 // ========================================
 $routes->group('refounds', function ($routes) {
