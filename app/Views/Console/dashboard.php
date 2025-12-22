@@ -592,7 +592,7 @@
                                                                 4 - Selecione o tipo de ingresso como Voucher e quantidade de ingressos que irá utilizar;<br>
                                                                 5 - Após isso, digite o código <strong style="font-size: 16px; color: #ffcc00"> <?= $i->cinemark ?></strong> do voucher que irá utilizar.<br>
                                                                 6 - Apresente seu voucher online no celular diretamente na entrada da sala do cinema.<br>
-                                                                <strong>Validade de 2 meses</strong>
+                                                                <strong>Validade de 20 dias</strong>
                                                                 <hr class="mt-2">
                                                             <?php endif ?>
                                                             <?php if ($i->frete == 1) : ?>
@@ -729,7 +729,7 @@
                                                         4 - Selecione o tipo de ingresso como Voucher e quantidade de ingressos que irá utilizar;<br>
                                                         5 - Após isso, digite o código <strong style="font-size: 16px; color: #ffcc00"> <?= $i->cinemark ?></strong> do voucher que irá utilizar.<br>
                                                         6 - Apresente seu voucher online no celular diretamente na entrada da sala do cinema.<br>
-                                                        <strong>Validade de 2 meses</strong>
+                                                        <strong>Validade de 20 dias</strong>
                                                         <hr class="mt-2">
                                                     <?php endif ?>
                                                     <?php if ($i->frete == 1) : ?>
