@@ -31,6 +31,11 @@ class LoginFilter implements FilterInterface
 			return null; // Permite passar sem verificar login web
 		}
 
+		// Permite acesso público a imagens de eventos
+		if (strpos($uri, 'eventos/imagem/') !== false) {
+			return null;
+		}
+
 		$autenticacao = service('autenticacao');
 
 		if ($autenticacao->estaLogado() === false)
