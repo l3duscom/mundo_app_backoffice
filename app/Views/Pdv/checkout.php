@@ -460,6 +460,11 @@ $('#formCheckout').on('submit', function(e) {
         data: formData,
         dataType: 'json',
         success: function(response) {
+            // Atualiza token CSRF
+            if (response.token) {
+                csrfToken = response.token;
+            }
+            
             if (response.erro) {
                 alert(response.erro);
                 return;

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\AsaasService;
+use App\Services\ResendService;
 
 class Pdv extends BaseController
 {
@@ -15,6 +16,7 @@ class Pdv extends BaseController
     private $clienteModel;
     private $transactionModel;
     private $asaasService;
+    private $resendService;
 
     public function __construct()
     {
@@ -26,6 +28,7 @@ class Pdv extends BaseController
         $this->clienteModel = new \App\Models\ClienteModel();
         $this->transactionModel = new \App\Models\TransactionModel();
         $this->asaasService = new AsaasService();
+        $this->resendService = new ResendService();
     }
 
     /**
@@ -270,25 +273,26 @@ class Pdv extends BaseController
             $total += $taxaEntrega;
         }
 
-        // Busca ou cria usuário
-        $clienteId = $this->buscarOuCriarCliente($nome, $email, $cpf, $telefone);
+        // Busca ou cria cliente
+        $cliente = $this->buscarOuCriarCliente($nome, $email, $cpf, $telefone);
+        $userId = $cliente->usuario_id;
+
+        // Gera código do pedido
+        $codigoPedido = $this->pedidoModel->geraCodigoPedido();
 
         // Cria o pedido
+        $frete = $entrega === 'casa' ? 1 : 0;
         $pedido = [
-            'user_id' => $clienteId,
-            'event_id' => $event_id,
-            'codigo' => 'PDV' . strtoupper(random_string('alnum', 8)),
-            'status' => 'pendente',
-            'subtotal' => $total - $taxaEntrega,
-            'taxa_entrega' => $taxaEntrega,
+            'evento_id' => $event_id,
+            'user_id' => $userId,
+            'codigo' => $codigoPedido,
             'total' => $total,
-            'forma_pagamento' => $formaPagamento,
-            'entrega' => $entrega,
-            'origem' => 'pdv',
-            'vendedor_id' => $usuario->id,
+            'frete' => $frete,
+            'forma_pagamento' => strtoupper($formaPagamento),
+            'status' => 'PENDING',
         ];
 
-        $this->pedidoModel->protect(false)->insert($pedido);
+        $this->pedidoModel->skipValidation(true)->protect(false)->insert($pedido);
         $pedidoId = $this->pedidoModel->getInsertID();
 
         // Cria os ingressos
@@ -296,13 +300,16 @@ class Pdv extends BaseController
             for ($i = 0; $i < $item['quantidade']; $i++) {
                 $ingresso = [
                     'pedido_id' => $pedidoId,
-                    'user_id' => $clienteId,
-                    'ticket_id' => $item['ticket_id'],
-                    'codigo' => strtoupper(random_string('alnum', 10)),
-                    'status' => 'pendente',
+                    'user_id' => $userId,
+                    'nome' => $item['nome'],
+                    'quantidade' => 1,
+                    'valor_unitario' => $item['preco'],
                     'valor' => $item['total'],
+                    'tipo' => $item['categoria'] ?? 'comum',
+                    'ticket_id' => $item['ticket_id'],
+                    'codigo' => $userId . $this->ingressoModel->geraCodigoIngresso(),
                 ];
-                $this->ingressoModel->protect(false)->insert($ingresso);
+                $this->ingressoModel->skipValidation(true)->protect(false)->insert($ingresso);
 
                 // Atualiza estoque
                 $this->ticketModel
@@ -320,6 +327,7 @@ class Pdv extends BaseController
             if (isset($cobrancaPix['erro'])) {
                 return $this->response->setJSON([
                     'erro' => $cobrancaPix['erro'],
+                    'token' => csrf_hash(),
                 ]);
             }
 
@@ -328,6 +336,7 @@ class Pdv extends BaseController
                 'pedido_id' => $pedidoId,
                 'forma_pagamento' => 'pix',
                 'pix' => $cobrancaPix,
+                'token' => csrf_hash(),
             ]);
         }
 
@@ -337,6 +346,7 @@ class Pdv extends BaseController
             'pedido_id' => $pedidoId,
             'forma_pagamento' => $formaPagamento,
             'aguardando_confirmacao' => true,
+            'token' => csrf_hash(),
         ]);
     }
 
@@ -448,37 +458,63 @@ class Pdv extends BaseController
     }
 
     /**
-     * Busca ou cria cliente
+     * Busca ou cria cliente seguindo o mesmo fluxo do Checkout
      */
-    private function buscarOuCriarCliente(string $nome, string $email, string $cpf, string $telefone): int
+    private function buscarOuCriarCliente(string $nome, string $email, string $cpf, string $telefone): object
     {
-        $cliente = $this->usuarioModel->where('email', $email)->first();
+        // Busca cliente existente
+        $cliente = $this->clienteModel
+            ->withDeleted(true)
+            ->where('email', $email)
+            ->orderBy('id', 'DESC')
+            ->first();
 
         if ($cliente) {
-            return $cliente->id;
+            return $cliente;
         }
 
-        // Cria novo usuário
+        // Cria novo cliente
         $novoCliente = [
             'nome' => $nome,
             'email' => $email,
-            'cpf' => $cpf,
-            'telefone' => $telefone,
-            'password' => random_string('alnum', 8),
+            'cpf' => preg_replace('/[^0-9]/', '', $cpf),
+            'telefone' => preg_replace('/[^0-9]/', '', $telefone),
+        ];
+
+        $this->clienteModel->skipValidation(true)->protect(false)->insert($novoCliente);
+        $clienteId = $this->clienteModel->getInsertID();
+
+        // Cria usuário para o cliente
+        $pass = $this->usuarioModel->geraCodigoUsuario();
+        $usuario = [
+            'nome' => $nome,
+            'email' => $email,
+            'password' => $pass,
             'ativo' => true,
         ];
 
-        $this->usuarioModel->protect(false)->insert($novoCliente);
-        $clienteId = $this->usuarioModel->getInsertID();
+        $this->usuarioModel->skipValidation(true)->protect(false)->insert($usuario);
+        $userId = $this->usuarioModel->getInsertID();
 
         // Adiciona ao grupo cliente
         $grupoUsuarioModel = new \App\Models\GrupoUsuarioModel();
         $grupoUsuarioModel->protect(false)->insert([
             'grupo_id' => 2,
-            'usuario_id' => $clienteId,
+            'usuario_id' => $userId,
         ]);
 
-        return $clienteId;
+        // Atualiza cliente com o ID do usuário
+        $this->clienteModel
+            ->protect(false)
+            ->where('id', $clienteId)
+            ->set('usuario_id', $userId)
+            ->update();
+
+        // Envia email de acesso
+        $clienteObj = $this->clienteModel->find($clienteId);
+        $this->enviarEmailNovoCliente($clienteObj, $pass);
+
+        return $clienteObj;
     }
 
     /**
@@ -601,6 +637,45 @@ class Pdv extends BaseController
      */
     private function enviarEmailConfirmacao(int $pedidoId): void
     {
-        // TODO: Implementar envio de email
+        $pedido = $this->pedidoModel->find($pedidoId);
+        if (!$pedido) return;
+
+        $cliente = $this->usuarioModel->find($pedido->user_id);
+        $evento = $this->eventoModel->find($pedido->evento_id);
+
+        if (!$cliente || !$evento) return;
+
+        $data = [
+            'cliente' => $cliente,
+            'evento' => $evento,
+            'pedido' => $pedido,
+        ];
+
+        $mensagem = view('Pedidos/email_pedido', $data);
+
+        $this->resendService->enviarEmail(
+            $cliente->email,
+            'Pedido realizado com sucesso!',
+            $mensagem
+        );
+    }
+
+    /**
+     * Envia email para novo cliente com dados de acesso
+     */
+    private function enviarEmailNovoCliente(object $cliente, string $senha): void
+    {
+        $data = [
+            'cliente' => $cliente,
+            'senha' => $senha,
+        ];
+
+        $mensagem = view('Clientes/email_dados_acesso', $data);
+
+        $this->resendService->enviarEmail(
+            $cliente->email,
+            'Seja bem-vindo(a) ao MundoDream!',
+            $mensagem
+        );
     }
 }
