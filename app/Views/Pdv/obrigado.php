@@ -221,7 +221,7 @@
             <!-- Botão WhatsApp -->
             <?php 
             $telefone = preg_replace('/[^0-9]/', '', $cliente->telefone ?? '');
-            $mensagem = urlencode("Olá {$cliente->nome}! 🎉\n\nSua compra foi confirmada!\n\n📋 *Pedido:* {$pedido->codigo}\n🎪 *Evento:* {$evento->nome}\n💰 *Valor:* R$ " . number_format($pedido->total ?? 0, 2, ',', '.') . "\n\nAcesse seu ingresso em: " . site_url('console/dashboard') . "\n\nNos vemos no evento! 🚀");
+            $mensagem = urlencode("Olá {$cliente->nome}! 🎉\n\nSua compra foi confirmada!\n\n📋 *Pedido:* {$pedido->codigo}\n🎪 *Evento:* {$evento->nome}\n💰 *Valor:* R$ " . number_format($pedido->total ?? 0, 2, ',', '.') . "\n\nAcesse seu ingresso em: https://mundodream.com.br/console/dashboard\n\nNos vemos no evento! 🚀");
             ?>
             <a href="https://wa.me/55<?= $telefone ?>?text=<?= $mensagem ?>" target="_blank" class="btn-whatsapp">
                 <i class="bi bi-whatsapp"></i>

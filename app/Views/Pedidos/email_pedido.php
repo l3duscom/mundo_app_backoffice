@@ -13,7 +13,7 @@
     <hr>
 </p>
 <hr>
-<p><strong>Acesse:</strong><a href="<?php echo site_url("console/dashboard"); ?>"> sua área de membros</a> com o email <?= $cliente->email ?> para ter acesso ao seu pedido!</p>
+<p><strong>Acesse:</strong><a href="https://mundodream.com.br/console/dashboard"> sua área de membros</a> com o email <?= $cliente->email ?> para ter acesso ao seu pedido!</p>
 <hr>
 <h3>Detalhes do evento:</h3>
 <p>

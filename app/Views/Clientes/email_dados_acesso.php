@@ -2,7 +2,7 @@
 <p>Sua conta no Mundo Dream foi criada com sucesso e você já pode adquirir seus ingressos para o Dreamfest e desfrutar de tudo o que temos a te oferecer!
 </p>
 <p>Seja muito bem vindo(a), seus dados de acesso são:</p>
-<p><a href="<?= site_url("/"); ?>" target="_blank"> Acessar meus ingressos</a>
+<p><a href="https://mundodream.com.br" target="_blank"> Acessar meus ingressos</a>
 </p>
 <p>E-mail de acesso: <?php echo esc($cliente->email); ?></p>
 <p>Senha proviória: <?php echo esc($newuser); ?></p>

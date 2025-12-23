@@ -285,6 +285,7 @@ class Pdv extends BaseController
         $pedido = [
             'evento_id' => $event_id,
             'user_id' => $userId,
+            'pdv_id' => $usuario->id,  // ID do vendedor PDV
             'codigo' => $codigoPedido,
             'total' => $total,
             'frete' => $frete,
