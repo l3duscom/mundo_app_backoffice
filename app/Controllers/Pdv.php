@@ -436,8 +436,12 @@ class Pdv extends BaseController
             return $this->response->setJSON(['erro' => 'Pedido não encontrado']);
         }
 
+        // Status que indicam pagamento confirmado
+        $statusPago = ['RECEIVED', 'RECEIVED_IN_CASH', 'CONFIRMED', 'pago'];
+        $isPago = in_array(strtoupper($pedido->status), array_map('strtoupper', $statusPago));
+
         return $this->response->setJSON([
-            'pago' => $pedido->status === 'pago',
+            'pago' => $isPago,
             'status' => $pedido->status,
             'token' => csrf_hash(),
         ]);
