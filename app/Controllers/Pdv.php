@@ -405,7 +405,7 @@ class Pdv extends BaseController
         }
 
         $cliente = $this->usuarioModel->find($pedido->user_id);
-        $evento = $this->eventoModel->find($pedido->event_id);
+        $evento = $this->eventoModel->find($pedido->evento_id);
         $ingressos = $this->ingressoModel->where('pedido_id', $pedidoId)->findAll();
 
         $data = [
