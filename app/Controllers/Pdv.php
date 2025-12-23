@@ -362,14 +362,13 @@ class Pdv extends BaseController
 
         $pedidoId = $this->request->getPost('pedido_id');
 
-        $this->pedidoModel
-            ->where('id', $pedidoId)
-            ->set('status', 'pago')
-            ->set('data_pagamento', date('Y-m-d H:i:s'))
-            ->update();
+        // Atualiza pedido - igual ao processarVenda
+        $this->pedidoModel->protect(false)->update($pedidoId, [
+            'status' => 'pago'
+        ]);
 
-        // Atualiza ingressos
-        $this->ingressoModel
+        // Atualiza ingressos - igual ao processarVenda
+        $this->ingressoModel->protect(false)
             ->where('pedido_id', $pedidoId)
             ->set('status', 'ativo')
             ->update();
@@ -642,27 +641,31 @@ class Pdv extends BaseController
      */
     private function enviarEmailConfirmacao(int $pedidoId): void
     {
-        $pedido = $this->pedidoModel->find($pedidoId);
-        if (!$pedido) return;
+        try {
+            $pedido = $this->pedidoModel->find($pedidoId);
+            if (!$pedido) return;
 
-        $cliente = $this->usuarioModel->find($pedido->user_id);
-        $evento = $this->eventoModel->find($pedido->evento_id);
+            $cliente = $this->usuarioModel->find($pedido->user_id);
+            $evento = $this->eventoModel->find($pedido->evento_id);
 
-        if (!$cliente || !$evento) return;
+            if (!$cliente || !$evento) return;
 
-        $data = [
-            'cliente' => $cliente,
-            'evento' => $evento,
-            'pedido' => $pedido,
-        ];
+            $data = [
+                'cliente' => $cliente,
+                'evento' => $evento,
+                'pedido' => $pedido,
+            ];
 
-        $mensagem = view('Pedidos/email_pedido', $data);
+            $mensagem = view('Pedidos/email_pedido', $data);
 
-        $this->resendService->enviarEmail(
-            $cliente->email,
-            'Pedido realizado com sucesso!',
-            $mensagem
-        );
+            $this->resendService->enviarEmail(
+                $cliente->email,
+                'Pedido realizado com sucesso!',
+                $mensagem
+            );
+        } catch (\Exception $e) {
+            log_message('error', 'Erro ao enviar email de confirmação PDV: ' . $e->getMessage());
+        }
     }
 
     /**

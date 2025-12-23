@@ -11,6 +11,7 @@ class PedidoModel extends Model
     protected $useSoftDeletes = true;
     protected $allowedFields = [
         'user_id',
+        'pdv_id',
         'evento_id',
         'endereco_id',
         'codigo',
@@ -18,6 +19,7 @@ class PedidoModel extends Model
         'total',
         'valor_liquido',
         'data_vencimento',
+        'data_pagamento',
         'status',
         'status_entrega',
         'forma_pagamento',
