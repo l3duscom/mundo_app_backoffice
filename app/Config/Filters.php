@@ -129,6 +129,7 @@ class Filters extends BaseConfig
                 'contratodocumentos/excluirmodelo(/*)?',
                 'expositores(/*)?',
                 'relatorios(/*)?',
+                'pdv(/*)?',
             ],
             'except' => [
                 'api/*', // Exclui todas as rotas da API do filtro de login web

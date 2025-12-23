@@ -187,9 +187,16 @@ class Expositores extends BaseController
 
         $expositor = $this->buscaExpositorOu404($id);
 
+        // Verifica se o expositor está no grupo PDV (grupo_id = 9)
+        $isPdv = false;
+        if (!empty($expositor->usuario_id)) {
+            $isPdv = $this->grupoUsuarioModel->usuarioEstaNoGrupo(9, $expositor->usuario_id) !== null;
+        }
+
         $data = [
             'titulo' => "Detalhando o expositor " . esc($expositor->getNomeExibicao()),
             'expositor' => $expositor,
+            'is_pdv' => $isPdv,
         ];
 
         return view('Expositores/exibir', $data);
@@ -361,6 +368,59 @@ class Expositores extends BaseController
         $cep = $this->request->getGet('cep');
 
         return $this->response->setJSON($this->consultaViaCep($cep));
+    }
+
+    /**
+     * Adiciona ou remove o expositor do grupo PDV (grupo_id = 9)
+     *
+     * @param int $id ID do expositor
+     * @return \CodeIgniter\HTTP\RedirectResponse
+     */
+    public function togglePdv(int $id = null)
+    {
+        if (!$this->usuarioLogado()->temPermissaoPara('editar-expositores')) {
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+        }
+
+        $expositor = $this->buscaExpositorOu404($id);
+
+        // Verifica se o expositor tem usuário vinculado
+        if (empty($expositor->usuario_id)) {
+            return redirect()->back()->with('atencao', 'Este expositor não possui usuário de acesso vinculado. Crie o usuário primeiro.');
+        }
+
+        $grupoPdv = 9;
+        $usuarioId = (int) $expositor->usuario_id;
+
+        // Verifica se já está no grupo PDV
+        $jaEhPdv = $this->grupoUsuarioModel
+            ->where('usuario_id', $usuarioId)
+            ->where('grupo_id', $grupoPdv)
+            ->first();
+
+        if ($jaEhPdv) {
+            // Remove do grupo PDV
+            $this->grupoUsuarioModel
+                ->where('usuario_id', $usuarioId)
+                ->where('grupo_id', $grupoPdv)
+                ->delete();
+
+            return redirect()->back()->with('sucesso', 'Expositor removido do grupo PDV com sucesso!');
+        } else {
+            // Adiciona ao grupo PDV
+            $db = \Config\Database::connect();
+            $builder = $db->table('grupos_usuarios');
+            $builder->insert([
+                'grupo_id'   => $grupoPdv,
+                'usuario_id' => $usuarioId,
+            ]);
+
+            if ($db->affectedRows() > 0) {
+                return redirect()->back()->with('sucesso', 'Expositor adicionado ao grupo PDV com sucesso!');
+            } else {
+                return redirect()->back()->with('erro', 'Erro ao adicionar expositor ao grupo PDV.');
+            }
+        }
     }
 
     /**

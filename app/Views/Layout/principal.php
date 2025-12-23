@@ -464,6 +464,15 @@
                         </div>
                     </a>
                 </li>
+                <?php if (usuario_logado()->is_pdv) : ?>
+                <li>
+                    <a href="<?php echo site_url('pdv/dashboard'); ?>" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border-radius: 8px; margin: 5px;">
+                        <div class="parent-icon"><i class="bx bx-store text-white"></i>
+                        </div>
+                        <div class="menu-title text-white fw-bold">Acessar PDV</div>
+                    </a>
+                </li>
+                <?php endif; ?>
                 <?php endif; ?>
 
                 <?php if (!usuario_logado()->is_admin) : ?>

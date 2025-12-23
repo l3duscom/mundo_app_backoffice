@@ -264,6 +264,24 @@ class Autenticacao
         return true;
     }
 
+    private function isPdv(): bool
+    {
+        // Definimos o ID do grupo PDV.
+        // Não esqueçam que esse ID jamais poderá ser alterado.
+        $grupoPdv = 9;
+
+        // Verificamos se o usuário logado está no grupo de PDV
+        $pdv = $this->grupoUsuarioModel->usuarioEstaNoGrupo($grupoPdv, session()->get('usuario_id'));
+
+        // Verificamos se foi encontrado o registro
+        if ($pdv == null) {
+            return false;
+        }
+
+        // Retornamos true, ou seja, o usuário logado faz parte do grupo PDV
+        return true;
+    }
+
 
 
 
@@ -288,6 +306,7 @@ class Autenticacao
             $usuario->is_membro = false;
             $usuario->is_parceiro = false;
             $usuario->is_influencer = false;
+            $usuario->is_pdv = false;
         } else {
 
             // Nesse ponto, podemos verificar se o usuário logado é um cliente, visto que ele não é admin
@@ -295,6 +314,7 @@ class Autenticacao
             $usuario->is_membro = $this->isMembro();
             $usuario->is_parceiro = $this->isParceiro();
             $usuario->is_influencer = $this->isInfluencer();
+            $usuario->is_pdv = $this->isPdv();
         }
 
 

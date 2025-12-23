@@ -73,6 +73,34 @@
 
 <div class="container-fluid py-4">
     
+    <?php if (usuario_logado()->is_pdv) : ?>
+    <!-- Banner PDV -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="<?= site_url('pdv/dashboard') ?>" class="text-decoration-none">
+                <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border-radius: 16px; cursor: pointer; transition: transform 0.3s ease;">
+                    <div class="card-body py-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-white bg-opacity-25 p-4 me-4">
+                                    <i class="bi bi-shop text-white" style="font-size: 2.5rem;"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-white mb-1 fw-bold">Você tem acesso ao PDV!</h3>
+                                    <p class="text-white-50 mb-0">Clique aqui para acessar o Ponto de Venda e realizar vendas</p>
+                                </div>
+                            </div>
+                            <div class="d-none d-md-block">
+                                <i class="bi bi-arrow-right-circle-fill text-white" style="font-size: 3rem; opacity: 0.7;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Header de boas-vindas -->
     <div class="row mb-4">
         <div class="col-12">

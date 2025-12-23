@@ -52,6 +52,8 @@ class Login extends BaseController
 
 		//session()->setFlashdata('sucesso', "Olá $usuarioLogado->nome, que bom que está de volta!");
 
+		// PDV também é expositor, então segue o fluxo normal de cliente
+		// O aviso de PDV será mostrado na dashboard_parceiro
 
 		if ($usuarioLogado->is_cliente) {
 

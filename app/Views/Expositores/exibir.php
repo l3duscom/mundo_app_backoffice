@@ -84,6 +84,14 @@
                 <?php else : ?>
                     <li><a class="dropdown-item" href="<?php echo site_url("expositores/reenviarEmail/$expositor->id"); ?>">
                         <i class="bx bx-envelope me-2"></i>Reenviar email de boas-vindas</a></li>
+                    
+                    <?php if (isset($is_pdv) && $is_pdv) : ?>
+                        <li><a class="dropdown-item text-warning" href="<?php echo site_url("expositores/togglePdv/$expositor->id"); ?>">
+                            <i class="bx bx-store-alt me-2"></i>Remover do PDV</a></li>
+                    <?php else : ?>
+                        <li><a class="dropdown-item text-success" href="<?php echo site_url("expositores/togglePdv/$expositor->id"); ?>">
+                            <i class="bx bx-store me-2"></i>Adicionar ao PDV</a></li>
+                    <?php endif; ?>
                 <?php endif; ?>
                 
                 <li><hr class="dropdown-divider"></li>
