@@ -10,6 +10,7 @@
         border: 2px solid transparent;
         border-radius: 16px;
         overflow: hidden;
+        background: #fff;
     }
     
     .evento-card:hover {
@@ -18,10 +19,30 @@
         border-color: #28a745;
     }
     
+    .evento-card .card-img-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        min-height: 150px;
+        background: #f5f5f5;
+    }
+    
     .evento-card .card-img-top {
+        max-width: 200px;
+        max-height: 150px;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+    
+    .evento-card .card-img-placeholder {
+        width: 100%;
         height: 150px;
-        object-fit: cover;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
     }
     
     .evento-date {
@@ -88,13 +109,15 @@
                 <div class="col-md-6 col-lg-4 col-xl-3">
                     <a href="<?= site_url("pdv/vender/{$evento->id}") ?>" class="text-decoration-none">
                         <div class="card evento-card h-100">
-                            <?php if (!empty($evento->avatar)) : ?>
-                                <img src="https://backoffice.mundodream.com.br/eventos/imagem/<?= $evento->avatar ?>" class="card-img-top" alt="<?= esc($evento->nome) ?>">
-                            <?php else : ?>
-                                <div class="card-img-top d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-calendar-event text-white" style="font-size: 4rem; opacity: 0.5;"></i>
-                                </div>
-                            <?php endif; ?>
+                            <div class="card-img-wrapper">
+                                <?php if (!empty($evento->avatar)) : ?>
+                                    <img src="https://backoffice.mundodream.com.br/eventos/imagem/<?= $evento->avatar ?>" class="card-img-top" alt="<?= esc($evento->nome) ?>">
+                                <?php else : ?>
+                                    <div class="card-img-placeholder">
+                                        <i class="bi bi-calendar-event text-white" style="font-size: 4rem; opacity: 0.5;"></i>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                             <div class="card-body">
                                 <h5 class="card-title text-dark mb-2"><?= esc($evento->nome) ?></h5>
                                 <p class="text-muted small mb-3">
