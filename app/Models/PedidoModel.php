@@ -18,6 +18,8 @@ class PedidoModel extends Model
         'rastreio',
         'total',
         'valor_liquido',
+        'cupom_id',
+        'valor_desconto',
         'data_vencimento',
         'data_pagamento',
         'status',
