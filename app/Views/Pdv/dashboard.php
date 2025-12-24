@@ -58,12 +58,15 @@
     
     <!-- Header PDV -->
     <div class="pdv-header">
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div>
                 <h2><i class="bi bi-shop me-3"></i>Ponto de Venda</h2>
                 <p class="mt-2 mb-0">Selecione o evento para iniciar uma venda</p>
             </div>
-            <div>
+            <div class="d-flex gap-2">
+                <a href="<?= site_url('pdv/minhasVendas') ?>" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-receipt me-2"></i>Minhas Vendas
+                </a>
                 <a href="<?= site_url('console/dashboard') ?>" class="btn btn-light btn-lg">
                     <i class="bi bi-arrow-left me-2"></i>Voltar
                 </a>

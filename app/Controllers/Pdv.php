@@ -60,6 +60,56 @@ class Pdv extends BaseController
     }
 
     /**
+     * Lista vendas do PDV por evento
+     */
+    public function minhasVendas()
+    {
+        $usuario = $this->usuarioLogado();
+
+        if (!$usuario->is_pdv) {
+            return redirect()->to(site_url('home'));
+        }
+
+        // Busca todas as vendas do operador PDV
+        $vendas = $this->pedidoModel
+            ->select('pedidos.*, clientes.nome as cliente_nome, clientes.email as cliente_email, eventos.nome as evento_nome')
+            ->join('clientes', 'clientes.usuario_id = pedidos.user_id', 'left')
+            ->join('eventos', 'eventos.id = pedidos.evento_id', 'left')
+            ->where('pedidos.pdv_id', $usuario->id)
+            ->orderBy('pedidos.created_at', 'DESC')
+            ->findAll();
+
+        // Calcula totalizadores
+        $vendasConfirmadas = 0;
+        $vendasPendentes = 0;
+        $totalConfirmado = 0;
+        $totalPendente = 0;
+
+        foreach ($vendas as $venda) {
+            $statusUpper = strtoupper($venda->status);
+            if (in_array($statusUpper, ['PAGO', 'CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH'])) {
+                $vendasConfirmadas++;
+                $totalConfirmado += $venda->total;
+            } elseif (in_array($statusUpper, ['PENDING', 'OVERDUE'])) {
+                $vendasPendentes++;
+                $totalPendente += $venda->total;
+            }
+        }
+
+        $data = [
+            'titulo' => 'Minhas Vendas - PDV',
+            'usuario' => $usuario,
+            'vendas' => $vendas,
+            'vendasConfirmadas' => $vendasConfirmadas,
+            'vendasPendentes' => $vendasPendentes,
+            'totalConfirmado' => $totalConfirmado,
+            'totalPendente' => $totalPendente,
+        ];
+
+        return view('Pdv/minhas_vendas', $data);
+    }
+
+    /**
      * Tela de vendas - Seleção de ingressos
      */
     public function vender(int $event_id = null)
