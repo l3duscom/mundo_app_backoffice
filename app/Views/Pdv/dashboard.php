@@ -89,7 +89,7 @@
                     <a href="<?= site_url("pdv/vender/{$evento->id}") ?>" class="text-decoration-none">
                         <div class="card evento-card h-100">
                             <?php if (!empty($evento->avatar)) : ?>
-                                <img src="<?= site_url("eventos/imagem/{$evento->avatar}") ?>" class="card-img-top" alt="<?= esc($evento->nome) ?>">
+                                <img src="https://backoffice.mundodream.com.br/eventos/imagem/<?= $evento->avatar ?>" class="card-img-top" alt="<?= esc($evento->nome) ?>">
                             <?php else : ?>
                                 <div class="card-img-top d-flex align-items-center justify-content-center">
                                     <i class="bi bi-calendar-event text-white" style="font-size: 4rem; opacity: 0.5;"></i>
