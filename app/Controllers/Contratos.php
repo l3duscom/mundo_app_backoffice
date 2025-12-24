@@ -23,6 +23,15 @@ class Contratos extends BaseController
 
     public function index()
     {
+        // Redireciona para Kanban como visão padrão
+        return redirect()->to(site_url('contratos/kanban'));
+    }
+
+    /**
+     * Exibe a visão de listagem (tabela) dos contratos
+     */
+    public function lista()
+    {
         if (!$this->usuarioLogado()->temPermissaoPara('listar-contratos')) {
             return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
         }
@@ -34,6 +43,119 @@ class Contratos extends BaseController
 
         return view('Contratos/index', $data);
     }
+
+    /**
+     * Exibe a visão Kanban dos contratos
+     */
+    public function kanban()
+    {
+        if (!$this->usuarioLogado()->temPermissaoPara('listar-contratos')) {
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+        }
+
+        $data = [
+            'titulo' => 'Kanban de Contratos',
+            'eventos' => $this->eventoModel->orderBy('id', 'DESC')->findAll(),
+        ];
+
+        return view('Contratos/kanban', $data);
+    }
+
+    /**
+     * Recupera contratos agrupados por situação para o Kanban (AJAX)
+     */
+    public function recuperaContratosKanban()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $eventId = $this->request->getGet('event_id');
+
+        $builder = $this->contratoModel
+            ->select('contratos.*, expositores.nome as expositor_nome, expositores.nome_fantasia as expositor_fantasia')
+            ->join('expositores', 'expositores.id = contratos.expositor_id', 'left')
+            ->where('contratos.deleted_at', null);
+
+        if (!empty($eventId)) {
+            $builder->where('contratos.event_id', $eventId);
+        }
+
+        $contratos = $builder->orderBy('contratos.id', 'DESC')->findAll();
+
+        // Carregar modelos auxiliares
+        $documentoModel = new \App\Models\ContratoDocumentoModel();
+        $credenciamentoModel = new \App\Models\CredenciamentoModel();
+
+        // Agrupar por situação
+        $situacoes = [
+            'proposta' => [],
+            'proposta_aceita' => [],
+            'contrato_assinado' => [],
+            'aguardando_credenciamento' => [],
+            'pagamento_aberto' => [],
+            'pagamento_andamento' => [],
+            'aguardando_contrato' => [],
+            'pagamento_confirmado' => [],
+            'finalizado' => [],
+            'cancelado' => [],
+            'banido' => [],
+        ];
+
+        $hoje = date('Y-m-d');
+
+        foreach ($contratos as $contrato) {
+            $nomeExpositor = !empty($contrato->expositor_fantasia) 
+                ? $contrato->expositor_fantasia 
+                : $contrato->expositor_nome;
+
+            // Busca documento ativo do contrato
+            $documento = $documentoModel->buscaDocumentoAtivo($contrato->id);
+            $documentoBadge = '';
+            if ($documento) {
+                $documentoBadge = $documento->getBadgeStatus();
+            }
+
+            // Busca credenciamento do contrato
+            $credenciamento = $credenciamentoModel->buscaPorContrato($contrato->id);
+            $credBadge = '';
+            if ($credenciamento) {
+                $credBadge = $credenciamento->getBadgeStatus();
+            }
+
+            // Verifica parcela vencida
+            $parcelaBadge = '';
+            $parcelaVencida = $this->parcelaModel
+                ->where('contrato_id', $contrato->id)
+                ->whereIn('status_local', ['pendente', 'vencido'])
+                ->where('data_vencimento <', $hoje)
+                ->orderBy('data_vencimento', 'ASC')
+                ->first();
+            
+            if ($parcelaVencida) {
+                $parcelaBadge = '<span class="badge bg-danger"><i class="bx bx-time-five me-1"></i>Vencido</span>';
+            }
+
+            $situacao = $contrato->situacao ?? 'proposta';
+            
+            if (isset($situacoes[$situacao])) {
+                $situacoes[$situacao][] = [
+                    'id' => $contrato->id,
+                    'codigo' => $contrato->codigo,
+                    'expositor' => esc($nomeExpositor ?? 'N/A'),
+                    'valor_final' => $contrato->getValorFinalFormatado(),
+                    'situacao' => $situacao,
+                    'documento_badge' => $documentoBadge,
+                    'credenciamento_badge' => $credBadge,
+                    'parcela_badge' => $parcelaBadge,
+                ];
+            }
+        }
+
+        return $this->response->setJSON($situacoes);
+    }
+
+
 
     public function recuperaContratos()
     {

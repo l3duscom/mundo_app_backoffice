@@ -44,7 +44,16 @@
             </ol>
         </nav>
     </div>
-    <div class="ms-auto">
+    <div class="ms-auto d-flex gap-2">
+        <!-- View Toggle -->
+        <div class="btn-group" role="group">
+            <a href="<?php echo site_url('contratos/lista'); ?>" class="btn btn-outline-secondary active" title="Visão Tabela">
+                <i class="bx bx-list-ul"></i>
+            </a>
+            <a href="<?php echo site_url('contratos/kanban'); ?>" class="btn btn-outline-secondary" title="Visão Kanban">
+                <i class="bx bx-columns"></i>
+            </a>
+        </div>
         <a href="<?php echo site_url('contratos/criar'); ?>" class="btn btn-primary">
             <i class="bx bx-plus me-2"></i>Novo Contrato
         </a>
