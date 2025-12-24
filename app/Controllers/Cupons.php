@@ -303,6 +303,147 @@ class Cupons extends BaseController
     }
 
     /**
+     * Formulário de geração em massa
+     */
+    public function gerarEmMassa()
+    {
+        if (!$this->usuarioLogado()->temPermissaoPara('criar-cupons')) {
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+        }
+
+        // Pega evento da URL ou do contexto
+        $eventoId = $this->request->getGet('evento_id') ?? evento_selecionado();
+
+        $data = [
+            'titulo' => 'Gerar Cupons em Massa',
+            'eventos' => $this->eventoModel->orderBy('id', 'DESC')->findAll(),
+            'evento_id' => $eventoId,
+        ];
+
+        return view('Cupons/gerar_massa', $data);
+    }
+
+    /**
+     * Cadastrar cupons em massa (AJAX)
+     */
+    public function cadastrarEmMassa()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $post = $this->request->getPost();
+
+        // Validações básicas
+        $quantidade = (int) ($post['quantidade'] ?? 0);
+        if ($quantidade < 1 || $quantidade > 1000) {
+            $retorno['erro'] = 'Quantidade deve ser entre 1 e 1000.';
+            return $this->response->setJSON($retorno);
+        }
+
+        if (empty($post['nome'])) {
+            $retorno['erro'] = 'Nome base é obrigatório.';
+            return $this->response->setJSON($retorno);
+        }
+
+        if (empty($post['desconto']) || $post['desconto'] <= 0) {
+            $retorno['erro'] = 'Valor do desconto é obrigatório.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $prefixo = strtoupper(trim($post['prefixo'] ?? ''));
+        $cuponsGerados = [];
+        $codigosExistentes = [];
+
+        // Buscar todos os códigos existentes para evitar colisão
+        $existentes = $this->cupomModel->select('codigo')->findAll();
+        foreach ($existentes as $e) {
+            $codigosExistentes[$e->codigo] = true;
+        }
+
+        // Gerar cupons
+        for ($i = 0; $i < $quantidade; $i++) {
+            // Gerar código único
+            $tentativas = 0;
+            do {
+                $codigo = $this->gerarCodigoAleatorio(8);
+                if ($prefixo) {
+                    $codigo = $prefixo . '-' . $codigo;
+                }
+                $tentativas++;
+            } while (isset($codigosExistentes[$codigo]) && $tentativas < 100);
+
+            if ($tentativas >= 100) {
+                $retorno['erro'] = 'Não foi possível gerar códigos únicos suficientes. Tente novamente.';
+                return $this->response->setJSON($retorno);
+            }
+
+            // Marcar como usado
+            $codigosExistentes[$codigo] = true;
+
+            // Preparar dados do cupom
+            $dadosCupom = [
+                'evento_id' => $post['evento_id'] ?: null,
+                'nome' => $post['nome'],
+                'codigo' => $codigo,
+                'desconto' => $post['desconto'],
+                'tipo' => $post['tipo'] ?? 'percentual',
+                'valor_minimo' => $post['valor_minimo'] ?? 0,
+                'quantidade_total' => 1, // Uso único por padrão
+                'quantidade_usada' => 0,
+                'uso_por_usuario' => 1,
+                'data_inicio' => $post['data_inicio'] ?: null,
+                'data_fim' => $post['data_fim'] ?: null,
+                'ativo' => 1,
+            ];
+
+            $cupom = new \App\Entities\Cupom($dadosCupom);
+
+            if (!$this->cupomModel->protect(false)->insert($cupom)) {
+                $retorno['erro'] = 'Erro ao cadastrar cupom: ' . $codigo;
+                $retorno['erros_model'] = $this->cupomModel->errors();
+                return $this->response->setJSON($retorno);
+            }
+
+            // Adicionar à lista para retorno
+            $cuponsGerados[] = [
+                'id' => $this->cupomModel->getInsertID(),
+                'codigo' => $codigo,
+                'nome' => $post['nome'],
+                'desconto' => $post['desconto'],
+                'tipo' => $post['tipo'] ?? 'percentual',
+                'valor_minimo' => $post['valor_minimo'] ?? 0,
+                'data_inicio' => $post['data_inicio'] ?: null,
+                'data_fim' => $post['data_fim'] ?: null,
+            ];
+        }
+
+        $retorno['sucesso'] = $quantidade . ' cupons gerados com sucesso!';
+        $retorno['quantidade'] = $quantidade;
+        $retorno['cupons'] = $cuponsGerados;
+
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Gera código aleatório de 8 caracteres (A-Z, 0-9)
+     */
+    private function gerarCodigoAleatorio(int $tamanho = 8): string
+    {
+        $caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $codigo = '';
+        $max = strlen($caracteres) - 1;
+        
+        for ($i = 0; $i < $tamanho; $i++) {
+            $codigo .= $caracteres[random_int(0, $max)];
+        }
+        
+        return $codigo;
+    }
+
+    /**
      * Monta botões de ação
      */
     private function montaBotoes($cupom): string

@@ -26,6 +26,9 @@
         </nav>
     </div>
     <div class="ms-auto">
+        <a href="<?php echo site_url('cupons/gerarEmMassa'); ?>" class="btn btn-success me-2">
+            <i class="bx bx-duplicate me-2"></i>Gerar em Massa
+        </a>
         <a href="<?php echo site_url('cupons/criar'); ?>" class="btn btn-primary">
             <i class="bx bx-plus me-2"></i>Novo Cupom
         </a>
