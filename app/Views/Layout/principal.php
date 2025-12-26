@@ -387,6 +387,13 @@
                             <div class="menu-title">Comparar Eventos</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('relatorios/clientesRecorrentes'); ?>">
+                            <div class="parent-icon"><i class="bx bx-group"></i>
+                            </div>
+                            <div class="menu-title">Clientes Recorrentes</div>
+                        </a>
+                    </li>
                     <hr>
                     <li class="menu-label">CONFIGURAÇÕES</li>
                     <li>

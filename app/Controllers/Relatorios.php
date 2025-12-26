@@ -17,8 +17,8 @@ class Relatorios extends BaseController
     public function __construct()
     {
         $this->itemModel = new \App\Models\ItemModel();
-        $this->ordemItemModel = new \App\Models\OrdemItemModel();
-        $this->ordemModel = new \App\Models\OrdemModel();
+        // $this->ordemItemModel = new \App\Models\OrdemItemModel(); // Comentado: Model não existe
+        //$this->ordemModel = new \App\Models\OrdemModel();
         $this->contaPagarModel = new \App\Models\ContaPagarModel();
         $this->usuarioModel = new \App\Models\UsuarioModel();
     }
@@ -726,5 +726,150 @@ class Relatorios extends BaseController
         unset($dompdf);
 
         exit();
+    }
+
+    //---------------Clientes Recorrentes-------//
+
+    /**
+     * Relatório de ranking de clientes que compraram ingressos para múltiplos eventos
+     */
+    public function clientesRecorrentes()
+    {
+        if (!$this->usuarioLogado()->is_admin) {
+            return redirect()->back()->with('atencao', 'Você não tem permissão para acessar esse menu.');
+        }
+
+        $db = \Config\Database::connect();
+        
+        // Query para encontrar clientes que participaram de mais de 1 evento
+        $query = $db->query("
+            SELECT 
+                u.id as user_id,
+                u.nome,
+                u.email,
+                COUNT(DISTINCT p.evento_id) as total_eventos,
+                SUM(i.quantidade) as total_ingressos,
+                SUM(i.valor) as valor_total,
+                MIN(p.created_at) as primeira_compra,
+                MAX(p.created_at) as ultima_compra,
+                GROUP_CONCAT(DISTINCT e.nome ORDER BY e.id DESC SEPARATOR ', ') as eventos_participados
+            FROM ingressos i
+            INNER JOIN pedidos p ON p.id = i.pedido_id
+            INNER JOIN usuarios u ON u.id = i.user_id
+            INNER JOIN eventos e ON e.id = p.evento_id
+            WHERE p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+            AND i.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
+            AND i.deleted_at IS NULL
+            AND p.deleted_at IS NULL
+            GROUP BY u.id, u.nome, u.email
+            HAVING total_eventos > 1
+            ORDER BY total_eventos DESC, valor_total DESC
+        ");
+        
+        $clientes = $query->getResultArray();
+        
+        // Estatísticas gerais
+        $estatisticas = [
+            'total_clientes_recorrentes' => count($clientes),
+            'media_eventos_por_cliente' => 0,
+            'valor_total_recorrentes' => 0,
+            'total_ingressos_recorrentes' => 0,
+            'max_eventos' => 0,
+        ];
+        
+        if (!empty($clientes)) {
+            $totalEventos = 0;
+            $valorTotal = 0;
+            $totalIngressos = 0;
+            $maxEventos = 0;
+            
+            foreach ($clientes as $cliente) {
+                $totalEventos += $cliente['total_eventos'];
+                $valorTotal += $cliente['valor_total'];
+                $totalIngressos += $cliente['total_ingressos'];
+                if ($cliente['total_eventos'] > $maxEventos) {
+                    $maxEventos = $cliente['total_eventos'];
+                }
+            }
+            
+            $estatisticas['media_eventos_por_cliente'] = round($totalEventos / count($clientes), 1);
+            $estatisticas['valor_total_recorrentes'] = $valorTotal;
+            $estatisticas['total_ingressos_recorrentes'] = $totalIngressos;
+            $estatisticas['max_eventos'] = $maxEventos;
+        }
+        
+        // Distribuição por quantidade de eventos
+        $distribuicao = [];
+        foreach ($clientes as $cliente) {
+            $qtd = $cliente['total_eventos'];
+            if (!isset($distribuicao[$qtd])) {
+                $distribuicao[$qtd] = 0;
+            }
+            $distribuicao[$qtd]++;
+        }
+        krsort($distribuicao);
+
+        $data = [
+            'titulo' => 'Ranking de Clientes Recorrentes',
+            'clientes' => $clientes,
+            'estatisticas' => $estatisticas,
+            'distribuicao' => $distribuicao,
+        ];
+
+        return view('Relatorios/Vendas/clientes_recorrentes', $data);
+    }
+
+    /**
+     * AJAX - Recupera dados do relatório de clientes recorrentes
+     */
+    public function recuperaClientesRecorrentes()
+    {
+        $db = \Config\Database::connect();
+        
+        $query = $db->query("
+            SELECT 
+                u.id as user_id,
+                u.nome,
+                u.email,
+                COUNT(DISTINCT p.evento_id) as total_eventos,
+                SUM(i.quantidade) as total_ingressos,
+                SUM(i.valor) as valor_total,
+                MIN(p.created_at) as primeira_compra,
+                MAX(p.created_at) as ultima_compra
+            FROM ingressos i
+            INNER JOIN pedidos p ON p.id = i.pedido_id
+            INNER JOIN usuarios u ON u.id = i.user_id
+            INNER JOIN eventos e ON e.id = p.evento_id
+            WHERE p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+            AND i.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
+            AND i.deleted_at IS NULL
+            AND p.deleted_at IS NULL
+            GROUP BY u.id, u.nome, u.email
+            HAVING total_eventos > 1
+            ORDER BY total_eventos DESC, valor_total DESC
+        ");
+        
+        $clientes = $query->getResultArray();
+        
+        $data = [];
+        $posicao = 1;
+        
+        foreach ($clientes as $cliente) {
+            $badge = $posicao <= 3 ? '<i class="bx bx-medal text-warning"></i> ' : '';
+            
+            $data[] = [
+                'posicao' => $posicao . 'º',
+                'nome' => $badge . '<strong>' . esc($cliente['nome']) . '</strong><br><small class="text-muted">' . esc($cliente['email']) . '</small>',
+                'total_eventos' => '<span class="badge bg-primary fs-6">' . $cliente['total_eventos'] . '</span>',
+                'total_ingressos' => number_format($cliente['total_ingressos'], 0, ',', '.'),
+                'valor_total' => '<span class="text-success fw-bold">R$ ' . number_format($cliente['valor_total'], 2, ',', '.') . '</span>',
+                'primeira_compra' => date('d/m/Y', strtotime($cliente['primeira_compra'])),
+                'ultima_compra' => date('d/m/Y', strtotime($cliente['ultima_compra'])),
+            ];
+            
+            $posicao++;
+        }
+        
+        return $this->response->setJSON(['data' => $data]);
     }
 }
