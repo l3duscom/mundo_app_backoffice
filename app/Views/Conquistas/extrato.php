@@ -108,7 +108,7 @@ $(document).ready(function() {
             url: '<?php echo site_url("conquistas-admin/recuperaExtrato"); ?>',
             type: 'GET',
             data: function(d) {
-                d.event_id = eventoContexto;
+                // Não filtra por evento por padrão - mostra todos
                 d.tipo = $('#filtroTipo').val();
                 d.user_id = $('#filtroUsuario').val();
             }

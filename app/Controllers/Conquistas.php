@@ -390,7 +390,8 @@ class Conquistas extends BaseController
      */
     public function recuperaExtrato()
     {
-        $eventId = $this->request->getGet('event_id') ?? evento_selecionado();
+        // Só filtra por evento se passado explicitamente na URL
+        $eventId = $this->request->getGet('event_id');
         $tipo = $this->request->getGet('tipo');
         $userId = $this->request->getGet('user_id');
 
@@ -398,7 +399,8 @@ class Conquistas extends BaseController
             ->select('extrato_pontos.*, usuarios.nome as usuario_nome, usuarios.email as usuario_email')
             ->join('usuarios', 'usuarios.id = extrato_pontos.user_id');
 
-        if (!empty($eventId)) {
+        // Só filtra por evento se foi passado explicitamente
+        if (!empty($eventId) && $eventId !== 'todos') {
             $builder->where('extrato_pontos.event_id', $eventId);
         }
 
@@ -410,7 +412,7 @@ class Conquistas extends BaseController
             $builder->where('extrato_pontos.user_id', $userId);
         }
 
-        $extrato = $builder->orderBy('extrato_pontos.created_at', 'DESC')
+        $extrato = $builder->orderBy('extrato_pontos.id', 'DESC')
             ->limit(500)
             ->findAll();
 
