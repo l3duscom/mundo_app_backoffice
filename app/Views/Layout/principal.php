@@ -293,6 +293,13 @@
                             <div class="menu-title">Reembolsos</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('/financeiro'); ?>">
+                            <div class="parent-icon"><i class="bx bx-wallet"></i>
+                            </div>
+                            <div class="menu-title">Financeiro</div>
+                        </a>
+                    </li>
                     <hr>
                     <?php if (evento_selecionado()) : ?>
                         <li class="menu-label">EVENTO ATUAL</li>
