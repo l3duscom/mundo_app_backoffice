@@ -56,20 +56,26 @@
 
 <!-- Cards estatísticos -->
 <div class="row mb-4">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="stat-card">
             <h3 id="totalConquistas">-</h3>
             <p><i class="bx bx-trophy"></i> Conquistas Cadastradas</p>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="stat-card green">
             <h3 id="totalAtribuicoes">-</h3>
             <p><i class="bx bx-user-check"></i> Total de Atribuições</p>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="stat-card orange">
+            <h3 id="totalPontos">-</h3>
+            <p><i class="bx bx-coin-stack"></i> Total de Pontos</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
             <h3 id="mediaAtribuicoes">-</h3>
             <p><i class="bx bx-stats"></i> Média por Conquista</p>
         </div>
@@ -140,6 +146,11 @@
 $(document).ready(function() {
     var eventoContexto = $('#eventoContexto').val();
     
+    // Função para formatar números
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+    
     // Carregar dados
     $.ajax({
         url: '<?php echo site_url("conquistas-admin/dadosRanking"); ?>',
@@ -150,6 +161,7 @@ $(document).ready(function() {
             // Atualizar cards
             $('#totalConquistas').text(response.totalConquistas || 0);
             $('#totalAtribuicoes').text(response.totalAtribuicoes || 0);
+            $('#totalPontos').text(formatNumber(response.totalPontos || 0));
             
             var media = response.totalConquistas > 0 
                 ? Math.round(response.totalAtribuicoes / response.totalConquistas) 

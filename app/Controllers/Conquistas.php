@@ -313,11 +313,24 @@ class Conquistas extends BaseController
         
         $totalConquistas = $builderConquistas->countAllResults();
 
+        // Total de pontos distribuídos
+        $builderPontos = $this->usuarioConquistaModel
+            ->selectSum('pontos')
+            ->where('status', 'ATIVA');
+        
+        if (!empty($eventId)) {
+            $builderPontos->where('event_id', $eventId);
+        }
+        
+        $resultPontos = $builderPontos->first();
+        $totalPontos = (int) ($resultPontos['pontos'] ?? 0);
+
         return $this->response->setJSON([
             'topConquistas' => $topConquistas,
             'porNivel' => $porNivel,
             'totalAtribuicoes' => $totalAtribuicoes,
             'totalConquistas' => $totalConquistas,
+            'totalPontos' => $totalPontos,
         ]);
     }
 
