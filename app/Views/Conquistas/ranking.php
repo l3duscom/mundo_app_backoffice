@@ -186,15 +186,11 @@ $(document).ready(function() {
     function renderChartTop(data) {
         var labels = data.map(function(item) { return item.nome_conquista; });
         var values = data.map(function(item) { return parseInt(item.total); });
-        var pontos = data.map(function(item) { return parseInt(item.total_pontos || 0); });
         
         var options = {
             series: [{
                 name: 'Usuários',
                 data: values
-            }, {
-                name: 'Pontos',
-                data: pontos
             }],
             chart: {
                 type: 'bar',
@@ -204,30 +200,18 @@ $(document).ready(function() {
             plotOptions: {
                 bar: {
                     borderRadius: 4,
-                    horizontal: true
+                    horizontal: true,
+                    distributed: true
                 }
             },
-            colors: ['#667eea', '#11998e'],
+            colors: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#11998e', '#38ef7d', '#FFD700', '#C0C0C0', '#CD7F32', '#B9F2FF'],
             dataLabels: {
-                enabled: true,
-                formatter: function(val) {
-                    return formatNumber(val);
-                }
+                enabled: true
             },
             xaxis: {
                 categories: labels
             },
-            legend: { 
-                show: true,
-                position: 'top'
-            },
-            tooltip: {
-                y: {
-                    formatter: function(val) {
-                        return formatNumber(val);
-                    }
-                }
-            }
+            legend: { show: false }
         };
         
         new ApexCharts(document.querySelector("#chartTop"), options).render();

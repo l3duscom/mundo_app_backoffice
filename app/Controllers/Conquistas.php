@@ -421,7 +421,7 @@ class Conquistas extends BaseController
             $pontosPrefix = $item->pontos >= 0 ? '+' : '';
 
             $data[] = [
-                'data' => date('d/m/Y H:i', strtotime($item->created_at)),
+                'data' => '<span data-order="' . strtotime($item->created_at) . '">' . date('d/m/Y H:i', strtotime($item->created_at)) . '</span>',
                 'usuario' => '<strong>' . esc($item->usuario_nome) . '</strong><br><small class="text-muted">' . esc($item->usuario_email) . '</small>',
                 'tipo' => $this->getBadgeTipo($item->tipo),
                 'pontos' => '<span class="' . $pontosClass . ' fw-bold">' . $pontosPrefix . number_format($item->pontos, 0, ',', '.') . '</span>',
