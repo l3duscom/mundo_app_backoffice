@@ -390,8 +390,7 @@ class Conquistas extends BaseController
      */
     public function recuperaExtrato()
     {
-        // Só filtra por evento se passado explicitamente na URL
-        $eventId = $this->request->getGet('event_id');
+        $eventId = $this->request->getGet('event_id') ?? evento_selecionado();
         $tipo = $this->request->getGet('tipo');
         $userId = $this->request->getGet('user_id');
 
@@ -399,8 +398,7 @@ class Conquistas extends BaseController
             ->select('extrato_pontos.*, usuarios.nome as usuario_nome, usuarios.email as usuario_email')
             ->join('usuarios', 'usuarios.id = extrato_pontos.user_id');
 
-        // Só filtra por evento se foi passado explicitamente
-        if (!empty($eventId) && $eventId !== 'todos') {
+        if (!empty($eventId)) {
             $builder->where('extrato_pontos.event_id', $eventId);
         }
 
@@ -423,7 +421,8 @@ class Conquistas extends BaseController
             $pontosPrefix = $item->pontos >= 0 ? '+' : '';
 
             $data[] = [
-                'data' => '<span data-order="' . strtotime($item->created_at) . '">' . date('d/m/Y H:i', strtotime($item->created_at)) . '</span>',
+                'id' => $item->id,
+                'data' => date('d/m/Y H:i', strtotime($item->created_at)),
                 'usuario' => '<strong>' . esc($item->usuario_nome) . '</strong><br><small class="text-muted">' . esc($item->usuario_email) . '</small>',
                 'tipo' => $this->getBadgeTipo($item->tipo),
                 'pontos' => '<span class="' . $pontosClass . ' fw-bold">' . $pontosPrefix . number_format($item->pontos, 0, ',', '.') . '</span>',
