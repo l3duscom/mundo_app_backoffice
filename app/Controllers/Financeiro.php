@@ -103,10 +103,13 @@ class Financeiro extends BaseController
             $cor = $lancamento->tipo === 'SAIDA' ? 'text-danger' : 'text-success';
             $prefixo = $lancamento->tipo === 'SAIDA' ? '-' : '+';
             
+            // Monta link para o registro original
+            $descricaoHtml = $this->montaLinkDescricao($lancamento);
+            
             $data[] = [
                 'id' => $lancamento->id,
                 'data' => $lancamento->getDataLancamentoFormatada(),
-                'descricao' => esc($lancamento->descricao),
+                'descricao' => $descricaoHtml,
                 'tipo' => $lancamento->getBadgeTipo(),
                 'origem' => $lancamento->getBadgeOrigem(),
                 'evento' => $lancamento->evento_nome ? esc($lancamento->evento_nome) : '<span class="text-muted">-</span>',
@@ -121,21 +124,95 @@ class Financeiro extends BaseController
     }
 
     /**
+     * Monta link para o registro original
+     */
+    private function montaLinkDescricao($lancamento): string
+    {
+        $descricao = esc($lancamento->descricao);
+        
+        if (empty($lancamento->referencia_tipo) || empty($lancamento->referencia_id)) {
+            return $descricao;
+        }
+
+        $url = null;
+        $icon = '';
+        
+        switch ($lancamento->referencia_tipo) {
+            case 'pedidos':
+                // Link para o pedido
+                $url = site_url("pedidos/ingressos/{$lancamento->referencia_id}");
+                $icon = '<i class="bx bx-receipt me-1"></i>';
+                break;
+            case 'contrato_parcelas':
+                // Link para o contrato (buscar contrato_id da parcela)
+                $parcelaModel = new \App\Models\ContratoParcelaModel();
+                $parcela = $parcelaModel->find($lancamento->referencia_id);
+                if ($parcela) {
+                    $url = site_url("contratos/detalhes/{$parcela->contrato_id}");
+                    $icon = '<i class="bx bx-file me-1"></i>';
+                }
+                break;
+            case 'contas_pagar':
+                $url = site_url("contas-pagar/editar/{$lancamento->referencia_id}");
+                $icon = '<i class="bx bx-money me-1"></i>';
+                break;
+        }
+
+        if ($url) {
+            return '<a href="' . $url . '" class="text-decoration-none" title="Ver detalhes">' . $icon . $descricao . ' <i class="bx bx-link-external" style="font-size:0.8rem;"></i></a>';
+        }
+
+        return $descricao;
+    }
+
+    /**
      * Monta botões de ação
      */
     private function montaBotoes($lancamento): string
     {
         $btns = '';
         
+        // Botão de visualizar registro original
+        if (!empty($lancamento->referencia_tipo) && !empty($lancamento->referencia_id)) {
+            $url = $this->getUrlReferencia($lancamento);
+            if ($url) {
+                $btns .= '<a href="' . $url . '" class="btn btn-sm btn-outline-info" title="Ver original"><i class="bx bx-link-external"></i></a> ';
+            }
+        }
+        
         // Só permite editar/excluir lançamentos manuais
         if ($lancamento->origem === 'MANUAL') {
             $btns .= '<a href="' . site_url("financeiro/editar/{$lancamento->id}") . '" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bx bx-edit"></i></a> ';
             $btns .= '<button type="button" class="btn btn-sm btn-outline-danger" onclick="excluirLancamento(' . $lancamento->id . ')" title="Excluir"><i class="bx bx-trash"></i></button>';
-        } else {
-            $btns .= '<span class="text-muted">Automático</span>';
         }
 
-        return $btns;
+        return $btns ?: '<span class="text-muted">-</span>';
+    }
+
+    /**
+     * Retorna URL do registro de referência
+     */
+    private function getUrlReferencia($lancamento): ?string
+    {
+        if (empty($lancamento->referencia_tipo) || empty($lancamento->referencia_id)) {
+            return null;
+        }
+
+        switch ($lancamento->referencia_tipo) {
+            case 'pedidos':
+                return site_url("pedidos/ingressos/{$lancamento->referencia_id}");
+            case 'contrato_parcelas':
+                $parcelaModel = new \App\Models\ContratoParcelaModel();
+                $parcela = $parcelaModel->find($lancamento->referencia_id);
+                if ($parcela) {
+                    return site_url("contratos/detalhes/{$parcela->contrato_id}");
+                }
+                break;
+            case 'contas_pagar':
+                return site_url("contas-pagar/editar/{$lancamento->referencia_id}");
+        }
+
+        return null;
     }
 
     /**
