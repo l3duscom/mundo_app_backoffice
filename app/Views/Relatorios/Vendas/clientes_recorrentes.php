@@ -144,7 +144,15 @@
                                         <?php endif; ?>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-primary fs-6"><?php echo $cliente['total_eventos']; ?></span>
+                                        <a href="#" class="badge bg-primary fs-6 text-decoration-none" 
+                                           data-bs-toggle="popover" 
+                                           data-bs-trigger="click"
+                                           data-bs-html="true"
+                                           data-bs-placement="left"
+                                           title="Eventos participados"
+                                           data-bs-content="<?php echo esc(str_replace(', ', '<br>', $cliente['eventos_participados'])); ?>">
+                                            <?php echo $cliente['total_eventos']; ?> <i class="bx bx-search-alt-2" style="font-size:10px;"></i>
+                                        </a>
                                     </td>
                                     <td class="text-center"><?php echo number_format($cliente['total_ingressos'], 0, ',', '.'); ?></td>
                                     <td class="text-end text-success fw-bold">R$ <?php echo number_format($cliente['valor_total'], 2, ',', '.'); ?></td>
@@ -254,6 +262,24 @@ $(document).ready(function() {
             url: '<?php echo site_url("recursos/theme/plugins/datatable/js/pt-BR.json"); ?>'
         },
         pageLength: 25
+    });
+    
+    // Inicializar popovers
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl, {
+            container: 'body',
+            sanitize: false
+        });
+    });
+    
+    // Fechar popover ao clicar fora
+    document.addEventListener('click', function(e) {
+        if (!e.target.hasAttribute('data-bs-toggle')) {
+            popoverList.forEach(function(popover) {
+                popover.hide();
+            });
+        }
     });
 });
 </script>
