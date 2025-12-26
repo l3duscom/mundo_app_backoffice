@@ -13,40 +13,39 @@
         text-align: center;
         height: 100%;
     }
-    .stat-card.purple {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    .stat-card.green {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    }
-    .stat-card.orange {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
-    .stat-card.blue {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    }
-    .stat-card h3 {
-        font-size: 2.2rem;
-        font-weight: bold;
-        margin: 0;
-    }
-    .stat-card p {
-        margin: 0.5rem 0 0;
-        opacity: 0.9;
-        font-size: 0.9rem;
-    }
-    .top-3 {
-        background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
-    }
+    .stat-card.purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stat-card.green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .stat-card.orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stat-card.blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-card h3 { font-size: 2.2rem; font-weight: bold; margin: 0; }
+    .stat-card p { margin: 0.5rem 0 0; opacity: 0.9; font-size: 0.9rem; }
     .distribuicao-item {
         display: flex;
         justify-content: space-between;
         padding: 8px 12px;
         border-bottom: 1px solid #eee;
     }
-    .distribuicao-item:last-child {
-        border-bottom: none;
+    .distribuicao-item:last-child { border-bottom: none; }
+    .whatsapp-btn {
+        background: #25D366;
+        color: white;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
     }
+    .whatsapp-btn:hover { background: #128C7E; color: white; }
+    .evento-ranking-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eee;
+    }
+    .evento-ranking-item:last-child { border-bottom: none; }
 </style>
 <?php echo $this->endSection() ?>
 
@@ -106,18 +105,26 @@
                     <table id="tabelaClientes" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
-                                <th class="text-center" style="width: 60px;">#</th>
+                                <th class="text-center" style="width: 50px;">#</th>
                                 <th>Cliente</th>
+                                <th class="text-center" style="width: 50px;">WhatsApp</th>
                                 <th class="text-center">Eventos</th>
                                 <th class="text-center">Ingressos</th>
                                 <th class="text-end">Valor Total</th>
-                                <th class="text-center">Primeira Compra</th>
-                                <th class="text-center">Última Compra</th>
+                                <th class="text-center">Primeira</th>
+                                <th class="text-center">Última</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php $posicao = 1; ?>
                             <?php foreach ($clientes as $cliente): ?>
+                                <?php 
+                                // Limpar telefone para WhatsApp (só números, com código do país)
+                                $telefone = preg_replace('/[^0-9]/', '', $cliente['telefone'] ?? '');
+                                if (!empty($telefone) && strlen($telefone) >= 10 && substr($telefone, 0, 2) !== '55') {
+                                    $telefone = '55' . $telefone;
+                                }
+                                ?>
                                 <tr class="<?php echo $posicao <= 3 ? 'table-warning' : ''; ?>">
                                     <td class="text-center fw-bold"><?php echo $posicao; ?>º</td>
                                     <td>
@@ -126,6 +133,15 @@
                                         <?php endif; ?>
                                         <strong><?php echo esc($cliente['nome']); ?></strong><br>
                                         <small class="text-muted"><?php echo esc($cliente['email']); ?></small>
+                                    </td>
+                                    <td class="text-center">
+                                        <?php if (!empty($telefone)): ?>
+                                            <a href="https://wa.me/<?php echo $telefone; ?>" target="_blank" class="whatsapp-btn" title="<?php echo esc($cliente['telefone']); ?>">
+                                                <i class="bx bxl-whatsapp"></i>
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="text-muted">-</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-center">
                                         <span class="badge bg-primary fs-6"><?php echo $cliente['total_eventos']; ?></span>
@@ -144,9 +160,33 @@
         </div>
     </div>
     
-    <!-- Sidebar com distribuição -->
+    <!-- Sidebar -->
     <div class="col-lg-3">
+        <!-- Ranking de Eventos -->
         <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bx bx-calendar-star me-2"></i>Top Eventos (Recorrência)</h6>
+            </div>
+            <div class="card-body p-0">
+                <?php if (!empty($eventosRecorrentes)): ?>
+                    <?php $pos = 1; foreach ($eventosRecorrentes as $evento): ?>
+                        <div class="evento-ranking-item">
+                            <span>
+                                <?php if ($pos <= 3): ?><i class="bx bx-medal text-warning"></i><?php endif; ?>
+                                <strong><?php echo $pos; ?>º</strong> 
+                                <?php echo esc(mb_substr($evento['nome'], 0, 20)); ?><?php echo strlen($evento['nome']) > 20 ? '...' : ''; ?>
+                            </span>
+                            <span class="badge bg-success"><?php echo $evento['total_clientes_recorrentes']; ?></span>
+                        </div>
+                    <?php $pos++; endforeach; ?>
+                <?php else: ?>
+                    <div class="p-3 text-center text-muted">Nenhum dado</div>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- Distribuição -->
+        <div class="card mt-3">
             <div class="card-header">
                 <h6 class="mb-0"><i class="bx bx-pie-chart-alt me-2"></i>Distribuição por Eventos</h6>
             </div>
@@ -156,9 +196,9 @@
                         <div class="distribuicao-item">
                             <span>
                                 <span class="badge bg-primary"><?php echo $qtdEventos; ?></span> 
-                                <?php echo $qtdEventos == 1 ? 'evento' : 'eventos'; ?>
+                                eventos
                             </span>
-                            <span class="fw-bold"><?php echo $qtdClientes; ?> <?php echo $qtdClientes == 1 ? 'cliente' : 'clientes'; ?></span>
+                            <span class="fw-bold"><?php echo $qtdClientes; ?> clientes</span>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -167,6 +207,7 @@
             </div>
         </div>
         
+        <!-- Recordista -->
         <div class="card mt-3">
             <div class="card-header">
                 <h6 class="mb-0"><i class="bx bx-star me-2"></i>Recordista</h6>
@@ -179,28 +220,22 @@
                     <p class="text-muted mb-2"><?php echo esc($recordista['email']); ?></p>
                     <span class="badge bg-primary fs-5"><?php echo $recordista['total_eventos']; ?> eventos</span>
                     <p class="mt-2 mb-0 text-success fw-bold">R$ <?php echo number_format($recordista['valor_total'], 2, ',', '.'); ?></p>
+                    <?php 
+                    $telefoneRecordista = preg_replace('/[^0-9]/', '', $recordista['telefone'] ?? '');
+                    if (!empty($telefoneRecordista) && strlen($telefoneRecordista) >= 10 && substr($telefoneRecordista, 0, 2) !== '55') {
+                        $telefoneRecordista = '55' . $telefoneRecordista;
+                    }
+                    if (!empty($telefoneRecordista)): 
+                    ?>
+                        <a href="https://wa.me/<?php echo $telefoneRecordista; ?>" target="_blank" class="btn btn-success btn-sm mt-2">
+                            <i class="bx bxl-whatsapp me-1"></i>WhatsApp
+                        </a>
+                    <?php endif; ?>
                 <?php else: ?>
                     <p class="text-muted">Nenhum cliente recorrente</p>
                 <?php endif; ?>
             </div>
         </div>
-        
-        <!-- Eventos do recordista -->
-        <?php if (!empty($clientes)): ?>
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6 class="mb-0"><i class="bx bx-calendar me-2"></i>Eventos do Recordista</h6>
-            </div>
-            <div class="card-body">
-                <?php 
-                $eventos = explode(', ', $recordista['eventos_participados']);
-                foreach ($eventos as $evento): 
-                ?>
-                    <span class="badge bg-light text-dark mb-1 d-inline-block"><?php echo esc($evento); ?></span>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
     </div>
 </div>
 

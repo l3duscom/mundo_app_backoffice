@@ -747,6 +747,7 @@ class Relatorios extends BaseController
                 u.id as user_id,
                 u.nome,
                 u.email,
+                c.telefone,
                 COUNT(DISTINCT p.evento_id) as total_eventos,
                 SUM(i.quantidade) as total_ingressos,
                 SUM(i.valor) as valor_total,
@@ -756,17 +757,54 @@ class Relatorios extends BaseController
             FROM ingressos i
             INNER JOIN pedidos p ON p.id = i.pedido_id
             INNER JOIN usuarios u ON u.id = i.user_id
+            LEFT JOIN clientes c ON c.usuario_id = u.id
             INNER JOIN eventos e ON e.id = p.evento_id
             WHERE p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
             AND i.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
             AND i.deleted_at IS NULL
             AND p.deleted_at IS NULL
-            GROUP BY u.id, u.nome, u.email
+            GROUP BY u.id, u.nome, u.email, c.telefone
             HAVING total_eventos > 1
             ORDER BY total_eventos DESC, valor_total DESC
         ");
         
         $clientes = $query->getResultArray();
+        
+        // Query para ranking de eventos com mais clientes recorrentes
+        $queryEventos = $db->query("
+            SELECT 
+                e.id,
+                e.nome,
+                COUNT(DISTINCT recorrentes.user_id) as total_clientes_recorrentes
+            FROM eventos e
+            INNER JOIN (
+                SELECT DISTINCT i.user_id, p.evento_id
+                FROM ingressos i
+                INNER JOIN pedidos p ON p.id = i.pedido_id
+                WHERE p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+                AND i.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
+                AND i.deleted_at IS NULL
+                AND p.deleted_at IS NULL
+                AND i.user_id IN (
+                    SELECT user_id FROM (
+                        SELECT i2.user_id, COUNT(DISTINCT p2.evento_id) as total
+                        FROM ingressos i2
+                        INNER JOIN pedidos p2 ON p2.id = i2.pedido_id
+                        WHERE p2.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+                        AND i2.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
+                        AND i2.deleted_at IS NULL
+                        AND p2.deleted_at IS NULL
+                        GROUP BY i2.user_id
+                        HAVING total > 1
+                    ) as clientes_recorrentes
+                )
+            ) as recorrentes ON recorrentes.evento_id = e.id
+            GROUP BY e.id, e.nome
+            ORDER BY total_clientes_recorrentes DESC
+            LIMIT 10
+        ");
+        
+        $eventosRecorrentes = $queryEventos->getResultArray();
         
         // Estatísticas gerais
         $estatisticas = [
@@ -814,6 +852,7 @@ class Relatorios extends BaseController
             'clientes' => $clientes,
             'estatisticas' => $estatisticas,
             'distribuicao' => $distribuicao,
+            'eventosRecorrentes' => $eventosRecorrentes,
         ];
 
         return view('Relatorios/Vendas/clientes_recorrentes', $data);
