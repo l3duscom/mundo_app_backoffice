@@ -148,7 +148,7 @@ class Financeiro extends BaseController
                 $parcelaModel = new \App\Models\ContratoParcelaModel();
                 $parcela = $parcelaModel->find($lancamento->referencia_id);
                 if ($parcela) {
-                    $url = site_url("contratos/detalhes/{$parcela->contrato_id}");
+                    $url = site_url("contratos/exibir/{$parcela->contrato_id}");
                     $icon = '<i class="bx bx-file me-1"></i>';
                 }
                 break;
@@ -205,7 +205,7 @@ class Financeiro extends BaseController
                 $parcelaModel = new \App\Models\ContratoParcelaModel();
                 $parcela = $parcelaModel->find($lancamento->referencia_id);
                 if ($parcela) {
-                    return site_url("contratos/detalhes/{$parcela->contrato_id}");
+                    return site_url("contratos/exibir/{$parcela->contrato_id}");
                 }
                 break;
             case 'contas_pagar':
