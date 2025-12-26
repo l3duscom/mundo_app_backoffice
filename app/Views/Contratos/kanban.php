@@ -289,11 +289,11 @@ $(document).ready(function() {
     const situacoes = {
         'proposta': { nome: 'Proposta', icone: 'bx bx-file' },
         'proposta_aceita': { nome: 'Proposta Aceita', icone: 'bx bx-check' },
-        'aguardando_contrato': { nome: 'Aguard. Contrato', icone: 'bx bx-file-find' },
-        'contrato_assinado': { nome: 'Contrato Assinado', icone: 'bx bx-edit' },
         'pagamento_aberto': { nome: 'Pgto em Aberto', icone: 'bx bx-time' },
         'pagamento_andamento': { nome: 'Pgto em Andamento', icone: 'bx bx-loader' },
         'pagamento_confirmado': { nome: 'Pgto Confirmado', icone: 'bx bx-check-circle' },
+        'aguardando_contrato': { nome: 'Aguard. Contrato', icone: 'bx bx-file-find' },
+        'contrato_assinado': { nome: 'Contrato Assinado', icone: 'bx bx-edit' },
         'aguardando_credenciamento': { nome: 'Aguard. Credenc.', icone: 'bx bx-id-card' },
         'finalizado': { nome: 'Finalizado', icone: 'bx bx-check-double' },
         'cancelado': { nome: 'Cancelado', icone: 'bx bx-x-circle' },
