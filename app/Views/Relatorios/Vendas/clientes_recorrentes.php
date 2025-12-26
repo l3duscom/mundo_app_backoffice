@@ -368,6 +368,8 @@ function abrirModalConquista(userId, userName) {
     modal.show();
 }
 
+var csrfToken = '<?php echo csrf_hash(); ?>';
+
 function atribuirConquista() {
     var userId = $('#conquista_user_id').val();
     var conquistaId = $('#conquista_id').val();
@@ -383,17 +385,24 @@ function atribuirConquista() {
         pontos = $('#conquista_id option:selected').data('pontos');
     }
     
+    var postData = {
+        user_id: userId,
+        conquista_id: conquistaId,
+        pontos: pontos
+    };
+    postData['<?php echo csrf_token(); ?>'] = csrfToken;
+    
     $.ajax({
         url: '<?php echo site_url("conquistas/atribuirConquista"); ?>',
         type: 'POST',
-        data: {
-            user_id: userId,
-            conquista_id: conquistaId,
-            pontos: pontos,
-            '<?php echo csrf_token(); ?>': '<?php echo csrf_hash(); ?>'
-        },
+        data: postData,
         dataType: 'json',
         success: function(response) {
+            // Renovar token
+            if (response.token) {
+                csrfToken = response.token;
+            }
+            
             if (response.sucesso) {
                 alert(response.sucesso);
                 bootstrap.Modal.getInstance(document.getElementById('modalConquista')).hide();
