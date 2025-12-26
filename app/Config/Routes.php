@@ -430,6 +430,25 @@ $routes->group('codigo-bonus', function ($routes) {
     $routes->get('migrar-cinemark', 'CodigoBonus::migrarCinemarkEvento');
 });
 
+// ========================================
+// ROTAS DE CONQUISTAS (ADMIN)
+// ========================================
+$routes->group('conquistas-admin', function ($routes) {
+    $routes->get('/', 'Conquistas::index');
+    $routes->get('criar', 'Conquistas::criar');
+    $routes->post('cadastrar', 'Conquistas::cadastrar');
+    $routes->get('editar/(:num)', 'Conquistas::editar/$1');
+    $routes->post('atualizar', 'Conquistas::atualizar');
+    $routes->get('excluir/(:num)', 'Conquistas::excluir/$1');
+    $routes->get('recupera', 'Conquistas::recuperaConquistas');
+    $routes->get('ranking', 'Conquistas::rankingConquistas');
+    $routes->get('dadosRanking', 'Conquistas::dadosRanking');
+    $routes->get('top-usuarios/(:num)', 'Conquistas::topUsuarios/$1');
+    $routes->get('extrato', 'Conquistas::extratoPontos');
+    $routes->get('recuperaExtrato', 'Conquistas::recuperaExtrato');
+});
+
+
 
 /*
  * --------------------------------------------------------------------

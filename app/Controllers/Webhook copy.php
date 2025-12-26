@@ -6,7 +6,6 @@ use App\Models\AuditoriaModel;
 use App\Models\PedidoModel;
 use App\Models\ContratoModel;
 use App\Models\ContratoParcelaModel;
-use App\Services\PontosCompraService;
 
 class Webhook extends BaseController
 {
@@ -83,23 +82,6 @@ class Webhook extends BaseController
 
             if ($pedidoAtualizado) {
                 log_message('info', 'Pedido atualizado com sucesso: ' . $payment_id);
-                
-                // Atribui pontos se o pagamento foi confirmado
-                $statusConfirmados = ['RECEIVED', 'CONFIRMED', 'paid', 'RECEIVED_IN_CASH'];
-                if (in_array($payment_status, $statusConfirmados)) {
-                    // Busca o pedido para obter o ID
-                    $pedido = $pedidosModel->where('charge_id', $payment_id)->first();
-                    if ($pedido) {
-                        $pontosService = new PontosCompraService();
-                        $pontosResult = $pontosService->atribuirPontosDoPedido($pedido->id);
-                        
-                        if ($pontosResult['success']) {
-                            log_message('info', 'Pontos atribuídos para pedido #' . $pedido->id . ': ' . ($pontosResult['data']['pontos'] ?? 0) . ' pontos');
-                        } else {
-                            log_message('info', 'Pontos: ' . ($pontosResult['message'] ?? 'Já atribuídos ou valor zero'));
-                        }
-                    }
-                }
             }
 
             // Tenta atualizar contrato (pelo payment_id ou external_reference)

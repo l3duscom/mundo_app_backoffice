@@ -357,6 +357,12 @@
                                 <div class="menu-title">Cupons</div>
                             </a>
                         </li>
+                        <li>
+                            <a href="<?php echo site_url('/conquistas-admin?event_id=' . evento_selecionado()); ?>">
+                                <div class="parent-icon"><i class="bx bx-trophy"></i></div>
+                                <div class="menu-title">Conquistas</div>
+                            </a>
+                        </li>
                     <?php endif; ?>
                     <hr>
                     <li class="menu-label">RELATÓRIOS</li>
