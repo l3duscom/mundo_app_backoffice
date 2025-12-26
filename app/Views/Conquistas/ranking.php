@@ -121,12 +121,13 @@
                         <th>#</th>
                         <th>Conquista</th>
                         <th>Nível</th>
-                        <th>Total de Usuários</th>
+                        <th class="text-center">Usuários</th>
+                        <th class="text-end">Total de Pontos</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaBody">
                     <tr>
-                        <td colspan="4" class="text-center">
+                        <td colspan="5" class="text-center">
                             <span class="spinner-border spinner-border-sm"></span> Carregando...
                         </td>
                     </tr>
@@ -185,11 +186,15 @@ $(document).ready(function() {
     function renderChartTop(data) {
         var labels = data.map(function(item) { return item.nome_conquista; });
         var values = data.map(function(item) { return parseInt(item.total); });
+        var pontos = data.map(function(item) { return parseInt(item.total_pontos || 0); });
         
         var options = {
             series: [{
                 name: 'Usuários',
                 data: values
+            }, {
+                name: 'Pontos',
+                data: pontos
             }],
             chart: {
                 type: 'bar',
@@ -199,18 +204,30 @@ $(document).ready(function() {
             plotOptions: {
                 bar: {
                     borderRadius: 4,
-                    horizontal: true,
-                    distributed: true
+                    horizontal: true
                 }
             },
-            colors: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#11998e', '#38ef7d', '#FFD700', '#C0C0C0', '#CD7F32', '#B9F2FF'],
+            colors: ['#667eea', '#11998e'],
             dataLabels: {
-                enabled: true
+                enabled: true,
+                formatter: function(val) {
+                    return formatNumber(val);
+                }
             },
             xaxis: {
                 categories: labels
             },
-            legend: { show: false }
+            legend: { 
+                show: true,
+                position: 'top'
+            },
+            tooltip: {
+                y: {
+                    formatter: function(val) {
+                        return formatNumber(val);
+                    }
+                }
+            }
         };
         
         new ApexCharts(document.querySelector("#chartTop"), options).render();
@@ -250,12 +267,13 @@ $(document).ready(function() {
             html += '<td>' + (index + 1) + 'º</td>';
             html += '<td><strong>' + item.nome_conquista + '</strong></td>';
             html += '<td>' + getNivelBadge(item.nivel) + '</td>';
-            html += '<td><span class="badge bg-primary">' + item.total + '</span></td>';
+            html += '<td class="text-center"><span class="badge bg-primary">' + item.total + '</span></td>';
+            html += '<td class="text-end"><span class="text-success fw-bold">' + formatNumber(parseInt(item.total_pontos || 0)) + ' pts</span></td>';
             html += '</tr>';
         });
         
         if (html === '') {
-            html = '<tr><td colspan="4" class="text-center text-muted">Nenhuma conquista atribuída ainda</td></tr>';
+            html = '<tr><td colspan="5" class="text-center text-muted">Nenhuma conquista atribuída ainda</td></tr>';
         }
         
         $('#tabelaBody').html(html);

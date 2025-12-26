@@ -267,7 +267,7 @@ class Conquistas extends BaseController
 
         // Top conquistas mais atribuídas
         $builder = $this->usuarioConquistaModel
-            ->select('conquista_id, conquistas.nome_conquista, conquistas.nivel, COUNT(*) as total')
+            ->select('conquista_id, conquistas.nome_conquista, conquistas.nivel, conquistas.pontos as pontos_conquista, COUNT(*) as total, SUM(usuario_conquistas.pontos) as total_pontos')
             ->join('conquistas', 'conquistas.id = usuario_conquistas.conquista_id')
             ->where('usuario_conquistas.status', 'ATIVA')
             ->groupBy('conquista_id')
