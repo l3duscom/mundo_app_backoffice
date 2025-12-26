@@ -113,6 +113,7 @@
                                 <th class="text-end">Valor Total</th>
                                 <th class="text-center">Primeira</th>
                                 <th class="text-center">Última</th>
+                                <th class="text-center" style="width: 60px;">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -158,6 +159,13 @@
                                     <td class="text-end text-success fw-bold">R$ <?php echo number_format($cliente['valor_total'], 2, ',', '.'); ?></td>
                                     <td class="text-center"><?php echo date('d/m/Y', strtotime($cliente['primeira_compra'])); ?></td>
                                     <td class="text-center"><?php echo date('d/m/Y', strtotime($cliente['ultima_compra'])); ?></td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-warning btn-sm" 
+                                                onclick="abrirModalConquista(<?php echo $cliente['user_id']; ?>, '<?php echo esc($cliente['nome']); ?>')" 
+                                                title="Atribuir Conquista">
+                                            <i class="bx bx-trophy"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                                 <?php $posicao++; ?>
                             <?php endforeach; ?>
@@ -247,6 +255,40 @@
     </div>
 </div>
 
+<!-- Modal Atribuir Conquista -->
+<div class="modal fade" id="modalConquista" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bx bx-trophy me-2"></i>Atribuir Conquista</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="conquista_user_id">
+                <p class="mb-3">Atribuindo conquista para: <strong id="conquista_user_nome"></strong></p>
+                
+                <div class="mb-3">
+                    <label class="form-label">Selecione a Conquista</label>
+                    <select class="form-select" id="conquista_id" required>
+                        <option value="">Carregando conquistas...</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Pontos (opcional - deixe em branco para usar os pontos padrão da conquista)</label>
+                    <input type="number" class="form-control" id="conquista_pontos" placeholder="Pontos">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="atribuirConquista()">
+                    <i class="bx bx-trophy me-1"></i>Atribuir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php echo $this->endSection() ?>
 
 <?php echo $this->section('scripts') ?>
@@ -281,6 +323,88 @@ $(document).ready(function() {
             });
         }
     });
+    
+    // Carregar conquistas ao abrir modal
+    carregarConquistas();
 });
+
+var conquistasCarregadas = false;
+
+function carregarConquistas() {
+    if (conquistasCarregadas) return;
+    
+    $.ajax({
+        url: '<?php echo site_url("conquistas/buscarConquistas"); ?>',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            var select = $('#conquista_id');
+            select.empty();
+            select.append('<option value="">Selecione uma conquista...</option>');
+            
+            if (data && data.length > 0) {
+                data.forEach(function(conquista) {
+                    select.append('<option value="' + conquista.id + '" data-pontos="' + conquista.pontos + '">' + 
+                        conquista.nome_conquista + ' (' + conquista.pontos + ' pts)</option>');
+                });
+                conquistasCarregadas = true;
+            } else {
+                select.append('<option value="">Nenhuma conquista disponível</option>');
+            }
+        },
+        error: function() {
+            $('#conquista_id').html('<option value="">Erro ao carregar conquistas</option>');
+        }
+    });
+}
+
+function abrirModalConquista(userId, userName) {
+    $('#conquista_user_id').val(userId);
+    $('#conquista_user_nome').text(userName);
+    $('#conquista_pontos').val('');
+    $('#conquista_id').val('');
+    
+    var modal = new bootstrap.Modal(document.getElementById('modalConquista'));
+    modal.show();
+}
+
+function atribuirConquista() {
+    var userId = $('#conquista_user_id').val();
+    var conquistaId = $('#conquista_id').val();
+    var pontos = $('#conquista_pontos').val();
+    
+    if (!conquistaId) {
+        alert('Por favor, selecione uma conquista!');
+        return;
+    }
+    
+    // Se não informou pontos, pegar os pontos padrão da conquista
+    if (!pontos) {
+        pontos = $('#conquista_id option:selected').data('pontos');
+    }
+    
+    $.ajax({
+        url: '<?php echo site_url("conquistas/atribuirConquista"); ?>',
+        type: 'POST',
+        data: {
+            user_id: userId,
+            conquista_id: conquistaId,
+            pontos: pontos,
+            '<?php echo csrf_token(); ?>': '<?php echo csrf_hash(); ?>'
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.sucesso) {
+                alert(response.sucesso);
+                bootstrap.Modal.getInstance(document.getElementById('modalConquista')).hide();
+            } else if (response.erro) {
+                alert('Erro: ' + response.erro);
+            }
+        },
+        error: function() {
+            alert('Erro ao atribuir conquista. Tente novamente.');
+        }
+    });
+}
 </script>
 <?php echo $this->endSection() ?>

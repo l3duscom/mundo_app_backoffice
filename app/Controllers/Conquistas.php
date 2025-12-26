@@ -239,6 +239,28 @@ class Conquistas extends BaseController
     }
 
     /**
+     * Buscar conquistas para dropdown (AJAX)
+     */
+    public function buscarConquistas()
+    {
+        $conquistas = $this->conquistaModel
+            ->where('status', 'ATIVA')
+            ->orderBy('nome_conquista', 'ASC')
+            ->findAll();
+        
+        $data = [];
+        foreach ($conquistas as $conquista) {
+            $data[] = [
+                'id' => $conquista->id,
+                'nome_conquista' => $conquista->nome_conquista,
+                'pontos' => $conquista->pontos,
+            ];
+        }
+        
+        return $this->response->setJSON($data);
+    }
+
+    /**
      * Ranking das conquistas mais usadas
      */
     public function rankingConquistas()
@@ -514,5 +536,51 @@ class Conquistas extends BaseController
         ];
 
         return $badges[$tipo] ?? '<span class="badge bg-secondary">' . esc($tipo) . '</span>';
+    }
+
+    /**
+     * Atribuir conquista a um usuário (via AJAX)
+     */
+    public function atribuirConquista()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $userId = $this->request->getPost('user_id');
+        $conquistaId = $this->request->getPost('conquista_id');
+
+        if (!$userId || !$conquistaId) {
+            $retorno['erro'] = 'Dados inválidos.';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Buscar conquista para obter o event_id
+        $conquista = $this->conquistaModel->find($conquistaId);
+
+        if (!$conquista) {
+            $retorno['erro'] = 'Conquista não encontrada.';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Usar o ConquistaService para atribuir
+        $conquistaService = new \App\Services\ConquistaService();
+        $result = $conquistaService->atribuirConquista(
+            (int) $userId,
+            (int) $conquistaId,
+            (int) $conquista->event_id,
+            true, // isAdmin
+            $this->usuarioLogado()->id // atribuidoPor
+        );
+
+        if ($result['success']) {
+            $retorno['sucesso'] = $result['message'] . ' (' . $result['data']['pontos'] . ' pontos)';
+        } else {
+            $retorno['erro'] = $result['message'];
+        }
+
+        return $this->response->setJSON($retorno);
     }
 }
