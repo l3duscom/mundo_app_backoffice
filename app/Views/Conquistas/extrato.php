@@ -114,7 +114,6 @@ $(document).ready(function() {
             }
         },
         columns: [
-            { data: 'id', visible: false },
             { data: 'data' },
             { data: 'usuario' },
             { data: 'tipo', className: 'text-center' },
@@ -122,7 +121,7 @@ $(document).ready(function() {
             { data: 'saldo', className: 'text-end' },
             { data: 'descricao' }
         ],
-        order: [[0, 'desc']],
+        ordering: false,
         language: {
             url: '<?php echo site_url("recursos/theme/plugins/datatable/js/pt-BR.json"); ?>'
         }
