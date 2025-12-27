@@ -440,6 +440,8 @@ $routes->group('conquistas-admin', function ($routes) {
     $routes->get('editar/(:num)', 'Conquistas::editar/$1');
     $routes->post('atualizar', 'Conquistas::atualizar');
     $routes->get('excluir/(:num)', 'Conquistas::excluir/$1');
+    $routes->post('duplicar', 'Conquistas::duplicar');
+    $routes->post('duplicar-massa', 'Conquistas::duplicarEmMassa');
     $routes->get('recupera', 'Conquistas::recuperaConquistas');
     $routes->get('ranking', 'Conquistas::rankingConquistas');
     $routes->get('dadosRanking', 'Conquistas::dadosRanking');

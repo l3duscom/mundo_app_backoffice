@@ -198,6 +198,98 @@ class Conquistas extends BaseController
     }
 
     /**
+     * Duplicar conquista individual (AJAX)
+     */
+    public function duplicar()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $id = $this->request->getPost('id');
+        $eventoDestinoId = $this->request->getPost('event_id');
+
+        $conquista = $this->conquistaModel->find($id);
+
+        if (!$conquista) {
+            $retorno['erro'] = 'Conquista não encontrada.';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Criar cópia
+        $dados = [
+            'event_id' => $eventoDestinoId ?: $conquista->event_id,
+            'nome_conquista' => $conquista->nome_conquista . ' (Cópia)',
+            'descricao' => $conquista->descricao,
+            'pontos' => $conquista->pontos,
+            'nivel' => $conquista->nivel,
+            'status' => 'ATIVA',
+        ];
+
+        if ($this->conquistaModel->insert($dados)) {
+            $retorno['sucesso'] = 'Conquista duplicada com sucesso!';
+        } else {
+            $retorno['erro'] = 'Erro ao duplicar conquista.';
+        }
+
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Duplicar conquistas em massa (AJAX)
+     */
+    public function duplicarEmMassa()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $ids = $this->request->getPost('ids');
+        $eventoDestinoId = $this->request->getPost('event_id');
+
+        if (empty($ids) || !is_array($ids)) {
+            $retorno['erro'] = 'Selecione pelo menos uma conquista.';
+            return $this->response->setJSON($retorno);
+        }
+
+        if (empty($eventoDestinoId)) {
+            $retorno['erro'] = 'Selecione o evento de destino.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $count = 0;
+        foreach ($ids as $id) {
+            $conquista = $this->conquistaModel->find($id);
+            if (!$conquista) continue;
+
+            $dados = [
+                'event_id' => $eventoDestinoId,
+                'nome_conquista' => $conquista->nome_conquista,
+                'descricao' => $conquista->descricao,
+                'pontos' => $conquista->pontos,
+                'nivel' => $conquista->nivel,
+                'status' => 'ATIVA',
+            ];
+
+            if ($this->conquistaModel->insert($dados)) {
+                $count++;
+            }
+        }
+
+        if ($count > 0) {
+            $retorno['sucesso'] = "{$count} conquista(s) duplicada(s) com sucesso!";
+        } else {
+            $retorno['erro'] = 'Nenhuma conquista foi duplicada.';
+        }
+
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
      * Recupera conquistas para DataTables (AJAX)
      */
     public function recuperaConquistas()
@@ -224,6 +316,7 @@ class Conquistas extends BaseController
                 ->countAllResults();
 
             $data[] = [
+                'id' => $conquista->id,
                 'codigo' => '<code>' . esc($conquista->codigo) . '</code>',
                 'nome' => '<strong>' . esc($conquista->nome_conquista) . '</strong>',
                 'descricao' => esc(mb_substr($conquista->descricao ?? '', 0, 50)) . (strlen($conquista->descricao ?? '') > 50 ? '...' : ''),
@@ -477,6 +570,9 @@ class Conquistas extends BaseController
 
         // Botão editar
         $btns .= '<a href="' . site_url("conquistas-admin/editar/{$conquista->id}") . '" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bx bx-edit"></i></a>';
+
+        // Botão duplicar
+        $btns .= '<button type="button" class="btn btn-sm btn-outline-success" onclick="duplicarConquista(' . $conquista->id . ')" title="Duplicar"><i class="bx bx-copy"></i></button>';
 
         // Botão ver usuários
         $btns .= '<a href="' . site_url("conquistas-admin/top-usuarios/{$conquista->id}") . '" class="btn btn-sm btn-outline-info" title="Ver Usuários"><i class="bx bx-user"></i></a>';
