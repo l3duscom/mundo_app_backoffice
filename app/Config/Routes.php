@@ -455,6 +455,7 @@ $routes->group('conquistas-admin', function ($routes) {
     $routes->get('top-usuarios/(:num)', 'Conquistas::topUsuarios/$1');
     $routes->get('extrato', 'Conquistas::extratoPontos');
     $routes->get('recuperaExtrato', 'Conquistas::recuperaExtrato');
+    $routes->post('revogar-usuario', 'Conquistas::revogarConquista');
 });
 
 

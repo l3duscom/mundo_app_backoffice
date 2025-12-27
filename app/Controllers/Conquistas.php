@@ -535,6 +535,12 @@ class Conquistas extends BaseController
             $pontosClass = $item->pontos >= 0 ? 'text-success' : 'text-danger';
             $pontosPrefix = $item->pontos >= 0 ? '+' : '';
 
+            // Montar botão de revogar (apenas para CONQUISTA e que não foi revogada)
+            $acoes = '-';
+            if ($item->tipo === 'CONQUISTA' && !empty($item->referencia_id)) {
+                $acoes = '<button type="button" class="btn btn-sm btn-outline-danger" onclick="revogarConquista(' . $item->referencia_id . ', \'' . esc($item->descricao) . '\')" title="Revogar"><i class="bx bx-x-circle"></i></button>';
+            }
+
             $data[] = [
                 'id' => $item->id,
                 'data' => date('d/m/Y H:i', strtotime($item->created_at)),
@@ -543,6 +549,7 @@ class Conquistas extends BaseController
                 'pontos' => '<span class="' . $pontosClass . ' fw-bold">' . $pontosPrefix . number_format($item->pontos, 0, ',', '.') . '</span>',
                 'saldo' => number_format($item->saldo_atual ?? 0, 0, ',', '.') . ' pts',
                 'descricao' => esc(mb_substr($item->descricao ?? '', 0, 60)) . (strlen($item->descricao ?? '') > 60 ? '...' : ''),
+                'acoes' => $acoes,
             ];
         }
 
@@ -673,6 +680,42 @@ class Conquistas extends BaseController
 
         if ($result['success']) {
             $retorno['sucesso'] = $result['message'] . ' (' . $result['data']['pontos'] . ' pontos)';
+        } else {
+            $retorno['erro'] = $result['message'];
+        }
+
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Revogar conquista de um usuário (via AJAX)
+     */
+    public function revogarConquista()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $usuarioConquistaId = $this->request->getPost('id');
+        $motivo = $this->request->getPost('motivo');
+
+        if (!$usuarioConquistaId) {
+            $retorno['erro'] = 'ID da conquista não informado.';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Usar o ConquistaService para revogar
+        $conquistaService = new \App\Services\ConquistaService();
+        $result = $conquistaService->revogarConquista(
+            (int) $usuarioConquistaId,
+            $this->usuarioLogado()->id, // revogadoPor
+            $motivo
+        );
+
+        if ($result['success']) {
+            $retorno['sucesso'] = $result['message'];
         } else {
             $retorno['erro'] = $result['message'];
         }

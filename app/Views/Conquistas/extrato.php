@@ -12,7 +12,7 @@
 <!-- Evento do contexto -->
 <input type="hidden" id="eventoContexto" value="<?php echo esc($evento_id ?? ''); ?>">
 <!-- CSRF Token -->
-<input type="hidden" name="<?php echo csrf_token(); ?>" value="<?php echo csrf_hash(); ?>">
+<input type="hidden" id="csrfToken" name="<?php echo csrf_token(); ?>" value="<?php echo csrf_hash(); ?>">
 
 <!--breadcrumb-->
 <div class="page-breadcrumb d-sm-flex align-items-center mb-3">
@@ -81,11 +81,44 @@
                         <th class="text-end">Pontos</th>
                         <th class="text-end">Saldo</th>
                         <th>Descrição</th>
+                        <th class="text-center" style="width: 60px;">Ação</th>
                     </tr>
                 </thead>
                 <tbody>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Revogar Conquista -->
+<div class="modal fade" id="modalRevogar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bx bx-x-circle me-2"></i>Revogar Conquista</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="revogar_id">
+                <p class="mb-3">Revogar conquista: <strong id="revogar_descricao"></strong></p>
+                
+                <div class="alert alert-warning">
+                    <i class="bx bx-error me-2"></i>
+                    <strong>Atenção:</strong> Esta ação irá revogar a conquista e deduzir os pontos do usuário.
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Motivo da Revogação (opcional)</label>
+                    <textarea class="form-control" id="revogar_motivo" rows="2" placeholder="Informe o motivo da revogação..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarRevogacao()">
+                    <i class="bx bx-x-circle me-1"></i>Revogar
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -99,11 +132,14 @@
 <script src="<?php echo site_url('recursos/theme/'); ?>plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
+var csrfToken = $('#csrfToken').val();
+var tabela;
+
 $(document).ready(function() {
     
     var eventoContexto = $('#eventoContexto').val();
     
-    var tabela = $('#tabelaExtrato').DataTable({
+    tabela = $('#tabelaExtrato').DataTable({
         ajax: {
             url: '<?php echo site_url("conquistas-admin/recuperaExtrato"); ?>',
             type: 'GET',
@@ -119,7 +155,8 @@ $(document).ready(function() {
             { data: 'tipo', className: 'text-center' },
             { data: 'pontos', className: 'text-end' },
             { data: 'saldo', className: 'text-end' },
-            { data: 'descricao' }
+            { data: 'descricao' },
+            { data: 'acoes', className: 'text-center' }
         ],
         ordering: false,
         language: {
@@ -146,6 +183,49 @@ $(document).ready(function() {
         }
     });
 });
+
+function revogarConquista(id, descricao) {
+    $('#revogar_id').val(id);
+    $('#revogar_descricao').text(descricao);
+    $('#revogar_motivo').val('');
+    
+    var modal = new bootstrap.Modal(document.getElementById('modalRevogar'));
+    modal.show();
+}
+
+function confirmarRevogacao() {
+    var id = $('#revogar_id').val();
+    var motivo = $('#revogar_motivo').val();
+    
+    var postData = {
+        id: id,
+        motivo: motivo
+    };
+    postData['<?php echo csrf_token(); ?>'] = csrfToken;
+    
+    $.ajax({
+        url: '<?php echo site_url("conquistas-admin/revogar-usuario"); ?>',
+        type: 'POST',
+        data: postData,
+        dataType: 'json',
+        success: function(response) {
+            if (response.token) {
+                csrfToken = response.token;
+            }
+            
+            if (response.sucesso) {
+                alert(response.sucesso);
+                bootstrap.Modal.getInstance(document.getElementById('modalRevogar')).hide();
+                tabela.ajax.reload();
+            } else if (response.erro) {
+                alert('Erro: ' + response.erro);
+            }
+        },
+        error: function() {
+            alert('Erro ao revogar conquista. Tente novamente.');
+        }
+    });
+}
 </script>
 
 <?php echo $this->endSection() ?>
