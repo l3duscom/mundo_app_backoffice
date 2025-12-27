@@ -405,9 +405,20 @@ function sincronizarDados() {
                 alert('Erro: ' + response.erro);
             }
         },
-        error: function() {
+        error: function(xhr, status, error) {
             $('#loadingOverlay').removeClass('show');
-            alert('Erro ao sincronizar. Tente novamente.');
+            var errorMsg = 'Erro ao sincronizar. ';
+            try {
+                var resp = JSON.parse(xhr.responseText);
+                if (resp.erro) {
+                    errorMsg += resp.erro;
+                } else {
+                    errorMsg += error || 'Tente novamente.';
+                }
+            } catch(e) {
+                errorMsg += xhr.responseText || error || 'Tente novamente.';
+            }
+            alert(errorMsg);
         }
     });
 }

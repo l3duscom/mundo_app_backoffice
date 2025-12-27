@@ -126,38 +126,41 @@ class LancamentoFinanceiroModel extends Model
     }
 
     /**
-     * Sincroniza entradas de parcelas de contrato
+     * Sincroniza entradas de parcelas de contrato - otimizado
      */
     public function sincronizarParcelas(): int
     {
         $db = \Config\Database::connect();
-        $parcelaModel = new \App\Models\ContratoParcelaModel();
-        $contratoModel = new \App\Models\ContratoModel();
         
-        $parcelas = $parcelaModel->findAll();
+        // Busca parcelas não sincronizadas com LEFT JOIN
+        $query = $db->query("
+            SELECT cp.id, cp.contrato_id, cp.numero_parcela, cp.valor, cp.valor_liquido,
+                   cp.data_vencimento, cp.data_pagamento, cp.status_local, cp.forma_pagamento,
+                   c.event_id
+            FROM contrato_parcelas cp
+            INNER JOIN contratos c ON c.id = cp.contrato_id
+            LEFT JOIN lancamentos_financeiros lf ON lf.referencia_tipo = 'contrato_parcelas' AND lf.referencia_id = cp.id AND lf.deleted_at IS NULL
+            WHERE lf.id IS NULL
+            LIMIT 500
+        ");
+        
+        $parcelas = $query->getResultArray();
         $count = 0;
 
         foreach ($parcelas as $parcela) {
-            if ($this->existeReferencia('contrato_parcelas', $parcela->id)) {
-                continue;
-            }
-
-            $contrato = $contratoModel->find($parcela->contrato_id);
-            if (!$contrato) continue;
-
             $data = [
-                'event_id' => $contrato->event_id,
+                'event_id' => $parcela['event_id'],
                 'tipo' => 'ENTRADA',
                 'origem' => 'CONTRATO',
                 'referencia_tipo' => 'contrato_parcelas',
-                'referencia_id' => $parcela->id,
-                'descricao' => "Parcela {$parcela->numero_parcela} - Contrato #{$parcela->contrato_id}",
-                'valor' => $parcela->valor,
-                'valor_liquido' => $parcela->valor_liquido ?? $parcela->valor,
-                'data_lancamento' => $parcela->data_vencimento,
-                'data_pagamento' => $parcela->data_pagamento,
-                'status' => $parcela->status_local === 'pago' ? 'pago' : 'pendente',
-                'forma_pagamento' => $parcela->forma_pagamento,
+                'referencia_id' => $parcela['id'],
+                'descricao' => "Parcela {$parcela['numero_parcela']} - Contrato #{$parcela['contrato_id']}",
+                'valor' => $parcela['valor'],
+                'valor_liquido' => $parcela['valor_liquido'] ?? $parcela['valor'],
+                'data_lancamento' => $parcela['data_vencimento'],
+                'data_pagamento' => $parcela['data_pagamento'],
+                'status' => $parcela['status_local'] === 'pago' ? 'pago' : 'pendente',
+                'forma_pagamento' => $parcela['forma_pagamento'],
                 'categoria' => 'Contratos',
             ];
 
@@ -169,28 +172,30 @@ class LancamentoFinanceiroModel extends Model
     }
 
     /**
-     * Sincroniza entradas de pedidos (ingressos/PDV)
+     * Sincroniza entradas de pedidos (ingressos/PDV) - processamento otimizado
      */
     public function sincronizarPedidos(): int
     {
         $db = \Config\Database::connect();
         
+        // Busca apenas pedidos que ainda não foram sincronizados (limit de 500 por vez)
         $query = $db->query("
-            SELECT p.*, e.nome as evento_nome
+            SELECT p.id, p.evento_id, p.codigo, p.total, p.valor_liquido, p.forma_pagamento, 
+                   p.created_at, p.updated_at, p.pdv_id, e.nome as evento_nome
             FROM pedidos p
             LEFT JOIN eventos e ON e.id = p.evento_id
+            LEFT JOIN lancamentos_financeiros lf ON lf.referencia_tipo = 'pedidos' AND lf.referencia_id = p.id AND lf.deleted_at IS NULL
             WHERE p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
             AND p.deleted_at IS NULL
+            AND lf.id IS NULL
+            ORDER BY p.id DESC
+            LIMIT 500
         ");
         
         $pedidos = $query->getResultArray();
         $count = 0;
 
         foreach ($pedidos as $pedido) {
-            if ($this->existeReferencia('pedidos', $pedido['id'])) {
-                continue;
-            }
-
             $origem = !empty($pedido['pdv_id']) ? 'PDV' : 'INGRESSO';
             
             $data = [
@@ -217,30 +222,37 @@ class LancamentoFinanceiroModel extends Model
     }
 
     /**
-     * Sincroniza saídas de contas a pagar
+     * Sincroniza saídas de contas a pagar - otimizado
      */
     public function sincronizarContasPagar(): int
     {
-        $contaPagarModel = new \App\Models\ContaPagarModel();
-        $contas = $contaPagarModel->findAll();
+        $db = \Config\Database::connect();
+        
+        // Busca contas não sincronizadas
+        $query = $db->query("
+            SELECT cp.id, cp.descricao_conta, cp.valor_conta, cp.data_vencimento, cp.situacao, cp.updated_at
+            FROM contas_pagar cp
+            LEFT JOIN lancamentos_financeiros lf ON lf.referencia_tipo = 'contas_pagar' AND lf.referencia_id = cp.id AND lf.deleted_at IS NULL
+            WHERE lf.id IS NULL
+            AND cp.deleted_at IS NULL
+            LIMIT 500
+        ");
+        
+        $contas = $query->getResultArray();
         $count = 0;
 
         foreach ($contas as $conta) {
-            if ($this->existeReferencia('contas_pagar', $conta->id)) {
-                continue;
-            }
-
             $data = [
                 'event_id' => null,
                 'tipo' => 'SAIDA',
                 'origem' => 'CONTA_PAGAR',
                 'referencia_tipo' => 'contas_pagar',
-                'referencia_id' => $conta->id,
-                'descricao' => $conta->descricao_conta,
-                'valor' => $conta->valor_conta,
-                'data_lancamento' => $conta->data_vencimento,
-                'data_pagamento' => $conta->situacao == 1 ? date('Y-m-d', strtotime($conta->updated_at)) : null,
-                'status' => $conta->situacao == 1 ? 'pago' : 'pendente',
+                'referencia_id' => $conta['id'],
+                'descricao' => $conta['descricao_conta'],
+                'valor' => $conta['valor_conta'],
+                'data_lancamento' => $conta['data_vencimento'],
+                'data_pagamento' => $conta['situacao'] == 1 ? date('Y-m-d', strtotime($conta['updated_at'])) : null,
+                'status' => $conta['situacao'] == 1 ? 'pago' : 'pendente',
                 'forma_pagamento' => null,
                 'categoria' => 'Fornecedores',
             ];
