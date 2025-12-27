@@ -346,6 +346,27 @@ class Eventos extends BaseController
     }
 
     /**
+     * Buscar eventos para dropdown (AJAX)
+     */
+    public function buscarEventos()
+    {
+        $eventos = $this->eventoModel
+            ->where('ativo', 1)
+            ->orderBy('id', 'DESC')
+            ->findAll();
+        
+        $data = [];
+        foreach ($eventos as $evento) {
+            $data[] = [
+                'id' => $evento->id,
+                'nome' => $evento->nome,
+            ];
+        }
+        
+        return $this->response->setJSON($data);
+    }
+
+    /**
      * Exibe imagem do evento (avatar ou cover)
      * Arquivos em writable/uploads/eventos/
      */

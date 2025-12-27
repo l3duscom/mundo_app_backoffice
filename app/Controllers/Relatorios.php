@@ -911,4 +911,166 @@ class Relatorios extends BaseController
         
         return $this->response->setJSON(['data' => $data]);
     }
+
+    /**
+     * Ranking de Participantes em Concursos
+     * Mostra quem mais participou de concursos em múltiplos eventos
+     */
+    public function rankingParticipantesConcursos()
+    {
+        if (!$this->usuarioLogado()->is_admin) {
+            return redirect()->back()->with('atencao', 'Você não tem permissão para acessar esse menu.');
+        }
+
+        $db = \Config\Database::connect();
+        
+        // Filtro por tipo
+        $tipoFiltro = $this->request->getGet('tipo') ?? '';
+        
+        // Buscar todos os tipos disponíveis para o select
+        $queryTiposDisponiveis = $db->query("
+            SELECT DISTINCT tipo FROM concursos WHERE deleted_at IS NULL ORDER BY tipo
+        ");
+        $tiposDisponiveis = $queryTiposDisponiveis->getResultArray();
+        
+        // Condição de filtro por tipo
+        $filtroTipoSql = '';
+        if (!empty($tipoFiltro)) {
+            $filtroTipoSql = "AND co.tipo = " . $db->escape($tipoFiltro);
+        }
+        
+        // Query para buscar participantes que se inscreveram em concursos de múltiplos eventos
+        $query = $db->query("
+            SELECT 
+                i.user_id,
+                COALESCE(c.nome, i.nome, u.nome) as nome,
+                COALESCE(c.email, i.email, u.email) as email,
+                COALESCE(c.telefone, i.telefone) as telefone,
+                COUNT(DISTINCT i.id) as total_inscricoes,
+                COUNT(DISTINCT co.evento_id) as total_eventos,
+                COUNT(DISTINCT co.id) as total_concursos,
+                MIN(i.created_at) as primeira_participacao,
+                MAX(i.created_at) as ultima_participacao,
+                GROUP_CONCAT(DISTINCT e.nome ORDER BY e.id DESC SEPARATOR ', ') as eventos_participados,
+                GROUP_CONCAT(DISTINCT co.tipo ORDER BY co.tipo SEPARATOR ', ') as tipos_concurso
+            FROM inscricoes i
+            INNER JOIN concursos co ON co.id = i.concurso_id
+            INNER JOIN eventos e ON e.id = co.evento_id
+            LEFT JOIN usuarios u ON u.id = i.user_id
+            LEFT JOIN clientes c ON c.usuario_id = i.user_id
+            WHERE i.deleted_at IS NULL
+            AND co.deleted_at IS NULL
+            AND i.status NOT IN ('REJEITADA', 'CANCELADA')
+            AND (i.user_id IS NULL OR i.user_id NOT IN (6, 7, 1836))
+            {$filtroTipoSql}
+            GROUP BY i.user_id, nome, email, telefone
+            HAVING total_eventos > 1
+            ORDER BY total_eventos DESC, total_inscricoes DESC
+        ");
+        
+        $participantes = $query->getResultArray();
+        
+        // Query para ranking de eventos com mais participantes recorrentes
+        $queryEventos = $db->query("
+            SELECT 
+                e.id,
+                e.nome,
+                COUNT(DISTINCT recorrentes.user_id) as total_participantes_recorrentes
+            FROM eventos e
+            INNER JOIN concursos co ON co.evento_id = e.id
+            INNER JOIN (
+                SELECT DISTINCT i.user_id, co2.evento_id
+                FROM inscricoes i
+                INNER JOIN concursos co2 ON co2.id = i.concurso_id
+                WHERE i.deleted_at IS NULL
+                AND co2.deleted_at IS NULL
+                AND i.status NOT IN ('REJEITADA', 'CANCELADA')
+                AND i.user_id IN (
+                    SELECT user_id FROM (
+                        SELECT i3.user_id, COUNT(DISTINCT co3.evento_id) as total
+                        FROM inscricoes i3
+                        INNER JOIN concursos co3 ON co3.id = i3.concurso_id
+                        WHERE i3.deleted_at IS NULL
+                        AND co3.deleted_at IS NULL
+                        AND i3.status NOT IN ('REJEITADA', 'CANCELADA')
+                        GROUP BY i3.user_id
+                        HAVING total > 1
+                    ) as participantes_recorrentes
+                )
+            ) as recorrentes ON recorrentes.evento_id = e.id
+            WHERE co.deleted_at IS NULL
+            GROUP BY e.id, e.nome
+            ORDER BY total_participantes_recorrentes DESC
+            LIMIT 10
+        ");
+        
+        $eventosRecorrentes = $queryEventos->getResultArray();
+        
+        // Query para ranking por tipo de concurso
+        $queryTipos = $db->query("
+            SELECT 
+                co.tipo,
+                COUNT(DISTINCT i.user_id) as total_participantes,
+                COUNT(i.id) as total_inscricoes
+            FROM inscricoes i
+            INNER JOIN concursos co ON co.id = i.concurso_id
+            WHERE i.deleted_at IS NULL
+            AND co.deleted_at IS NULL
+            AND i.status NOT IN ('REJEITADA', 'CANCELADA')
+            GROUP BY co.tipo
+            ORDER BY total_participantes DESC
+        ");
+        
+        $tiposConcurso = $queryTipos->getResultArray();
+        
+        // Estatísticas gerais
+        $estatisticas = [
+            'total_participantes_recorrentes' => count($participantes),
+            'media_eventos_por_participante' => 0,
+            'total_inscricoes_recorrentes' => 0,
+            'max_eventos' => 0,
+        ];
+        
+        if (!empty($participantes)) {
+            $totalEventos = 0;
+            $totalInscricoes = 0;
+            $maxEventos = 0;
+            
+            foreach ($participantes as $participante) {
+                $totalEventos += $participante['total_eventos'];
+                $totalInscricoes += $participante['total_inscricoes'];
+                if ($participante['total_eventos'] > $maxEventos) {
+                    $maxEventos = $participante['total_eventos'];
+                }
+            }
+            
+            $estatisticas['media_eventos_por_participante'] = round($totalEventos / count($participantes), 1);
+            $estatisticas['total_inscricoes_recorrentes'] = $totalInscricoes;
+            $estatisticas['max_eventos'] = $maxEventos;
+        }
+        
+        // Distribuição por quantidade de eventos
+        $distribuicao = [];
+        foreach ($participantes as $participante) {
+            $qtd = $participante['total_eventos'];
+            if (!isset($distribuicao[$qtd])) {
+                $distribuicao[$qtd] = 0;
+            }
+            $distribuicao[$qtd]++;
+        }
+        krsort($distribuicao);
+
+        $data = [
+            'titulo' => 'Ranking de Participantes em Concursos',
+            'participantes' => $participantes,
+            'estatisticas' => $estatisticas,
+            'distribuicao' => $distribuicao,
+            'eventosRecorrentes' => $eventosRecorrentes,
+            'tiposConcurso' => $tiposConcurso,
+            'tiposDisponiveis' => $tiposDisponiveis,
+            'tipoFiltro' => $tipoFiltro,
+        ];
+
+        return view('Relatorios/Vendas/participantes_concursos', $data);
+    }
 }

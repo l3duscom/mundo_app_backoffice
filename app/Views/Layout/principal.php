@@ -401,6 +401,13 @@
                             <div class="menu-title">Clientes Recorrentes</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('relatorios/participantes-concursos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-trophy"></i>
+                            </div>
+                            <div class="menu-title">Participantes Concursos</div>
+                        </a>
+                    </li>
                     <hr>
                     <li class="menu-label">CONFIGURAÇÕES</li>
                     <li>

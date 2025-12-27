@@ -44,6 +44,7 @@ $routes->get('esqueci', 'Password::esqueci');
 $routes->get('notifica', 'Declarations::notifica');
 $routes->get('notificaT', 'Declarations::notificaT');
 $routes->post('import-csv', 'DeclarationsController::importCsv');
+$routes->get('eventos/buscar', 'Eventos::buscarEventos');
 $routes->post('cron', 'Cron::index');
 
 $routes->group(
@@ -285,6 +286,10 @@ $routes->group('relatorios', function ($routes) {
     $routes->get('contratos/expositor', 'RelatorioContratos::contratosPorExpositor');
     $routes->get('contratos/exportar-excel/(:segment)', 'RelatorioContratos::exportarExcel/$1');
     $routes->get('contratos/exportar-pdf/(:segment)', 'RelatorioContratos::exportarPdf/$1');
+    
+    // Clientes e Participantes
+    $routes->get('clientes-recorrentes', 'Relatorios::rankingClientesRecorrentes');
+    $routes->get('participantes-concursos', 'Relatorios::rankingParticipantesConcursos');
 });
 
 $routes->get('api/checkout/obrigado', 'Api\Checkout::obrigado');
@@ -443,6 +448,8 @@ $routes->group('conquistas-admin', function ($routes) {
     $routes->post('duplicar', 'Conquistas::duplicar');
     $routes->post('duplicar-massa', 'Conquistas::duplicarEmMassa');
     $routes->get('recupera', 'Conquistas::recuperaConquistas');
+    $routes->get('buscar', 'Conquistas::buscarConquistas');
+    $routes->post('atribuir-usuario', 'Conquistas::atribuirConquista');
     $routes->get('ranking', 'Conquistas::rankingConquistas');
     $routes->get('dadosRanking', 'Conquistas::dadosRanking');
     $routes->get('top-usuarios/(:num)', 'Conquistas::topUsuarios/$1');

@@ -157,6 +157,9 @@ class ConquistaService
             // Busca dados completos da conquista atribuída
             $conquistaAtribuida = $this->usuarioConquistaModel->find($usuarioConquistaId);
 
+            // 9. Envia email de notificação ao usuário
+            $this->enviarEmailConquista($usuario, $conquista, $pontos);
+
             return [
                 'success' => true,
                 'message' => 'Conquista atribuída com sucesso',
@@ -306,6 +309,71 @@ class ConquistaService
                 'message' => 'Erro ao revogar conquista',
                 'error' => ENVIRONMENT === 'development' ? $e->getMessage() : 'Erro interno',
             ];
+        }
+    }
+
+    /**
+     * Envia email de notificação de conquista ao usuário
+     * 
+     * @param object $usuario
+     * @param object $conquista
+     * @param int $pontos
+     * @return void
+     */
+    private function enviarEmailConquista($usuario, $conquista, int $pontos): void
+    {
+        try {
+            $resendService = new ResendService();
+            
+            $nivelEmoji = [
+                'BRONZE' => '🥉',
+                'PRATA' => '🥈',
+                'OURO' => '🥇',
+                'PLATINA' => '💎',
+                'DIAMANTE' => '💎',
+            ];
+            
+            $emoji = $nivelEmoji[$conquista->nivel] ?? '🏆';
+            
+            $html = "
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
+                <div style='text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 15px 15px 0 0;'>
+                    <h1 style='color: white; margin: 0; font-size: 28px;'>{$emoji} Nova Conquista!</h1>
+                </div>
+                
+                <div style='background: #f8f9fa; padding: 30px; border-radius: 0 0 15px 15px;'>
+                    <p style='font-size: 16px; color: #333;'>Olá <strong>" . esc($usuario->nome) . "</strong>,</p>
+                    
+                    <p style='font-size: 16px; color: #333;'>Parabéns! Você conquistou uma nova medalha:</p>
+                    
+                    <div style='background: white; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
+                        <h2 style='color: #764ba2; margin: 0 0 10px 0;'>" . esc($conquista->nome_conquista) . "</h2>
+                        <p style='color: #666; margin: 0 0 15px 0;'>" . esc($conquista->descricao ?? '') . "</p>
+                        <div style='display: inline-block; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 10px 25px; border-radius: 25px; font-size: 18px; font-weight: bold;'>
+                            +{$pontos} pontos
+                        </div>
+                    </div>
+                    
+                    <p style='font-size: 14px; color: #666; text-align: center;'>Continue participando dos nossos eventos para desbloquear mais conquistas!</p>
+                </div>
+                
+                <div style='text-align: center; padding: 20px; color: #999; font-size: 12px;'>
+                    <p>Mundo Dream - Conquistas e Recompensas</p>
+                </div>
+            </div>
+            ";
+            
+            $resendService->enviarEmail(
+                $usuario->email,
+                "{$emoji} Você conquistou: {$conquista->nome_conquista}!",
+                $html
+            );
+            
+            log_message('info', "Email de conquista enviado para {$usuario->email} - Conquista: {$conquista->nome_conquista}");
+            
+        } catch (\Exception $e) {
+            // Não falha a atribuição se o email der erro, apenas loga
+            log_message('error', 'Erro ao enviar email de conquista: ' . $e->getMessage());
         }
     }
 }
