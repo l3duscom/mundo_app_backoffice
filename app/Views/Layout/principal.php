@@ -306,6 +306,13 @@
                             <div class="menu-title">Conquistas</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('/fornecedores'); ?>">
+                            <div class="parent-icon"><i class="bx bx-store"></i></div>
+                            <div class="menu-title">Fornecedores</div>
+                        </a>
+                    </li>
+
                     <hr>
                     <?php if (evento_selecionado()) : ?>
                         <li class="menu-label">EVENTO ATUAL</li>
@@ -342,6 +349,13 @@
                                 <div class="parent-icon"><i class="bx bx-file"></i>
                                 </div>
                                 <div class="menu-title">Contratos</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo site_url('/orcamentos?evento_id=' . evento_selecionado()); ?>">
+                                <div class="parent-icon"><i class="bx bx-calculator"></i>
+                                </div>
+                                <div class="menu-title">Orçamentos</div>
                             </a>
                         </li>
                         <li>

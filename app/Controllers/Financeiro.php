@@ -156,6 +156,10 @@ class Financeiro extends BaseController
                 $url = site_url("contas-pagar/editar/{$lancamento->referencia_id}");
                 $icon = '<i class="bx bx-money me-1"></i>';
                 break;
+            case 'orcamentos':
+                $url = site_url("orcamentos/exibir/{$lancamento->referencia_id}");
+                $icon = '<i class="bx bx-calculator me-1"></i>';
+                break;
         }
 
         if ($url) {

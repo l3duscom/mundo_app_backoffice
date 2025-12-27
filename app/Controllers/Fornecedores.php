@@ -16,11 +16,13 @@ class Fornecedores extends BaseController
 
     private $fornecedorModel;
     private $fornecedorNotaFiscalModel;
+    private $categoriaModel;
 
     public function __construct()
     {
         $this->fornecedorModel = new \App\Models\FornecedorModel();
         $this->fornecedorNotaFiscalModel = new \App\Models\FornecedorNotaFiscalModel();
+        $this->categoriaModel = new \App\Models\FornecedorCategoriaModel();
     }
 
     public function index()
@@ -38,45 +40,68 @@ class Fornecedores extends BaseController
         return view('Fornecedores/index', $data);
     }
 
+    /**
+     * Retorna lista de categorias para filtro (AJAX)
+     */
+    public function listarCategorias()
+    {
+        $categorias = $this->categoriaModel->getCategoriasAtivas();
+        return $this->response->setJSON($categorias);
+    }
+
 
     public function recuperaFornecedores()
     {
-        if (!$this->request->isAJAX()) {
-            return redirect()->back();
+        $categoria_id = $this->request->getGet('categoria_id');
+
+        try {
+            // Tenta com as novas colunas
+            $builder = $this->fornecedorModel
+                ->select('fornecedores.id, fornecedores.razao, fornecedores.cnpj, fornecedores.telefone, fornecedores.cidade, fornecedores.estado, fornecedores.ativo, fornecedores.deleted_at, fornecedores.categoria_id, fornecedor_categorias.nome as categoria_nome')
+                ->join('fornecedor_categorias', 'fornecedor_categorias.id = fornecedores.categoria_id', 'left')
+                ->withDeleted(true);
+
+            if (!empty($categoria_id)) {
+                $builder->where('fornecedores.categoria_id', $categoria_id);
+            }
+
+            $fornecedores = $builder->orderBy('fornecedores.razao', 'ASC')->findAll();
+
+            $data = [];
+            foreach ($fornecedores as $fornecedor) {
+                $data[] = [
+                    'razao' => anchor("fornecedores/exibir/$fornecedor->id", esc($fornecedor->razao), 'title="Exibir fornecedor ' . esc($fornecedor->razao) . ' "'),
+                    'categoria' => (isset($fornecedor->categoria_nome) && $fornecedor->categoria_nome) 
+                        ? '<span class="badge bg-primary">' . esc($fornecedor->categoria_nome) . '</span>'
+                        : '<span class="text-muted">-</span>',
+                    'cnpj' => esc($fornecedor->cnpj),
+                    'telefone' => esc($fornecedor->telefone),
+                    'cidade' => esc($fornecedor->cidade) . '/' . esc($fornecedor->estado),
+                    'ativo' => $fornecedor->exibeSituacao(),
+                ];
+            }
+        } catch (\Exception $e) {
+            // Fallback: tabela antiga sem categoria_id
+            $fornecedores = $this->fornecedorModel
+                ->select('id, razao, cnpj, telefone, cidade, estado, ativo, deleted_at')
+                ->withDeleted(true)
+                ->orderBy('razao', 'ASC')
+                ->findAll();
+
+            $data = [];
+            foreach ($fornecedores as $fornecedor) {
+                $data[] = [
+                    'razao' => anchor("fornecedores/exibir/$fornecedor->id", esc($fornecedor->razao), 'title="Exibir fornecedor ' . esc($fornecedor->razao) . ' "'),
+                    'categoria' => '<span class="text-muted">-</span>',
+                    'cnpj' => esc($fornecedor->cnpj),
+                    'telefone' => esc($fornecedor->telefone),
+                    'cidade' => esc($fornecedor->cidade) . '/' . esc($fornecedor->estado),
+                    'ativo' => $fornecedor->exibeSituacao(),
+                ];
+            }
         }
 
-        $atributos = [
-            'id',
-            'razao',
-            'cnpj',
-            'telefone',
-            'ativo',
-            'deleted_at'
-        ];
-
-        $fornecedores = $this->fornecedorModel->select($atributos)
-            ->withDeleted(true)
-            ->orderBy('id', 'DESC')
-            ->findAll();
-
-        // Receberá o array de objetos de fornecedores
-        $data = [];
-
-        foreach ($fornecedores as $fornecedor) {
-            $data[] = [
-                'razao' => anchor("fornecedores/exibir/$fornecedor->id", esc($fornecedor->razao), 'title="Exibir fornecedor ' . esc($fornecedor->razao) . ' "'),
-                'cnpj' => esc($fornecedor->cnpj),
-                'telefone' => esc($fornecedor->telefone),
-                'ativo' => $fornecedor->exibeSituacao(),
-            ];
-        }
-
-
-        $retorno = [
-            'data' => $data,
-        ];
-
-        return $this->response->setJSON($retorno);
+        return $this->response->setJSON(['data' => $data]);
     }
 
     public function criar()
@@ -92,6 +117,7 @@ class Fornecedores extends BaseController
         $data = [
             'titulo' => "Cadastrar novo fornecedor",
             'fornecedor' => $fornecedor,
+            'categorias' => $this->categoriaModel->getCategoriasAtivas(),
         ];
 
 
@@ -156,6 +182,12 @@ class Fornecedores extends BaseController
 
         $fornecedor = $this->buscaFornecedorOu404($id);
 
+        // Buscar nome da categoria se existir
+        if (!empty($fornecedor->categoria_id)) {
+            $categoria = $this->categoriaModel->find($fornecedor->categoria_id);
+            $fornecedor->categoria_nome = $categoria ? $categoria->nome : null;
+        }
+
         $data = [
             'titulo' => "Detalhando o fornecedor " . esc($fornecedor->razao),
             'fornecedor' => $fornecedor,
@@ -179,6 +211,7 @@ class Fornecedores extends BaseController
         $data = [
             'titulo' => "Editando o fornecedor " . esc($fornecedor->razao),
             'fornecedor' => $fornecedor,
+            'categorias' => $this->categoriaModel->getCategoriasAtivas(),
         ];
 
 
@@ -433,7 +466,51 @@ class Fornecedores extends BaseController
         return redirect()->back();
     }
 
+    /**
+     * Cadastrar nova categoria via AJAX
+     */
+    public function cadastrarCategoria()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
 
+        $retorno['token'] = csrf_hash();
+
+        $nome = $this->request->getPost('nome');
+
+        if (empty($nome)) {
+            $retorno['erro'] = 'Nome da categoria é obrigatório';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Verifica se já existe
+        $existe = $this->categoriaModel->where('nome', $nome)->first();
+        if ($existe) {
+            $retorno['erro'] = 'Esta categoria já existe';
+            return $this->response->setJSON($retorno);
+        }
+
+        $dados = [
+            'nome' => $nome,
+            'cor' => $this->request->getPost('cor') ?? 'bg-secondary',
+            'ativo' => 1,
+        ];
+
+        if (!$this->categoriaModel->insert($dados)) {
+            $retorno['erro'] = 'Erro ao cadastrar categoria';
+            $retorno['erros_model'] = $this->categoriaModel->errors();
+            return $this->response->setJSON($retorno);
+        }
+
+        $retorno['sucesso'] = 'Categoria cadastrada com sucesso!';
+        $retorno['categoria'] = [
+            'id' => $this->categoriaModel->getInsertID(),
+            'nome' => $nome,
+        ];
+
+        return $this->response->setJSON($retorno);
+    }
 
     public function consultaCep()
     {
