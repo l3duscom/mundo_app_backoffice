@@ -2,9 +2,9 @@
 <div class="row">
     <div class="col-md-6">
         <div class="mb-3">
-            <label for="event_id" class="form-label">Evento <span class="text-danger">*</span></label>
-            <select name="event_id" id="event_id" class="form-select" required>
-                <option value="">Selecione o evento</option>
+            <label for="event_id" class="form-label">Evento <small class="text-muted">(opcional)</small></label>
+            <select name="event_id" id="event_id" class="form-select">
+                <option value="">🌐 Conquista Global (todos os eventos)</option>
                 <?php foreach ($eventos as $evento): ?>
                     <option value="<?php echo $evento->id; ?>" <?php echo (isset($conquista) && $conquista->event_id == $evento->id) || (isset($evento_id) && $evento_id == $evento->id) ? 'selected' : ''; ?>>
                         <?php echo esc($evento->nome); ?>

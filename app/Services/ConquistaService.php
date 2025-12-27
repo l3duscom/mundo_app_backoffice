@@ -37,7 +37,7 @@ class ConquistaService
     public function atribuirConquista(
         int $userId, 
         int $conquistaId, 
-        int $eventId, 
+        ?int $eventId, // Pode ser null para conquistas globais
         bool $isAdmin = false, 
         ?int $atribuidoPor = null
     ): array {

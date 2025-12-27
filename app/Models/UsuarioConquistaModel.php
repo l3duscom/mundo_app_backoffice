@@ -33,7 +33,7 @@ class UsuarioConquistaModel extends Model
     // Validation
     protected $validationRules = [
         'conquista_id' => 'required|is_natural_no_zero',
-        'event_id'     => 'required|is_natural_no_zero',
+        'event_id'     => 'permit_empty|is_natural',
         'user_id'      => 'required|is_natural_no_zero',
         'pontos'       => 'permit_empty|integer',
         'admin'        => 'permit_empty|in_list[0,1]',
@@ -46,8 +46,7 @@ class UsuarioConquistaModel extends Model
             'is_natural_no_zero'  => 'O campo conquista_id deve ser um número válido',
         ],
         'event_id' => [
-            'required'            => 'O campo event_id é obrigatório',
-            'is_natural_no_zero'  => 'O campo event_id deve ser um número válido',
+            'is_natural'  => 'O campo event_id deve ser um número válido',
         ],
         'user_id' => [
             'required'            => 'O campo user_id é obrigatório',
@@ -103,17 +102,26 @@ class UsuarioConquistaModel extends Model
      * 
      * @param int $userId
      * @param int $conquistaId
-     * @param int $eventId
+     * @param int|null $eventId
      * @return bool
      */
-    public function usuarioPossuiConquista(int $userId, int $conquistaId, int $eventId): bool
+    public function usuarioPossuiConquista(int $userId, int $conquistaId, ?int $eventId = null): bool
     {
-        return $this->where([
+        $conditions = [
             'user_id'      => $userId,
             'conquista_id' => $conquistaId,
-            'event_id'     => $eventId,
             'status'       => 'ATIVA'
-        ])->countAllResults() > 0;
+        ];
+        
+        // Se event_id for null, busca por IS NULL
+        if ($eventId === null) {
+            return $this->where($conditions)
+                        ->where('event_id IS NULL')
+                        ->countAllResults() > 0;
+        }
+        
+        $conditions['event_id'] = $eventId;
+        return $this->where($conditions)->countAllResults() > 0;
     }
 
     /**

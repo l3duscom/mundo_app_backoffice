@@ -46,7 +46,15 @@
             </ol>
         </nav>
     </div>
-    <div class="ms-auto">
+    <div class="ms-auto d-flex gap-2 align-items-center">
+        <select class="form-select form-select-sm" id="filtroEvento" style="width: 200px;" onchange="carregarDados()">
+            <option value="todos">Todos os Eventos</option>
+            <?php foreach ($eventos as $evento): ?>
+                <option value="<?php echo $evento->id; ?>" <?php echo $evento_id == $evento->id ? 'selected' : ''; ?>>
+                    <?php echo esc($evento->nome); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
         <a href="<?php echo site_url('conquistas-admin'); ?>" class="btn btn-outline-secondary">
             <i class="bx bx-arrow-back me-2"></i>Voltar
         </a>
@@ -144,19 +152,125 @@
 <script src="<?php echo site_url('recursos/theme/'); ?>plugins/apexcharts-bundle/js/apexcharts.min.js"></script>
 
 <script>
-$(document).ready(function() {
-    var eventoContexto = $('#eventoContexto').val();
+// Funções auxiliares no escopo global
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function getNivelBadge(nivel) {
+    var cores = {
+        'BRONZE': 'background: linear-gradient(135deg, #CD7F32, #8B4513); color: white;',
+        'PRATA': 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;',
+        'OURO': 'background: linear-gradient(135deg, #FFD700, #DAA520); color: #333;',
+        'PLATINA': 'background: linear-gradient(135deg, #E5E4E2, #BCC6CC); color: #333;',
+        'DIAMANTE': 'background: linear-gradient(135deg, #B9F2FF, #7DF9FF); color: #333;'
+    };
+    var estilo = cores[nivel] || 'background: #6c757d; color: white;';
+    return '<span class="badge" style="' + estilo + '">' + nivel + '</span>';
+}
+
+function renderChartTop(data) {
+    var labels = data.map(function(item) { return item.nome_conquista; });
+    var values = data.map(function(item) { return parseInt(item.total); });
     
-    // Função para formatar números
-    function formatNumber(num) {
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    if (values.length === 0) {
+        $('#chartTop').html('<div class="text-center text-muted p-5">Nenhuma conquista atribuída ainda</div>');
+        return;
     }
+    
+    var options = {
+        series: [{
+            name: 'Usuários',
+            data: values
+        }],
+        chart: {
+            type: 'bar',
+            height: 400,
+            toolbar: { show: false }
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                horizontal: true,
+                distributed: true
+            }
+        },
+        colors: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#11998e', '#38ef7d', '#FFD700', '#C0C0C0', '#CD7F32', '#B9F2FF'],
+        dataLabels: {
+            enabled: true
+        },
+        xaxis: {
+            categories: labels
+        },
+        legend: { show: false }
+    };
+    
+    new ApexCharts(document.querySelector("#chartTop"), options).render();
+}
+
+function renderChartNivel(data) {
+    var labels = data.map(function(item) { return item.nivel; });
+    var values = data.map(function(item) { return parseInt(item.total); });
+    
+    if (values.length === 0) {
+        $('#chartNivel').html('<div class="text-center text-muted p-5">Nenhum dado disponível</div>');
+        return;
+    }
+    
+    var options = {
+        series: values,
+        chart: {
+            type: 'donut',
+            height: 400
+        },
+        labels: labels,
+        colors: ['#CD7F32', '#C0C0C0', '#FFD700', '#E5E4E2', '#B9F2FF'],
+        legend: {
+            position: 'bottom'
+        },
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: { width: 200 },
+                legend: { position: 'bottom' }
+            }
+        }]
+    };
+    
+    new ApexCharts(document.querySelector("#chartNivel"), options).render();
+}
+
+function renderTabela(data) {
+    var html = '';
+    data.forEach(function(item, index) {
+        html += '<tr>';
+        html += '<td>' + (index + 1) + 'º</td>';
+        html += '<td><strong>' + item.nome_conquista + '</strong></td>';
+        html += '<td>' + getNivelBadge(item.nivel) + '</td>';
+        html += '<td class="text-center"><span class="badge bg-primary">' + item.total + '</span></td>';
+        html += '<td class="text-end"><span class="text-success fw-bold">' + formatNumber(parseInt(item.total_pontos || 0)) + ' pts</span></td>';
+        html += '</tr>';
+    });
+    
+    if (html === '') {
+        html = '<tr><td colspan="5" class="text-center text-muted">Nenhuma conquista atribuída ainda</td></tr>';
+    }
+    
+    $('#tabelaBody').html(html);
+}
+
+function carregarDados() {
+    var eventoId = $('#filtroEvento').val();
+    
+    // Limpar gráficos anteriores
+    $('#chartTop').empty();
+    $('#chartNivel').empty();
     
     // Carregar dados
     $.ajax({
         url: '<?php echo site_url("conquistas-admin/dadosRanking"); ?>',
         type: 'GET',
-        data: { event_id: eventoContexto },
+        data: { event_id: eventoId },
         dataType: 'json',
         success: function(response) {
             // Atualizar cards
@@ -182,98 +296,10 @@ $(document).ready(function() {
             alert('Erro ao carregar dados do ranking');
         }
     });
-    
-    function renderChartTop(data) {
-        var labels = data.map(function(item) { return item.nome_conquista; });
-        var values = data.map(function(item) { return parseInt(item.total); });
-        
-        var options = {
-            series: [{
-                name: 'Usuários',
-                data: values
-            }],
-            chart: {
-                type: 'bar',
-                height: 400,
-                toolbar: { show: false }
-            },
-            plotOptions: {
-                bar: {
-                    borderRadius: 4,
-                    horizontal: true,
-                    distributed: true
-                }
-            },
-            colors: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#11998e', '#38ef7d', '#FFD700', '#C0C0C0', '#CD7F32', '#B9F2FF'],
-            dataLabels: {
-                enabled: true
-            },
-            xaxis: {
-                categories: labels
-            },
-            legend: { show: false }
-        };
-        
-        new ApexCharts(document.querySelector("#chartTop"), options).render();
-    }
-    
-    function renderChartNivel(data) {
-        var labels = data.map(function(item) { return item.nivel; });
-        var values = data.map(function(item) { return parseInt(item.total); });
-        
-        var options = {
-            series: values,
-            chart: {
-                type: 'donut',
-                height: 400
-            },
-            labels: labels,
-            colors: ['#CD7F32', '#C0C0C0', '#FFD700', '#E5E4E2', '#B9F2FF'],
-            legend: {
-                position: 'bottom'
-            },
-            responsive: [{
-                breakpoint: 480,
-                options: {
-                    chart: { width: 200 },
-                    legend: { position: 'bottom' }
-                }
-            }]
-        };
-        
-        new ApexCharts(document.querySelector("#chartNivel"), options).render();
-    }
-    
-    function renderTabela(data) {
-        var html = '';
-        data.forEach(function(item, index) {
-            html += '<tr>';
-            html += '<td>' + (index + 1) + 'º</td>';
-            html += '<td><strong>' + item.nome_conquista + '</strong></td>';
-            html += '<td>' + getNivelBadge(item.nivel) + '</td>';
-            html += '<td class="text-center"><span class="badge bg-primary">' + item.total + '</span></td>';
-            html += '<td class="text-end"><span class="text-success fw-bold">' + formatNumber(parseInt(item.total_pontos || 0)) + ' pts</span></td>';
-            html += '</tr>';
-        });
-        
-        if (html === '') {
-            html = '<tr><td colspan="5" class="text-center text-muted">Nenhuma conquista atribuída ainda</td></tr>';
-        }
-        
-        $('#tabelaBody').html(html);
-    }
-    
-    function getNivelBadge(nivel) {
-        var cores = {
-            'BRONZE': 'background: linear-gradient(135deg, #CD7F32, #8B4513); color: white;',
-            'PRATA': 'background: linear-gradient(135deg, #C0C0C0, #808080); color: white;',
-            'OURO': 'background: linear-gradient(135deg, #FFD700, #DAA520); color: #333;',
-            'PLATINA': 'background: linear-gradient(135deg, #E5E4E2, #BCC6CC); color: #333;',
-            'DIAMANTE': 'background: linear-gradient(135deg, #B9F2FF, #7DF9FF); color: #333;'
-        };
-        var estilo = cores[nivel] || 'background: #6c757d; color: white;';
-        return '<span class="badge" style="' + estilo + '">' + nivel + '</span>';
-    }
+}
+
+$(document).ready(function() {
+    carregarDados();
 });
 </script>
 <?php echo $this->endSection() ?>

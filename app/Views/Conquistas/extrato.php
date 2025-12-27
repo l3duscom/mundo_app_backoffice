@@ -38,7 +38,18 @@
 <div class="card mb-4">
     <div class="card-body">
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label">Evento</label>
+                <select id="filtroEvento" class="form-select">
+                    <option value="todos">Todos os Eventos</option>
+                    <?php foreach ($eventos as $evento): ?>
+                        <option value="<?php echo $evento->id; ?>" <?php echo $evento_id == $evento->id ? 'selected' : ''; ?>>
+                            <?php echo esc($evento->nome); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <label class="form-label">Tipo de Transação</label>
                 <select id="filtroTipo" class="form-select">
                     <option value="">Todos</option>
@@ -50,11 +61,11 @@
                     <option value="EXPIRACAO">Expiração</option>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label">Buscar Usuário (ID)</label>
                 <input type="number" id="filtroUsuario" class="form-control" placeholder="ID do usuário">
             </div>
-            <div class="col-md-4 d-flex align-items-end">
+            <div class="col-md-3 d-flex align-items-end">
                 <button type="button" id="btnFiltrar" class="btn btn-primary me-2">
                     <i class="bx bx-filter-alt me-1"></i>Filtrar
                 </button>
@@ -137,14 +148,12 @@ var tabela;
 
 $(document).ready(function() {
     
-    var eventoContexto = $('#eventoContexto').val();
-    
     tabela = $('#tabelaExtrato').DataTable({
         ajax: {
             url: '<?php echo site_url("conquistas-admin/recuperaExtrato"); ?>',
             type: 'GET',
             data: function(d) {
-                d.event_id = eventoContexto;
+                d.event_id = $('#filtroEvento').val();
                 d.tipo = $('#filtroTipo').val();
                 d.user_id = $('#filtroUsuario').val();
             }

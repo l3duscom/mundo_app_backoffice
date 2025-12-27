@@ -32,7 +32,7 @@ class ConquistaModel extends Model
 
     // Validation
     protected $validationRules = [
-        'event_id'       => 'required|is_natural_no_zero',
+        'event_id'       => 'permit_empty|is_natural',
         'codigo'         => 'permit_empty|string|exact_length[8]|is_unique[conquistas.codigo,id,{id}]',
         'nome_conquista' => 'required|string|max_length[255]',
         'descricao'      => 'permit_empty|string',
@@ -43,8 +43,7 @@ class ConquistaModel extends Model
 
     protected $validationMessages = [
         'event_id' => [
-            'required'            => 'O campo event_id é obrigatório',
-            'is_natural_no_zero'  => 'O campo event_id deve ser um número válido',
+            'is_natural'  => 'O campo event_id deve ser um número válido',
         ],
         'codigo' => [
             'exact_length' => 'O código deve ter exatamente 8 caracteres',

@@ -35,7 +35,8 @@ class Conquistas extends BaseController
             return redirect()->back()->with('atencao', 'Você não tem permissão para acessar esse menu.');
         }
 
-        $eventoId = $this->request->getGet('event_id') ?? evento_selecionado();
+        // Evento é filtro opcional - não usa mais evento_selecionado()
+        $eventoId = $this->request->getGet('event_id');
 
         $data = [
             'titulo' => 'Gerenciamento de Conquistas',
@@ -55,7 +56,8 @@ class Conquistas extends BaseController
             return redirect()->back()->with('atencao', 'Você não tem permissão para acessar esse menu.');
         }
 
-        $eventoId = $this->request->getGet('event_id') ?? evento_selecionado();
+        // Evento é opcional - não pré-seleciona mais
+        $eventoId = $this->request->getGet('event_id');
 
         $data = [
             'titulo' => 'Nova Conquista',
@@ -80,18 +82,13 @@ class Conquistas extends BaseController
         $post = $this->request->getPost();
 
         // Validar campos obrigatórios
-        if (empty($post['event_id'])) {
-            $retorno['erro'] = 'Selecione um evento.';
-            return $this->response->setJSON($retorno);
-        }
-
         if (empty($post['nome_conquista'])) {
             $retorno['erro'] = 'Nome da conquista é obrigatório.';
             return $this->response->setJSON($retorno);
         }
 
         $dados = [
-            'event_id' => $post['event_id'],
+            'event_id' => !empty($post['event_id']) ? $post['event_id'] : null,
             'nome_conquista' => $post['nome_conquista'],
             'descricao' => $post['descricao'] ?? null,
             'pontos' => (int) ($post['pontos'] ?? 0),
@@ -148,7 +145,7 @@ class Conquistas extends BaseController
         $conquista = $this->buscaConquistaOu404($post['id']);
 
         $dados = [
-            'event_id' => $post['event_id'],
+            'event_id' => !empty($post['event_id']) ? $post['event_id'] : null,
             'nome_conquista' => $post['nome_conquista'],
             'descricao' => $post['descricao'] ?? null,
             'pontos' => (int) ($post['pontos'] ?? 0),
@@ -294,13 +291,15 @@ class Conquistas extends BaseController
      */
     public function recuperaConquistas()
     {
-        $eventId = $this->request->getGet('event_id') ?? evento_selecionado();
+        // Filtro de evento é opcional - mostra todas por padrão
+        $eventId = $this->request->getGet('event_id');
 
         $builder = $this->conquistaModel
             ->select('conquistas.*, eventos.nome as evento_nome')
             ->join('eventos', 'eventos.id = conquistas.event_id', 'left');
 
-        if (!empty($eventId)) {
+        // Filtra por evento apenas se especificado
+        if (!empty($eventId) && $eventId !== 'todos') {
             $builder->where('conquistas.event_id', $eventId);
         }
 
@@ -315,6 +314,11 @@ class Conquistas extends BaseController
                 ->where('status', 'ATIVA')
                 ->countAllResults();
 
+            // Nome do evento ou indicador de "sem evento"
+            $eventoLabel = $conquista->evento_nome 
+                ? '<span class="badge bg-secondary">' . esc($conquista->evento_nome) . '</span>'
+                : '<span class="badge bg-light text-dark">Global</span>';
+
             $data[] = [
                 'id' => $conquista->id,
                 'codigo' => '<code>' . esc($conquista->codigo) . '</code>',
@@ -322,6 +326,7 @@ class Conquistas extends BaseController
                 'descricao' => esc(mb_substr($conquista->descricao ?? '', 0, 50)) . (strlen($conquista->descricao ?? '') > 50 ? '...' : ''),
                 'pontos' => '<span class="badge bg-primary">' . number_format($conquista->pontos, 0, ',', '.') . ' pts</span>',
                 'nivel' => $this->getBadgeNivel($conquista->nivel),
+                'evento' => $eventoLabel,
                 'usuarios' => '<a href="' . site_url("conquistas-admin/top-usuarios/{$conquista->id}") . '" class="badge bg-info text-decoration-none">' . $qtdUsuarios . ' usuários</a>',
                 'status' => $this->getBadgeStatus($conquista->status),
                 'acoes' => $this->montaBotoes($conquista),
@@ -336,17 +341,28 @@ class Conquistas extends BaseController
      */
     public function buscarConquistas()
     {
-        $conquistas = $this->conquistaModel
-            ->where('status', 'ATIVA')
-            ->orderBy('nome_conquista', 'ASC')
-            ->findAll();
+        $eventId = $this->request->getGet('event_id');
+        
+        $builder = $this->conquistaModel
+            ->select('conquistas.*, eventos.nome as evento_nome')
+            ->join('eventos', 'eventos.id = conquistas.event_id', 'left')
+            ->where('conquistas.status', 'ATIVA');
+        
+        // Filtro opcional por evento
+        if (!empty($eventId) && $eventId !== 'todos') {
+            $builder->where('conquistas.event_id', $eventId);
+        }
+        
+        $conquistas = $builder->orderBy('conquistas.nome_conquista', 'ASC')->findAll();
         
         $data = [];
         foreach ($conquistas as $conquista) {
+            $eventoLabel = $conquista->evento_nome ? " ({$conquista->evento_nome})" : ' (Global)';
             $data[] = [
                 'id' => $conquista->id,
-                'nome_conquista' => $conquista->nome_conquista,
+                'nome_conquista' => $conquista->nome_conquista . $eventoLabel,
                 'pontos' => $conquista->pontos,
+                'event_id' => $conquista->event_id,
             ];
         }
         
@@ -362,7 +378,8 @@ class Conquistas extends BaseController
             return redirect()->back()->with('atencao', 'Você não tem permissão para acessar esse menu.');
         }
 
-        $eventoId = $this->request->getGet('event_id') ?? evento_selecionado();
+        // Filtro opcional de evento
+        $eventoId = $this->request->getGet('event_id');
 
         $data = [
             'titulo' => 'Ranking de Conquistas',
@@ -378,7 +395,8 @@ class Conquistas extends BaseController
      */
     public function dadosRanking()
     {
-        $eventId = $this->request->getGet('event_id') ?? evento_selecionado();
+        // Filtro opcional de evento
+        $eventId = $this->request->getGet('event_id');
 
         // Top conquistas mais atribuídas
         $builder = $this->usuarioConquistaModel
@@ -389,7 +407,7 @@ class Conquistas extends BaseController
             ->orderBy('total', 'DESC')
             ->limit(10);
 
-        if (!empty($eventId)) {
+        if (!empty($eventId) && $eventId !== 'todos') {
             $builder->where('usuario_conquistas.event_id', $eventId);
         }
 
@@ -403,7 +421,7 @@ class Conquistas extends BaseController
             ->groupBy('conquistas.nivel')
             ->orderBy('total', 'DESC');
 
-        if (!empty($eventId)) {
+        if (!empty($eventId) && $eventId !== 'todos') {
             $builderNivel->where('usuario_conquistas.event_id', $eventId);
         }
 
@@ -413,7 +431,7 @@ class Conquistas extends BaseController
         $builderTotal = $this->usuarioConquistaModel
             ->where('status', 'ATIVA');
         
-        if (!empty($eventId)) {
+        if (!empty($eventId) && $eventId !== 'todos') {
             $builderTotal->where('event_id', $eventId);
         }
         
@@ -422,7 +440,7 @@ class Conquistas extends BaseController
         $builderConquistas = $this->conquistaModel
             ->where('status', 'ATIVA');
         
-        if (!empty($eventId)) {
+        if (!empty($eventId) && $eventId !== 'todos') {
             $builderConquistas->where('event_id', $eventId);
         }
         
@@ -435,7 +453,7 @@ class Conquistas extends BaseController
             ->where('status', 'ATIVA')
             ->where('deleted_at IS NULL');
         
-        if (!empty($eventId)) {
+        if (!empty($eventId) && $eventId !== 'todos') {
             $builderPontos->where('event_id', $eventId);
         }
         
@@ -489,7 +507,8 @@ class Conquistas extends BaseController
             return redirect()->back()->with('atencao', 'Você não tem permissão para acessar esse menu.');
         }
 
-        $eventoId = $this->request->getGet('event_id') ?? evento_selecionado();
+        // Filtro opcional de evento
+        $eventoId = $this->request->getGet('event_id');
 
         $data = [
             'titulo' => 'Extrato de Pontos',
@@ -505,7 +524,8 @@ class Conquistas extends BaseController
      */
     public function recuperaExtrato()
     {
-        $eventId = $this->request->getGet('event_id') ?? evento_selecionado();
+        // Filtro opcional de evento
+        $eventId = $this->request->getGet('event_id');
         $tipo = $this->request->getGet('tipo');
         $userId = $this->request->getGet('user_id');
 
@@ -513,7 +533,8 @@ class Conquistas extends BaseController
             ->select('extrato_pontos.*, usuarios.nome as usuario_nome, usuarios.email as usuario_email')
             ->join('usuarios', 'usuarios.id = extrato_pontos.user_id');
 
-        if (!empty($eventId)) {
+        // Filtra por evento apenas se especificado
+        if (!empty($eventId) && $eventId !== 'todos') {
             $builder->where('extrato_pontos.event_id', $eventId);
         }
 
@@ -673,7 +694,7 @@ class Conquistas extends BaseController
         $result = $conquistaService->atribuirConquista(
             (int) $userId,
             (int) $conquistaId,
-            (int) $conquista->event_id,
+            $conquista->event_id ? (int) $conquista->event_id : null, // Pode ser null
             true, // isAdmin
             $this->usuarioLogado()->id // atribuidoPor
         );

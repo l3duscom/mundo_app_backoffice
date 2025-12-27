@@ -300,6 +300,12 @@
                             <div class="menu-title">Financeiro</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('/conquistas-admin'); ?>">
+                            <div class="parent-icon"><i class="bx bx-trophy"></i></div>
+                            <div class="menu-title">Conquistas</div>
+                        </a>
+                    </li>
                     <hr>
                     <?php if (evento_selecionado()) : ?>
                         <li class="menu-label">EVENTO ATUAL</li>
@@ -362,12 +368,6 @@
                             <a href="<?php echo site_url('/cupons?evento_id=' . evento_selecionado()); ?>">
                                 <div class="parent-icon"><i class="bx bx-purchase-tag-alt"></i></div>
                                 <div class="menu-title">Cupons</div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo site_url('/conquistas-admin?event_id=' . evento_selecionado()); ?>">
-                                <div class="parent-icon"><i class="bx bx-trophy"></i></div>
-                                <div class="menu-title">Conquistas</div>
                             </a>
                         </li>
                     <?php endif; ?>

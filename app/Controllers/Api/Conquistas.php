@@ -258,30 +258,23 @@ class Conquistas extends BaseController
                     ->setStatusCode(400);
             }
 
-            // Valida evento
-            if (!isset($json['event_id'])) {
-                return $this->response
-                    ->setJSON([
-                        'success' => false,
-                        'message' => 'Campo event_id é obrigatório'
-                    ])
-                    ->setStatusCode(400);
-            }
-
-            $evento = $this->eventoModel->find($json['event_id']);
-            if (!$evento) {
-                return $this->response
-                    ->setJSON([
-                        'success' => false,
-                        'message' => 'Evento não encontrado'
-                    ])
-                    ->setStatusCode(404);
+            // Valida evento se fornecido
+            if (!empty($json['event_id'])) {
+                $evento = $this->eventoModel->find($json['event_id']);
+                if (!$evento) {
+                    return $this->response
+                        ->setJSON([
+                            'success' => false,
+                            'message' => 'Evento não encontrado'
+                        ])
+                        ->setStatusCode(404);
+                }
             }
 
             // Prepara dados para salvar
             // Nota: O código será gerado automaticamente pelo Model
             $data = [
-                'event_id' => $json['event_id'],
+                'event_id' => !empty($json['event_id']) ? $json['event_id'] : null,
                 'nome_conquista' => $json['nome_conquista'] ?? '',
                 'descricao' => $json['descricao'] ?? null,
                 'pontos' => $json['pontos'] ?? 0,

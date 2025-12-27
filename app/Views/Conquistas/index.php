@@ -42,6 +42,31 @@
 </div>
 <!--end breadcrumb-->
 
+<!-- Filtro por Evento -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <label class="form-label mb-1">Filtrar por Evento</label>
+                <select class="form-select form-select-sm" id="filtroEvento">
+                    <option value="todos">🌐 Todos os Eventos + Globais</option>
+                    <option value="">🌐 Apenas Conquistas Globais</option>
+                    <?php foreach ($eventos as $evento): ?>
+                        <option value="<?php echo $evento->id; ?>" <?php echo $evento_id == $evento->id ? 'selected' : ''; ?>>
+                            <?php echo esc($evento->nome); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-sm btn-primary mt-3" onclick="aplicarFiltro()">
+                    <i class="bx bx-filter-alt"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
@@ -54,6 +79,7 @@
                         <th>Descrição</th>
                         <th>Pontos</th>
                         <th>Nível</th>
+                        <th>Evento</th>
                         <th>Usuários</th>
                         <th>Status</th>
                         <th class="text-center" style="width: 150px;">Ações</th>
@@ -141,14 +167,13 @@ var conquistasSelecionadas = [];
 
 $(document).ready(function() {
     
-    var eventoContexto = $('#eventoContexto').val();
-    
     tabela = $('#tabelaConquistas').DataTable({
         ajax: {
             url: '<?php echo site_url("conquistas-admin/recupera"); ?>',
             type: 'GET',
             data: function(d) {
-                d.event_id = eventoContexto;
+                // Usa o filtro selecionado (todos, vazio para global, ou id do evento)
+                d.event_id = $('#filtroEvento').val();
             }
         },
         columns: [
@@ -165,6 +190,7 @@ $(document).ready(function() {
             { data: 'descricao' },
             { data: 'pontos', className: 'text-center' },
             { data: 'nivel', className: 'text-center' },
+            { data: 'evento', className: 'text-center' },
             { data: 'usuarios', className: 'text-center' },
             { data: 'status', className: 'text-center' },
             { data: 'acoes', className: 'text-center', orderable: false }
@@ -187,6 +213,10 @@ $(document).ready(function() {
         atualizarSelecionados();
     });
 });
+
+function aplicarFiltro() {
+    tabela.ajax.reload();
+}
 
 function atualizarSelecionados() {
     conquistasSelecionadas = [];
