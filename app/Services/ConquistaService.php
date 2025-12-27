@@ -76,7 +76,7 @@ class ConquistaService
                 ];
             }
 
-            // 4. Verifica se usuário já possui a conquista
+            // 4. Verifica se usuário já possui a conquista ATIVA
             if ($this->usuarioConquistaModel->usuarioPossuiConquista($userId, $conquistaId, $eventId)) {
                 $this->db->transRollback();
                 return [
@@ -90,30 +90,51 @@ class ConquistaService
             $pontos = (int) $conquista->pontos;
             $saldoAtual = $saldoAnterior + $pontos;
 
-            // 6. Cria registro de usuário conquista
-            $usuarioConquistaData = [
-                'conquista_id'  => $conquistaId,
-                'event_id'      => $eventId,
-                'user_id'       => $userId,
-                'pontos'        => $pontos,
-                'admin'         => $isAdmin ? 1 : 0,
-                'status'        => 'ATIVA',
-                'atribuido_por' => $atribuidoPor,
-            ];
+            // 6. Verifica se existe registro REVOGADO anterior (para reativar ao invés de criar novo)
+            $conquistaRevogada = $this->usuarioConquistaModel
+                ->where([
+                    'user_id'      => $userId,
+                    'conquista_id' => $conquistaId,
+                    'event_id'     => $eventId,
+                    'status'       => 'REVOGADA'
+                ])
+                ->first();
 
-            if (!$this->usuarioConquistaModel->save($usuarioConquistaData)) {
-                $this->db->transRollback();
-                $errors = $this->usuarioConquistaModel->errors();
-                log_message('error', 'Erro ao salvar usuario_conquista: ' . json_encode($errors));
-                log_message('error', 'Dados enviados: ' . json_encode($usuarioConquistaData));
-                return [
-                    'success' => false,
-                    'message' => 'Erro ao atribuir conquista',
-                    'errors' => $errors,
+            if ($conquistaRevogada) {
+                // Reativar conquista existente
+                $this->usuarioConquistaModel->protect(false)->update($conquistaRevogada->id, [
+                    'status' => 'ATIVA',
+                    'pontos' => $pontos,
+                    'admin' => $isAdmin ? 1 : 0,
+                    'atribuido_por' => $atribuidoPor,
+                ]);
+                $usuarioConquistaId = $conquistaRevogada->id;
+            } else {
+                // Cria novo registro de usuário conquista
+                $usuarioConquistaData = [
+                    'conquista_id'  => $conquistaId,
+                    'event_id'      => $eventId,
+                    'user_id'       => $userId,
+                    'pontos'        => $pontos,
+                    'admin'         => $isAdmin ? 1 : 0,
+                    'status'        => 'ATIVA',
+                    'atribuido_por' => $atribuidoPor,
                 ];
-            }
 
-            $usuarioConquistaId = $this->usuarioConquistaModel->getInsertID();
+                if (!$this->usuarioConquistaModel->save($usuarioConquistaData)) {
+                    $this->db->transRollback();
+                    $errors = $this->usuarioConquistaModel->errors();
+                    log_message('error', 'Erro ao salvar usuario_conquista: ' . json_encode($errors));
+                    log_message('error', 'Dados enviados: ' . json_encode($usuarioConquistaData));
+                    return [
+                        'success' => false,
+                        'message' => 'Erro ao atribuir conquista',
+                        'errors' => $errors,
+                    ];
+                }
+
+                $usuarioConquistaId = $this->usuarioConquistaModel->getInsertID();
+            }
 
             // 7. Atualiza pontos do usuário
             $this->usuarioModel->update($userId, ['pontos' => $saldoAtual]);
