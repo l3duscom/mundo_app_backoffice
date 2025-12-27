@@ -244,7 +244,49 @@ var csrfToken = '<?php echo csrf_hash(); ?>';
 $(document).ready(function() {
     carregarResumo();
     inicializarTabela();
+    
+    // Sincronização automática ao entrar no módulo
+    sincronizarDadosAutomatico();
 });
+
+/**
+ * Sincronização automática silenciosa (sem confirmação)
+ * Executa ao entrar na página e atualiza dados se necessário
+ */
+function sincronizarDadosAutomatico() {
+    // Mostra loading discreto
+    $('#loadingProgress').text('Sincronizando dados...');
+    $('#loadingOverlay').addClass('show');
+    
+    $.ajax({
+        url: '<?php echo site_url("financeiro/sincronizar"); ?>',
+        type: 'POST',
+        data: { '<?php echo csrf_token(); ?>': csrfToken },
+        dataType: 'json',
+        success: function(response) {
+            if (response.token) csrfToken = response.token;
+            
+            // Esconde loading
+            $('#loadingOverlay').removeClass('show');
+            
+            // Se houver novos lançamentos, recarrega a tabela e resumo
+            if (response.sucesso && response.detalhes) {
+                var total = (response.detalhes.parcelas || 0) + 
+                           (response.detalhes.pedidos || 0) + 
+                           (response.detalhes.contas_pagar || 0);
+                
+                if (total > 0) {
+                    carregarResumo();
+                    tabela.ajax.reload();
+                }
+            }
+        },
+        error: function() {
+            // Esconde loading silenciosamente em caso de erro
+            $('#loadingOverlay').removeClass('show');
+        }
+    });
+}
 
 function formatarMoeda(valor) {
     return 'R$ ' + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
