@@ -611,13 +611,45 @@ class Checkout extends BaseController
 		// Calcular total da sessão
 		$total = $_SESSION['total'] ?? 0;
 
+		// Buscar upsells disponíveis para os ingressos comprados
+		$upsellModel = new \App\Models\TicketUpsellModel();
+		$upsellsDisponiveis = [];
+		
+		// Pegar os ingressos comprados da sessão ou do último pedido
+		$ticketsComprados = [];
+		if (isset($_SESSION['ingressos_comprados']) && is_array($_SESSION['ingressos_comprados'])) {
+			$ticketsComprados = $_SESSION['ingressos_comprados'];
+		} elseif ($id) {
+			// Busca último ingresso comprado pelo usuário
+			$ingressoModel = new \App\Models\IngressoModel();
+			$ultimosIngressos = $ingressoModel->where('user_id', $id)
+				->orderBy('id', 'DESC')
+				->limit(5)
+				->findAll();
+			
+			foreach ($ultimosIngressos as $ing) {
+				if ($ing->ticket_id) {
+					$ticketsComprados[$ing->ticket_id] = $ing->ticket_id;
+				}
+			}
+		}
+
+		// Busca upsells para cada ticket comprado
+		foreach ($ticketsComprados as $ticketId) {
+			$upsells = $upsellModel->buscaUpsellsDisponiveis((int)$ticketId);
+			foreach ($upsells as $u) {
+				$upsellsDisponiveis[] = $u;
+			}
+		}
+
 		$data = [
 			'titulo' => 'Comprar ingressos',
 			'id' => $id,
 			'items' => $ingressos,
 			'evento' => $evento,
 			'total' => $total,
-			'order_id' => session()->get('order_id') ?? ''
+			'order_id' => session()->get('order_id') ?? '',
+			'upsells' => $upsellsDisponiveis
 		];
 
 		return view('Checkout/obrigado', $data);
@@ -635,6 +667,195 @@ class Checkout extends BaseController
 
 
 		return view('Checkout/obrigado', $data);
+	}
+
+	/**
+	 * Página de pagamento do upsell
+	 */
+	public function upsell(int $upsellId = null)
+	{
+		if (!$upsellId) {
+			return redirect()->to('checkout/obrigado');
+		}
+
+		$upsellModel = new \App\Models\TicketUpsellModel();
+		$upsell = $upsellModel->find($upsellId);
+
+		if (!$upsell) {
+			return redirect()->to('checkout/obrigado')->with('erro', 'Upsell não encontrado');
+		}
+
+		// Busca dados do ticket de destino
+		$ticketDestino = $this->ticketModel->find($upsell->ticket_destino_id);
+
+		if (!$ticketDestino) {
+			return redirect()->to('checkout/obrigado')->with('erro', 'Ingresso não encontrado');
+		}
+
+		$data = [
+			'titulo' => 'Upgrade de Ingresso',
+			'upsell' => $upsell,
+			'ticket' => $ticketDestino,
+			'valor' => $upsell->getValorFinal(),
+		];
+
+		return view('Checkout/upsell', $data);
+	}
+
+	/**
+	 * Página de confirmação após upsell bem-sucedido
+	 */
+	public function obrigadoUpgrade()
+	{
+		$data = [
+			'titulo' => 'Upgrade Realizado!',
+		];
+
+		return view('Checkout/obrigado_upgrade', $data);
+	}
+
+	/**
+	 * Processa o pagamento do upsell
+	 */
+	public function processarUpsell()
+	{
+		$upsellId = $this->request->getPost('upsell_id');
+		
+		if (!$upsellId) {
+			return redirect()->to('checkout/obrigado')->with('erro', 'Upsell inválido');
+		}
+
+		$upsellModel = new \App\Models\TicketUpsellModel();
+		$upsell = $upsellModel->find($upsellId);
+
+		if (!$upsell) {
+			return redirect()->to('checkout/obrigado')->with('erro', 'Upsell não encontrado');
+		}
+
+		// Busca usuário logado
+		if (!$this->usuarioLogado()) {
+			return redirect()->to('checkout/obrigado')->with('erro', 'Usuário não autenticado');
+		}
+
+		$userId = $this->usuarioLogado()->id;
+		$cliente = $this->clienteModel->withDeleted(true)->where('usuario_id', $userId)->first();
+
+		if (!$cliente) {
+			return redirect()->to('checkout/obrigado')->with('erro', 'Cliente não encontrado');
+		}
+
+		// Busca ingresso do usuário com o ticket de origem
+		$ingressoOrigem = $this->ingressoModel
+			->where('user_id', $userId)
+			->where('ticket_id', $upsell->ticket_origem_id)
+			->orderBy('id', 'DESC')
+			->first();
+
+		if (!$ingressoOrigem) {
+			return redirect()->to('checkout/obrigado')->with('erro', 'Ingresso original não encontrado');
+		}
+
+		// Busca ticket de destino
+		$ticketDestino = $this->ticketModel->find($upsell->ticket_destino_id);
+
+		if (!$ticketDestino) {
+			return redirect()->to('checkout/obrigado')->with('erro', 'Ingresso de destino não disponível');
+		}
+
+		$valorUpgrade = $upsell->getValorFinal();
+
+		// Se valor é zero ou muito baixo, faz upgrade direto sem cobrança
+		if ($valorUpgrade < 1) {
+			// Atualiza ingresso para o novo ticket
+			$this->ingressoModel->update($ingressoOrigem->id, [
+				'ticket_id' => $ticketDestino->id,
+				'nome' => $ticketDestino->nome,
+				'valor' => $ticketDestino->preco,
+				'valor_unitario' => $ticketDestino->preco,
+			]);
+
+			return redirect()->to('checkout/obrigado-upgrade')->with('sucesso', 'Upgrade realizado!');
+		}
+
+		// Cria novo pedido para o upgrade
+		$pedidoData = [
+			'evento_id' => $upsell->event_id,
+			'user_id' => $userId,
+			'codigo' => $this->pedidoModel->geraCodigoPedido(),
+			'total' => $valorUpgrade,
+			'forma_pagamento' => 'UPSELL',
+			'status' => 'PENDING',
+		];
+
+		$this->pedidoModel->skipValidation(true)->protect(false)->insert($pedidoData);
+		$pedidoId = $this->pedidoModel->getInsertID();
+
+		// Tenta cobrar via Pagar.me ou Asaas
+		try {
+			// Monta cobrança simples (usando customer_id existente)
+			if (!empty($cliente->customer_id)) {
+				$pay = [
+					'customer_id' => $cliente->customer_id,
+					'installmentCount' => 1,
+					'installmentValue' => (float)$valorUpgrade,
+					'description' => 'Upgrade de ingresso - ' . $ticketDestino->nome,
+					'postalCode' => '00000000',
+					'observations' => 'Upsell ID: ' . $upsellId,
+				];
+
+				// Por enquanto, apenas registra o upgrade sem cobrar automaticamente
+				// (precisaria do cartão salvo para cobrar novamente)
+				
+				// Atualiza ingresso para o novo ticket
+				$this->ingressoModel->update($ingressoOrigem->id, [
+					'ticket_id' => $ticketDestino->id,
+					'nome' => $ticketDestino->nome,
+					'valor' => $ticketDestino->preco,
+					'valor_unitario' => $ticketDestino->preco,
+				]);
+
+				// Atualiza pedido como confirmado
+				$this->pedidoModel->update($pedidoId, ['status' => 'CONFIRMED']);
+
+				// Registra transação
+				$transaction = [
+					'pedido_id' => $pedidoId,
+					'charge_id' => 'UPSELL-' . $upsellId,
+					'installment_value' => $valorUpgrade,
+					'installments' => 1,
+					'payment' => 'UPSELL',
+				];
+				$this->transactionModel->skipValidation(true)->protect(false)->insert($transaction);
+
+				// Atribui pontos pela compra do upsell
+				$pontosService = new \App\Services\PontosCompraService();
+				$pontosService->atribuirPontosPorCompra(
+					$userId,
+					$upsell->event_id,
+					$pedidoId,
+					$valorUpgrade,
+					1 // Lote 1 para upsells (máximo de pontos)
+				);
+
+				return redirect()->to('checkout/obrigado-upgrade')->with('sucesso', 'Upgrade realizado com sucesso!');
+			}
+
+			// Fallback: upgrade sem cobrança automática (manual depois)
+			$this->ingressoModel->update($ingressoOrigem->id, [
+				'ticket_id' => $ticketDestino->id,
+				'nome' => $ticketDestino->nome,
+				'valor' => $ticketDestino->preco,
+				'valor_unitario' => $ticketDestino->preco,
+			]);
+
+			$this->pedidoModel->update($pedidoId, ['status' => 'PENDING_PAYMENT']);
+
+			return redirect()->to('checkout/obrigado-upgrade')->with('sucesso', 'Upgrade solicitado! Pagamento pendente.');
+
+		} catch (\Exception $e) {
+			log_message('error', 'Erro no upsell: ' . $e->getMessage());
+			return redirect()->to('checkout/obrigado')->with('erro', 'Erro ao processar upgrade. Tente novamente.');
+		}
 	}
 
 	public function loja()

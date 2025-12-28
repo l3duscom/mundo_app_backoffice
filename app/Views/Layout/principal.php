@@ -379,6 +379,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo site_url('/ticket-upsells'); ?>">
+                                <div class="parent-icon"><i class="bx bx-trending-up"></i>
+                                </div>
+                                <div class="menu-title">Upsells</div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo site_url('/credenciamento/listar?evento_id=' . evento_selecionado()); ?>">
                                 <div class="parent-icon"><i class="bx bx-id-card"></i>
                                 </div>

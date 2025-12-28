@@ -500,6 +500,19 @@ $routes->group('agentes', function ($routes) {
     $routes->post('removerAnexo', 'Agentes::removerAnexo');
 });
 
+// ========================================
+// ROTAS DE TICKET UPSELLS
+// ========================================
+$routes->group('ticket-upsells', function ($routes) {
+    $routes->get('/', 'TicketUpsells::index');
+    $routes->get('criar', 'TicketUpsells::criar');
+    $routes->post('cadastrar', 'TicketUpsells::cadastrar');
+    $routes->get('editar/(:num)', 'TicketUpsells::editar/$1');
+    $routes->post('atualizar', 'TicketUpsells::atualizar');
+    $routes->post('excluir/(:num)', 'TicketUpsells::excluir/$1');
+    $routes->get('calcularDiferenca', 'TicketUpsells::calcularDiferenca');
+});
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

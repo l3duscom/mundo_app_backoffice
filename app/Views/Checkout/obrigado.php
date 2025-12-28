@@ -70,6 +70,108 @@ if ($_SESSION['convite'] == 'x') {
 $event_id = session()->get('event_id');
 ?>
 
+<!-- OVERLAY DE UPSELL -->
+<?php if (!empty($upsells)): ?>
+<?php $upsell = $upsells[0]; // Pega o primeiro upsell disponível ?>
+<div id="upsellOverlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+">
+    <div style="
+        background: linear-gradient(135deg, #6c038f 0%, #9b4dca 100%);
+        border-radius: 20px;
+        max-width: 500px;
+        width: 100%;
+        padding: 30px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 10px 50px rgba(108,3,143,0.5);
+        animation: slideUp 0.5s ease-out;
+    ">
+        <style>
+            @keyframes slideUp {
+                from { transform: translateY(50px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+        </style>
+        
+        <div style="margin-bottom: 15px;">
+            <i class="bx bx-star" style="font-size: 50px; color: #ffd700;"></i>
+        </div>
+        
+        <h3 style="margin-bottom: 10px; font-weight: bold;">
+            🎉 OFERTA ESPECIAL! 🎉
+        </h3>
+        
+        <h4 style="margin-bottom: 20px;">
+            <?php echo esc($upsell->titulo ?: 'Faça upgrade do seu ingresso!'); ?>
+        </h4>
+        
+        <div style="background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+            <p style="margin-bottom: 10px; font-size: 14px;">
+                <strong>Upgrade para:</strong><br>
+                <span style="font-size: 18px;"><?php echo esc($upsell->ticket_destino_nome); ?></span>
+            </p>
+            
+            <?php if (!empty($upsell->descricao)): ?>
+            <p style="font-size: 12px; opacity: 0.9; margin-bottom: 0;">
+                <?php echo esc($upsell->descricao); ?>
+            </p>
+            <?php endif; ?>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <p style="margin-bottom: 5px; font-size: 14px; opacity: 0.8;">
+                Pague apenas a diferença:
+            </p>
+            <span style="font-size: 36px; font-weight: bold; color: #ffd700;">
+                <?php echo $upsell->getValorFinalFormatado(); ?>
+            </span>
+            <?php if ($upsell->temDesconto()): ?>
+            <br><span style="font-size: 12px; background: #ff6b6b; padding: 3px 10px; border-radius: 10px;">
+                <?php echo $upsell->desconto_percentual; ?>% de desconto!
+            </span>
+            <?php endif; ?>
+        </div>
+        
+        <a href="<?php echo site_url('checkout/upsell/' . $upsell->id); ?>" 
+           class="btn btn-lg" 
+           style="
+               background: #ffd700;
+               color: #333;
+               font-weight: bold;
+               padding: 15px 40px;
+               border-radius: 30px;
+               animation: pulse 2s infinite;
+               display: inline-block;
+               margin-bottom: 15px;
+           ">
+            <i class="bx bx-rocket me-2"></i>QUERO FAZER UPGRADE!
+        </a>
+        
+        <br>
+        
+        <button onclick="document.getElementById('upsellOverlay').style.display='none'" 
+                style="background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 14px; text-decoration: underline;">
+            Não, obrigado. Continuar sem upgrade
+        </button>
+    </div>
+</div>
+<?php endif; ?>
+
 <div class="row">
     <div class="col-lg-12">
         <div class="block">
