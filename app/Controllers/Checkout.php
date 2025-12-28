@@ -1889,6 +1889,22 @@ class Checkout extends BaseController
 				'valor' => $payment['value']
 			], $event_id);
 
+			// Salva os tickets comprados para exibir upsell na tela de obrigado
+			if (!isset($_SESSION['is_upsell'])) { // Só salva se não for um upsell
+				$ticketsParaUpsell = [];
+				if (isset($_SESSION['carrinho'])) {
+					foreach ($_SESSION['carrinho'] as $item) {
+						if (!empty($item['ticket_id'])) {
+							$ticketsParaUpsell[$item['ticket_id']] = $item['ticket_id'];
+						}
+					}
+				}
+				$_SESSION['tickets_upsell'] = $ticketsParaUpsell;
+				$_SESSION['pedido_upsell'] = $pedido_id ?? null;
+				$_SESSION['user_id_upsell'] = $user_id ?? $cliente->usuario_id ?? null;
+				$_SESSION['forma_pagamento_upsell'] = 'PIX';
+			}
+
 			unset($_SESSION['carrinho']);
 
 			// Redirecionar para a página do QR Code

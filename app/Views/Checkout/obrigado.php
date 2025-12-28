@@ -71,6 +71,8 @@ $event_id = session()->get('event_id');
 ?>
 
 <!-- OVERLAY DE UPSELL -->
+<?php if (!isset($upsells)) $upsells = []; ?>
+<!-- DEBUG: <?php echo 'Upsells count: ' . count($upsells); ?> -->
 <?php if (!empty($upsells)): ?>
 <?php $upsell = $upsells[0]; // Pega o primeiro upsell disponível ?>
 <div id="upsellOverlay" style="
