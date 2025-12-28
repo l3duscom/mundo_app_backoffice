@@ -1569,18 +1569,6 @@ class Checkout extends BaseController
 
 			$retorno['id'] = $payment['id'];
 
-			// Salva os tickets comprados para exibir upsell na tela de obrigado
-			$ticketsParaUpsell = [];
-			if (isset($_SESSION['carrinho'])) {
-				foreach ($_SESSION['carrinho'] as $item) {
-					if (!empty($item['ticket_id'])) {
-						$ticketsParaUpsell[$item['ticket_id']] = $item['ticket_id'];
-					}
-				}
-			}
-			$_SESSION['tickets_upsell'] = $ticketsParaUpsell;
-			$_SESSION['pedido_upsell'] = $pedido_id ?? null;
-			
 			unset($_SESSION['carrinho']);
 
 			return $this->response->setJSON($retorno);
@@ -1830,18 +1818,6 @@ class Checkout extends BaseController
 				'valor' => $payment['value']
 			], $event_id);
 
-			// Salva os tickets comprados para exibir upsell na tela de obrigado
-			$ticketsParaUpsell = [];
-			if (isset($_SESSION['carrinho'])) {
-				foreach ($_SESSION['carrinho'] as $item) {
-					if (!empty($item['ticket_id'])) {
-						$ticketsParaUpsell[$item['ticket_id']] = $item['ticket_id'];
-					}
-				}
-			}
-			$_SESSION['tickets_upsell'] = $ticketsParaUpsell;
-			$_SESSION['pedido_upsell'] = $pedido_id ?? null;
-			
 			unset($_SESSION['carrinho']);
 
 			// Redirecionar para a página do QR Code
@@ -2138,18 +2114,6 @@ class Checkout extends BaseController
 
 
 		$this->enviaEmailCortesia((object)$montaemail, $event_id);
-
-		// Salva os tickets comprados para exibir upsell na tela de obrigado
-		$ticketsParaUpsell = [];
-		if (isset($_SESSION['carrinho'])) {
-			foreach ($_SESSION['carrinho'] as $item) {
-				if (!empty($item['ticket_id'])) {
-					$ticketsParaUpsell[$item['ticket_id']] = $item['ticket_id'];
-				}
-			}
-		}
-		$_SESSION['tickets_upsell'] = $ticketsParaUpsell;
-		$_SESSION['pedido_upsell'] = $pedido_id ?? null;
 
 
 
