@@ -160,6 +160,10 @@ class Financeiro extends BaseController
                 $url = site_url("orcamentos/exibir/{$lancamento->referencia_id}");
                 $icon = '<i class="bx bx-calculator me-1"></i>';
                 break;
+            case 'artista_contratacoes':
+                $url = site_url("artista-contratacoes/exibir/{$lancamento->referencia_id}");
+                $icon = '<i class="bx bx-microphone me-1"></i>';
+                break;
         }
 
         if ($url) {
@@ -214,6 +218,10 @@ class Financeiro extends BaseController
                 break;
             case 'contas_pagar':
                 return site_url("contas-pagar/editar/{$lancamento->referencia_id}");
+            case 'orcamentos':
+                return site_url("orcamentos/exibir/{$lancamento->referencia_id}");
+            case 'artista_contratacoes':
+                return site_url("artista-contratacoes/exibir/{$lancamento->referencia_id}");
         }
 
         return null;
