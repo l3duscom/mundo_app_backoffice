@@ -319,6 +319,12 @@
                             <div class="menu-title">Artistas</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('/agentes'); ?>">
+                            <div class="parent-icon"><i class="bx bx-user-voice"></i></div>
+                            <div class="menu-title">Agentes</div>
+                        </a>
+                    </li>
 
                     <hr><li class="menu-label">EVENTO ATUAL</li>
                     <?php if (evento_selecionado()) : ?>

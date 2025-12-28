@@ -36,9 +36,31 @@
             <div class="card-body text-center">
                 <i class="bx bx-microphone" style="font-size: 3rem; color: var(--bs-primary);"></i>
                 <h5 class="mt-2 mb-1"><?php echo esc($artista->nome_artistico ?? '-'); ?></h5>
-                <p class="text-muted"><?php echo esc($artista->genero_musical ?? ''); ?></p>
+                <p class="text-muted mb-2"><?php echo esc($artista->genero_musical ?? ''); ?></p>
                 <?php echo $contratacao->exibeSituacao(); ?>
                 <p class="mt-2 mb-0"><code><?php echo esc($contratacao->codigo); ?></code></p>
+                
+                <?php if ($artista->telefone || $artista->email): ?>
+                <hr class="my-3">
+                <div class="text-start">
+                    <?php if ($artista->telefone): ?>
+                    <p class="mb-1 small">
+                        <i class="bx bx-phone me-1"></i><?php echo esc($artista->telefone); ?>
+                        <?php 
+                        $artistaWhatsapp = preg_replace('/\D/', '', $artista->telefone);
+                        if ($artistaWhatsapp): 
+                        ?>
+                        <a href="https://wa.me/55<?php echo $artistaWhatsapp; ?>" target="_blank" class="btn btn-sm btn-success ms-2" title="WhatsApp do Artista">
+                            <i class="bx bxl-whatsapp"></i>
+                        </a>
+                        <?php endif; ?>
+                    </p>
+                    <?php endif; ?>
+                    <?php if ($artista->email): ?>
+                    <p class="mb-0 small"><i class="bx bx-envelope me-1"></i><?php echo esc($artista->email); ?></p>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -67,6 +89,46 @@
                     <tr class="table-success"><td>Pago</td><td class="text-end">R$ <?php echo number_format($totais['pago'], 2, ',', '.'); ?></td></tr>
                     <tr class="table-warning"><td>Pendente</td><td class="text-end">R$ <?php echo number_format($totais['pendente'], 2, ',', '.'); ?></td></tr>
                 </table>
+            </div>
+        </div>
+
+        <!-- Agentes Vinculados -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6><i class="bx bx-user-voice me-2"></i>Agentes / Contatos</h6>
+                <?php if (!empty($agentesVinculados)): ?>
+                <ul class="list-unstyled mb-0">
+                    <?php foreach ($agentesVinculados as $ag): ?>
+                    <li class="mb-2 pb-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong><?php echo esc($ag->nome_fantasia ?: $ag->nome); ?></strong>
+                                <span class="badge bg-secondary ms-1"><?php echo \App\Models\ArtistaAgenteModel::FUNCOES[$ag->funcao] ?? $ag->funcao; ?></span>
+                                <?php if ($ag->principal): ?><span class="badge bg-primary ms-1">Principal</span><?php endif; ?>
+                                <?php if ($ag->telefone): ?><br><small class="text-muted"><i class="bx bx-phone me-1"></i><?php echo esc($ag->telefone); ?></small><?php endif; ?>
+                                <?php if ($ag->email): ?><br><small class="text-muted"><i class="bx bx-envelope me-1"></i><?php echo esc($ag->email); ?></small><?php endif; ?>
+                            </div>
+                            <div>
+                                <?php 
+                                $whatsapp = $ag->whatsapp ?: $ag->telefone;
+                                if ($whatsapp): 
+                                    $whatsappNumero = preg_replace('/\D/', '', $whatsapp);
+                                ?>
+                                <a href="https://wa.me/55<?php echo $whatsappNumero; ?>" target="_blank" class="btn btn-sm btn-success" title="WhatsApp">
+                                    <i class="bx bxl-whatsapp"></i>
+                                </a>
+                                <?php endif; ?>
+                                <a href="<?php echo site_url("agentes/exibir/{$ag->agente_id}"); ?>" class="btn btn-sm btn-outline-secondary" title="Ver Agente" target="_blank">
+                                    <i class="bx bx-link-external"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php else: ?>
+                <p class="text-muted text-center mb-0 small">Nenhum agente vinculado</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>

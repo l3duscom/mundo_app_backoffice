@@ -3,7 +3,8 @@
 <?php echo $this->section('titulo') ?> <?php echo $titulo; ?> <?php echo $this->endSection() ?>
 
 <?php echo $this->section('estilos') ?>
-<link href="<?php echo site_url('recursos/theme/'); ?>plugins/input-mask/css/inputmask.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <?php echo $this->endSection() ?>
 
 <?php echo $this->section('conteudo') ?>
@@ -53,49 +54,100 @@
 
 <?php echo $this->section('scripts') ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-var contatoIndex = <?php echo count($contatos ?? []); ?>;
+var agenteIndex = <?php echo count($agentesVinculados ?? []); ?>;
 
 $(document).ready(function() {
     // Máscaras
     $('.cpf').mask('000.000.000-00');
     $('.telefone').mask('(00) 00000-0000');
 
-    // Adicionar contato
-    $('#btnAdicionarContato').click(function() {
-        var html = `
-        <div class="row contato-row mb-2" data-index="${contatoIndex}">
-            <div class="col-md-2">
-                <select name="contatos[${contatoIndex}][tipo]" class="form-select form-select-sm">
-                    <option value="agente">Agente</option>
-                    <option value="empresario">Empresário</option>
-                    <option value="assessoria">Assessoria</option>
-                    <option value="tecnico">Técnico</option>
-                    <option value="outro">Outro</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <input type="text" name="contatos[${contatoIndex}][nome]" class="form-control form-control-sm" placeholder="Nome">
-            </div>
-            <div class="col-md-2">
-                <input type="text" name="contatos[${contatoIndex}][telefone]" class="form-control form-control-sm telefone" placeholder="Telefone">
-            </div>
-            <div class="col-md-3">
-                <input type="email" name="contatos[${contatoIndex}][email]" class="form-control form-control-sm" placeholder="E-mail">
-            </div>
-            <div class="col-md-1">
-                <button type="button" class="btn btn-sm btn-outline-danger btn-remover-contato"><i class="bx bx-trash"></i></button>
-            </div>
-        </div>`;
-        $('#container-contatos').append(html);
-        contatoIndex++;
-        $('.telefone').mask('(00) 00000-0000');
+    // Select2 para buscar agentes
+    $('#selectAgente').select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $('#modalAdicionarAgente'),
+        placeholder: 'Digite para buscar...',
+        allowClear: true,
+        ajax: {
+            url: '<?php echo site_url("agentes/pesquisar"); ?>',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return { q: params.term };
+            },
+            processResults: function(data) {
+                return { results: data.results };
+            },
+            cache: true
+        },
+        minimumInputLength: 1
     });
 
-    // Remover contato
-    $(document).on('click', '.btn-remover-contato', function() {
-        $(this).closest('.contato-row').remove();
+    // Abrir modal para vincular agente
+    $('#btnAdicionarAgente').click(function() {
+        $('#selectAgente').val(null).trigger('change');
+        $('#selectFuncao').val('agente');
+        $('#checkPrincipal').prop('checked', false);
+        $('#modalAdicionarAgente').modal('show');
+    });
+
+    // Confirmar vinculação
+    $('#btnConfirmarAgente').click(function() {
+        var agenteData = $('#selectAgente').select2('data')[0];
+        if (!agenteData) {
+            alert('Selecione um agente');
+            return;
+        }
+
+        // Verificar se já existe
+        if ($('#container-agentes').find('[data-agente-id="' + agenteData.id + '"]').length) {
+            alert('Este agente já está vinculado');
+            return;
+        }
+
+        var funcao = $('#selectFuncao').val();
+        var principal = $('#checkPrincipal').is(':checked');
+
+        var html = `
+        <div class="row agente-row mb-2 align-items-center" data-agente-id="${agenteData.id}">
+            <div class="col-md-4">
+                <input type="hidden" name="agentes[${agenteIndex}][agente_id]" value="${agenteData.id}">
+                <strong>${agenteData.text}</strong>
+            </div>
+            <div class="col-md-3">
+                <select name="agentes[${agenteIndex}][funcao]" class="form-select form-select-sm">
+                    <option value="agente" ${funcao === 'agente' ? 'selected' : ''}>Agente</option>
+                    <option value="empresario" ${funcao === 'empresario' ? 'selected' : ''}>Empresário</option>
+                    <option value="assessoria" ${funcao === 'assessoria' ? 'selected' : ''}>Assessoria</option>
+                    <option value="produtor" ${funcao === 'produtor' ? 'selected' : ''}>Produtor</option>
+                    <option value="tecnico" ${funcao === 'tecnico' ? 'selected' : ''}>Técnico</option>
+                    <option value="outro" ${funcao === 'outro' ? 'selected' : ''}>Outro</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="form-check">
+                    <input type="checkbox" name="agentes[${agenteIndex}][principal]" value="1" class="form-check-input" ${principal ? 'checked' : ''}>
+                    <label class="form-check-label small">Principal</label>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <a href="<?php echo site_url('agentes/exibir'); ?>/${agenteData.id}" class="btn btn-sm btn-outline-secondary" target="_blank" title="Ver Agente">
+                    <i class="bx bx-link-external"></i>
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger btn-remover-agente"><i class="bx bx-trash"></i></button>
+            </div>
+        </div>`;
+
+        $('#container-agentes').append(html);
+        agenteIndex++;
+        $('#modalAdicionarAgente').modal('hide');
+    });
+
+    // Remover agente
+    $(document).on('click', '.btn-remover-agente', function() {
+        $(this).closest('.agente-row').remove();
     });
 
     // Submit
@@ -108,7 +160,7 @@ $(document).ready(function() {
         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Salvando...');
         
         $.ajax({
-            url: '<?php echo site_url("artistas/atualizar"); ?>',
+            url: form.attr('action'),
             type: 'POST',
             data: form.serialize(),
             dataType: 'json',

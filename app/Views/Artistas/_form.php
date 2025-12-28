@@ -102,43 +102,93 @@
     </div>
 </div>
 
-<!-- Contatos (Agentes, Empresários, etc.) -->
+<!-- Agentes Vinculados -->
 <div class="row mt-4">
     <div class="col-12 mb-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h6 class="text-primary mb-0"><i class="bx bx-group me-2"></i>Agentes e Outros Contatos</h6>
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAdicionarContato">
-                <i class="bx bx-plus me-1"></i>Adicionar Contato
+            <h6 class="text-primary mb-0"><i class="bx bx-group me-2"></i>Agentes Vinculados</h6>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAdicionarAgente">
+                <i class="bx bx-plus me-1"></i>Vincular Agente
             </button>
         </div>
         <hr class="mt-2">
     </div>
 </div>
 
-<div id="container-contatos">
-    <?php if (!empty($contatos)): foreach ($contatos as $idx => $c): ?>
-    <div class="row contato-row mb-2" data-index="<?php echo $idx; ?>">
-        <div class="col-md-2">
-            <select name="contatos[<?php echo $idx; ?>][tipo]" class="form-select form-select-sm">
-                <option value="agente" <?php echo ($c->tipo ?? '') === 'agente' ? 'selected' : ''; ?>>Agente</option>
-                <option value="empresario" <?php echo ($c->tipo ?? '') === 'empresario' ? 'selected' : ''; ?>>Empresário</option>
-                <option value="assessoria" <?php echo ($c->tipo ?? '') === 'assessoria' ? 'selected' : ''; ?>>Assessoria</option>
-                <option value="tecnico" <?php echo ($c->tipo ?? '') === 'tecnico' ? 'selected' : ''; ?>>Técnico</option>
-                <option value="outro" <?php echo ($c->tipo ?? '') === 'outro' ? 'selected' : ''; ?>>Outro</option>
+<div id="container-agentes">
+    <?php if (!empty($agentesVinculados)): foreach ($agentesVinculados as $idx => $ag): ?>
+    <div class="row agente-row mb-2 align-items-center" data-agente-id="<?php echo $ag->agente_id; ?>">
+        <div class="col-md-4">
+            <input type="hidden" name="agentes[<?php echo $idx; ?>][agente_id]" value="<?php echo $ag->agente_id; ?>">
+            <strong><?php echo esc($ag->nome_fantasia ?: $ag->nome); ?></strong>
+            <small class="text-muted d-block"><?php echo esc($ag->email ?? ''); ?></small>
+        </div>
+        <div class="col-md-3">
+            <select name="agentes[<?php echo $idx; ?>][funcao]" class="form-select form-select-sm">
+                <option value="agente" <?php echo ($ag->funcao ?? '') === 'agente' ? 'selected' : ''; ?>>Agente</option>
+                <option value="empresario" <?php echo ($ag->funcao ?? '') === 'empresario' ? 'selected' : ''; ?>>Empresário</option>
+                <option value="assessoria" <?php echo ($ag->funcao ?? '') === 'assessoria' ? 'selected' : ''; ?>>Assessoria</option>
+                <option value="produtor" <?php echo ($ag->funcao ?? '') === 'produtor' ? 'selected' : ''; ?>>Produtor</option>
+                <option value="tecnico" <?php echo ($ag->funcao ?? '') === 'tecnico' ? 'selected' : ''; ?>>Técnico</option>
+                <option value="outro" <?php echo ($ag->funcao ?? '') === 'outro' ? 'selected' : ''; ?>>Outro</option>
             </select>
         </div>
-        <div class="col-md-3">
-            <input type="text" name="contatos[<?php echo $idx; ?>][nome]" class="form-control form-control-sm" placeholder="Nome" value="<?php echo esc($c->nome ?? ''); ?>">
+        <div class="col-md-2">
+            <div class="form-check">
+                <input type="checkbox" name="agentes[<?php echo $idx; ?>][principal]" value="1" class="form-check-input" <?php echo ($ag->principal ?? 0) ? 'checked' : ''; ?>>
+                <label class="form-check-label small">Principal</label>
+            </div>
         </div>
         <div class="col-md-2">
-            <input type="text" name="contatos[<?php echo $idx; ?>][telefone]" class="form-control form-control-sm telefone" placeholder="Telefone" value="<?php echo esc($c->telefone ?? ''); ?>">
-        </div>
-        <div class="col-md-3">
-            <input type="email" name="contatos[<?php echo $idx; ?>][email]" class="form-control form-control-sm" placeholder="E-mail" value="<?php echo esc($c->email ?? ''); ?>">
-        </div>
-        <div class="col-md-1">
-            <button type="button" class="btn btn-sm btn-outline-danger btn-remover-contato"><i class="bx bx-trash"></i></button>
+            <a href="<?php echo site_url("agentes/exibir/{$ag->agente_id}"); ?>" class="btn btn-sm btn-outline-secondary" target="_blank" title="Ver Agente">
+                <i class="bx bx-link-external"></i>
+            </a>
+            <button type="button" class="btn btn-sm btn-outline-danger btn-remover-agente"><i class="bx bx-trash"></i></button>
         </div>
     </div>
     <?php endforeach; endif; ?>
+</div>
+
+<p class="text-muted small mt-2">
+    <i class="bx bx-info-circle me-1"></i>
+    Não encontrou o agente? <a href="<?php echo site_url('agentes/criar'); ?>" target="_blank">Cadastre um novo agente</a>
+</p>
+
+<!-- Modal Adicionar Agente -->
+<div class="modal fade" id="modalAdicionarAgente" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bx bx-user-plus me-2"></i>Vincular Agente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Selecione o Agente</label>
+                    <select id="selectAgente" class="form-select" style="width: 100%"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Função</label>
+                    <select id="selectFuncao" class="form-select">
+                        <option value="agente">Agente</option>
+                        <option value="empresario">Empresário</option>
+                        <option value="assessoria">Assessoria</option>
+                        <option value="produtor">Produtor</option>
+                        <option value="tecnico">Técnico</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" id="checkPrincipal" class="form-check-input">
+                    <label class="form-check-label" for="checkPrincipal">Contato Principal</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmarAgente">
+                    <i class="bx bx-check me-1"></i>Vincular
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

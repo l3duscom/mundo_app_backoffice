@@ -481,6 +481,25 @@ $routes->group('artista-contratacoes', function ($routes) {
     $routes->post('removerAnexo', 'ArtistaContratacoes::removerAnexo');
 });
 
+// ========================================
+// ROTAS DE AGENTES
+// ========================================
+$routes->group('agentes', function ($routes) {
+    $routes->get('/', 'Agentes::index');
+    $routes->get('criar', 'Agentes::criar');
+    $routes->post('cadastrar', 'Agentes::cadastrar');
+    $routes->get('exibir/(:num)', 'Agentes::exibir/$1');
+    $routes->get('editar/(:num)', 'Agentes::editar/$1');
+    $routes->post('atualizar', 'Agentes::atualizar');
+    $routes->get('excluir/(:num)', 'Agentes::excluir/$1');
+    $routes->get('pesquisar', 'Agentes::pesquisar');
+    // Anexos
+    $routes->post('uploadAnexo', 'Agentes::uploadAnexo');
+    $routes->get('downloadAnexo/(:num)', 'Agentes::downloadAnexo/$1');
+    $routes->get('visualizarAnexo/(:num)', 'Agentes::visualizarAnexo/$1');
+    $routes->post('removerAnexo', 'Agentes::removerAnexo');
+});
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

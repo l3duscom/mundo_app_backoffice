@@ -13,6 +13,7 @@ use App\Models\ArtistaAlimentacaoModel;
 use App\Models\ArtistaCustoExtraModel;
 use App\Models\ArtistaParcelaModel;
 use App\Models\ArtistaContratacaoAnexoModel;
+use App\Models\ArtistaAgenteModel;
 use App\Models\LancamentoFinanceiroModel;
 use App\Models\EventoModel;
 
@@ -67,10 +68,13 @@ class ArtistaContratacoes extends BaseController
         $extraModel = new ArtistaCustoExtraModel();
         $parcelaModel = new ArtistaParcelaModel();
 
+        $agenteModel = new ArtistaAgenteModel();
+
         $data = [
             'titulo' => 'Contratação ' . $contratacao->codigo,
             'contratacao' => $contratacao,
             'artista' => $this->artistaModel->find($contratacao->artista_id),
+            'agentesVinculados' => $agenteModel->buscarPorArtista($contratacao->artista_id),
             'voos' => $vooModel->buscaPorContratacao($id),
             'hospedagens' => $hospModel->buscaPorContratacao($id),
             'translados' => $transModel->buscaPorContratacao($id),

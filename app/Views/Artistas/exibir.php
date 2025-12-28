@@ -70,36 +70,45 @@
 
     <!-- Coluna Direita - Contatos e Contratações -->
     <div class="col-lg-8">
-        <!-- Contatos (Agentes, etc.) -->
+        <!-- Agentes Vinculados -->
         <div class="card shadow radius-10 mb-3">
             <div class="card-body">
-                <h6 class="card-title"><i class="bx bx-group me-2"></i>Agentes e Contatos</h6>
+                <h6 class="card-title"><i class="bx bx-group me-2"></i>Agentes Vinculados</h6>
                 
-                <?php if (!empty($contatos)): ?>
+                <?php if (!empty($agentesVinculados)): ?>
                 <div class="table-responsive">
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Tipo</th>
+                                <th>Função</th>
                                 <th>Nome</th>
                                 <th>Telefone</th>
                                 <th>E-mail</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($contatos as $c): ?>
+                            <?php foreach ($agentesVinculados as $ag): ?>
                             <tr>
-                                <td><span class="badge bg-secondary"><?php echo ucfirst($c->tipo); ?></span></td>
-                                <td><?php echo esc($c->nome); ?></td>
-                                <td><?php echo esc($c->telefone ?? '-'); ?></td>
-                                <td><?php echo esc($c->email ?? '-'); ?></td>
+                                <td>
+                                    <span class="badge bg-secondary"><?php echo \App\Models\ArtistaAgenteModel::FUNCOES[$ag->funcao] ?? ucfirst($ag->funcao); ?></span>
+                                    <?php if ($ag->principal): ?><span class="badge bg-primary ms-1">Principal</span><?php endif; ?>
+                                </td>
+                                <td><?php echo esc($ag->nome_fantasia ?: $ag->nome); ?></td>
+                                <td><?php echo esc($ag->telefone ?? '-'); ?></td>
+                                <td><?php echo esc($ag->email ?? '-'); ?></td>
+                                <td>
+                                    <a href="<?php echo site_url("agentes/exibir/{$ag->agente_id}"); ?>" class="btn btn-sm btn-outline-secondary" title="Ver Agente">
+                                        <i class="bx bx-link-external"></i>
+                                    </a>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
                 <?php else: ?>
-                <p class="text-muted text-center mb-0">Nenhum contato cadastrado</p>
+                <p class="text-muted text-center mb-0">Nenhum agente vinculado</p>
                 <?php endif; ?>
             </div>
         </div>

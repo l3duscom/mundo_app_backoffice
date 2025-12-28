@@ -5,19 +5,19 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Entities\Artista;
 use App\Models\ArtistaModel;
-use App\Models\ArtistaContatoModel;
+use App\Models\ArtistaAgenteModel;
 use App\Models\ArtistaContratacaoModel;
 
 class Artistas extends BaseController
 {
     protected $artistaModel;
-    protected $contatoModel;
+    protected $agenteModel;
     protected $contratacaoModel;
 
     public function __construct()
     {
         $this->artistaModel = new ArtistaModel();
-        $this->contatoModel = new ArtistaContatoModel();
+        $this->agenteModel = new ArtistaAgenteModel();
         $this->contratacaoModel = new ArtistaContratacaoModel();
     }
 
@@ -79,7 +79,7 @@ class Artistas extends BaseController
         $data = [
             'titulo' => 'Novo Artista',
             'artista' => $artista,
-            'contatos' => [],
+            'agentesVinculados' => [],
         ];
 
         return view('Artistas/criar', $data);
@@ -107,8 +107,8 @@ class Artistas extends BaseController
 
         $artistaId = $this->artistaModel->getInsertID();
 
-        // Salvar contatos
-        $this->salvarContatos($artistaId, $this->request->getPost('contatos'));
+        // Salvar agentes vinculados
+        $this->salvarAgentes($artistaId, $this->request->getPost('agentes'));
 
         if ($isAjax) {
             return $this->response->setJSON([
@@ -131,7 +131,7 @@ class Artistas extends BaseController
         $data = [
             'titulo' => $artista->nome_artistico,
             'artista' => $artista,
-            'contatos' => $this->contatoModel->buscaPorArtista($id),
+            'agentesVinculados' => $this->agenteModel->buscarPorArtista($id),
             'contratacoes' => $this->contratacaoModel->buscaPorArtista($id),
         ];
 
@@ -148,7 +148,7 @@ class Artistas extends BaseController
         $data = [
             'titulo' => 'Editar: ' . $artista->nome_artistico,
             'artista' => $artista,
-            'contatos' => $this->contatoModel->buscaPorArtista($id),
+            'agentesVinculados' => $this->agenteModel->buscarPorArtista($id),
         ];
 
         return view('Artistas/editar', $data);
@@ -175,8 +175,8 @@ class Artistas extends BaseController
             return redirect()->back()->withInput()->with('erro', $erro);
         }
 
-        // Atualizar contatos
-        $this->salvarContatos($id, $this->request->getPost('contatos'));
+        // Atualizar agentes vinculados
+        $this->salvarAgentes($id, $this->request->getPost('agentes'));
 
         if ($isAjax) {
             return $this->response->setJSON([
@@ -212,26 +212,25 @@ class Artistas extends BaseController
     }
 
     /**
-     * Salva contatos do artista
+     * Salva agentes vinculados ao artista
      */
-    private function salvarContatos(int $artistaId, ?array $contatos): void
+    private function salvarAgentes(int $artistaId, ?array $agentes): void
     {
-        // Remove contatos antigos
-        $this->contatoModel->where('artista_id', $artistaId)->delete();
+        // Remove vínculos antigos
+        $db = \Config\Database::connect();
+        $db->table('artista_agentes')->where('artista_id', $artistaId)->delete();
 
-        if (empty($contatos)) return;
+        if (empty($agentes)) return;
 
-        foreach ($contatos as $contato) {
-            if (empty($contato['nome'])) continue;
+        foreach ($agentes as $ag) {
+            if (empty($ag['agente_id'])) continue;
 
-            $this->contatoModel->insert([
-                'artista_id' => $artistaId,
-                'tipo' => $contato['tipo'] ?? 'outro',
-                'nome' => $contato['nome'],
-                'telefone' => $contato['telefone'] ?? null,
-                'email' => $contato['email'] ?? null,
-                'observacoes' => $contato['observacoes'] ?? null,
-            ]);
+            $this->agenteModel->vincular(
+                $artistaId,
+                (int) $ag['agente_id'],
+                $ag['funcao'] ?? 'agente',
+                isset($ag['principal']) && $ag['principal']
+            );
         }
     }
 
