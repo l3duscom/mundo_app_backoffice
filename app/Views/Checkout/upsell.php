@@ -23,6 +23,22 @@
     font-weight: bold;
     color: #ffd700;
 }
+.payment-option {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 15px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.payment-option:hover, .payment-option.selected {
+    border-color: #ffd700;
+    background: rgba(255,255,255,0.2);
+}
+.payment-option i {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
 </style>
 <?php echo $this->endSection() ?>
 
@@ -66,16 +82,32 @@
                 
                 <hr style="border-color: rgba(255,255,255,0.2);">
                 
-                <p class="small opacity-75 mb-4">
-                    O valor será cobrado no mesmo cartão/forma de pagamento utilizada na compra original.
-                </p>
+                <p class="mb-3">Escolha a forma de pagamento:</p>
                 
-                <form action="<?php echo site_url('checkout/processarUpsell'); ?>" method="post">
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="payment-option" id="opt-pix" onclick="selectPayment('PIX')">
+                            <i class="bx bx-qr"></i>
+                            <div>PIX</div>
+                            <small style="opacity: 0.7;">Pagamento instantâneo</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="payment-option" id="opt-cartao" onclick="selectPayment('CREDIT_CARD')">
+                            <i class="bx bx-credit-card"></i>
+                            <div>Cartão</div>
+                            <small style="opacity: 0.7;">Crédito</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="formUpsell" action="<?php echo site_url('checkout/processarUpsellPagamento'); ?>" method="post">
                     <input type="hidden" name="<?php echo csrf_token(); ?>" value="<?php echo csrf_hash(); ?>">
                     <input type="hidden" name="upsell_id" value="<?php echo $upsell->id; ?>">
+                    <input type="hidden" name="forma_pagamento" id="forma_pagamento" value="PIX">
                     
                     <button type="submit" class="btn btn-lg" style="background: #ffd700; color: #333; font-weight: bold; padding: 15px 50px; border-radius: 30px;">
-                        <i class="bx bx-check-circle me-2"></i>CONFIRMAR UPGRADE
+                        <i class="bx bx-check-circle me-2"></i>PAGAR UPGRADE
                     </button>
                 </form>
                 
@@ -93,5 +125,15 @@
         </div>
     </div>
 </div>
+
+<script>
+function selectPayment(type) {
+    document.getElementById('forma_pagamento').value = type;
+    document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+    document.getElementById('opt-' + (type === 'PIX' ? 'pix' : 'cartao')).classList.add('selected');
+}
+// Seleciona PIX por padrão
+document.getElementById('opt-pix').classList.add('selected');
+</script>
 
 <?php echo $this->endSection() ?>
