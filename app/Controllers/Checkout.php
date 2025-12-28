@@ -850,6 +850,16 @@ class Checkout extends BaseController
 
 			$this->pedidoModel->update($pedidoId, ['status' => 'PENDING_PAYMENT']);
 
+			// Atribui pontos pela compra do upsell (mesmo pendente)
+			$pontosService = new \App\Services\PontosCompraService();
+			$pontosService->atribuirPontosPorCompra(
+				$userId,
+				$upsell->event_id,
+				$pedidoId,
+				$valorUpgrade,
+				1 // Lote 1 para upsells (máximo de pontos)
+			);
+
 			return redirect()->to('checkout/obrigado-upgrade')->with('sucesso', 'Upgrade solicitado! Pagamento pendente.');
 
 		} catch (\Exception $e) {

@@ -2,6 +2,11 @@
 
 <?php echo $this->section('titulo') ?> <?php echo $titulo; ?> <?php echo $this->endSection() ?>
 
+<?php echo $this->section('estilos') ?>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+<?php echo $this->endSection() ?>
+
 <?php echo $this->section('conteudo') ?>
 
 <div class="page-breadcrumb d-sm-flex align-items-center mb-3">
@@ -49,9 +54,18 @@
 
 <?php echo $this->section('scripts') ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
     $('.money').mask('#.##0,00', {reverse: true});
+
+    // Inicializa Select2 nos selects de ticket
+    $('#ticketOrigem, #ticketDestino').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Digite para pesquisar...',
+        allowClear: true,
+        width: '100%'
+    });
 
     // Calcula diferença ao mudar tickets
     function calcularDiferenca() {
