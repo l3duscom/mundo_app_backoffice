@@ -412,6 +412,19 @@ class Checkout extends BaseController
 
 
 			if ($payment['status'] == 'paid' || $payment['status'] == 'CONFIRMED' || $payment['status'] == 'RECEIVED') {
+				// Salva os tickets comprados para exibir upsell na tela de obrigado
+				$ticketsParaUpsell = [];
+				if (isset($_SESSION['carrinho'])) {
+					foreach ($_SESSION['carrinho'] as $item) {
+						if (!empty($item['ticket_id'])) {
+							$ticketsParaUpsell[$item['ticket_id']] = $item['ticket_id'];
+						}
+					}
+				}
+				$_SESSION['tickets_upsell'] = $ticketsParaUpsell;
+				$_SESSION['pedido_upsell'] = $pedido_id ?? null;
+				$_SESSION['user_id_upsell'] = $user_id ?? null;
+				
 				unset($_SESSION['carrinho']);
 				return redirect()->to(site_url("checkout/obrigado/"));
 			} else {
@@ -615,24 +628,39 @@ class Checkout extends BaseController
 		$upsellModel = new \App\Models\TicketUpsellModel();
 		$upsellsDisponiveis = [];
 		
-		// Pegar os ingressos comprados da sessão ou do último pedido
+		// Pegar os tickets salvos na sessão durante o checkout
 		$ticketsComprados = [];
-		if (isset($_SESSION['ingressos_comprados']) && is_array($_SESSION['ingressos_comprados'])) {
-			$ticketsComprados = $_SESSION['ingressos_comprados'];
-		} elseif ($id) {
-			// Busca último ingresso comprado pelo usuário
-			$ingressoModel = new \App\Models\IngressoModel();
-			$ultimosIngressos = $ingressoModel->where('user_id', $id)
+		
+		// Primeira opção: tickets salvos durante o checkout (para guest checkout)
+		if (isset($_SESSION['tickets_upsell']) && is_array($_SESSION['tickets_upsell']) && !empty($_SESSION['tickets_upsell'])) {
+			$ticketsComprados = $_SESSION['tickets_upsell'];
+		} 
+		// Segunda opção: buscar pelo usuário logado
+		elseif ($id) {
+			// Busca último pedido confirmado do usuário no evento
+			$ultimoPedido = $this->pedidoModel
+				->where('user_id', $id)
+				->where('evento_id', $event_id)
+				->whereIn('status', ['CONFIRMED', 'RECEIVED', 'paid', 'PENDING'])
 				->orderBy('id', 'DESC')
-				->limit(5)
-				->findAll();
+				->first();
 			
-			foreach ($ultimosIngressos as $ing) {
-				if ($ing->ticket_id) {
-					$ticketsComprados[$ing->ticket_id] = $ing->ticket_id;
+			if ($ultimoPedido) {
+				// Busca ingressos desse pedido
+				$ingressosDoPedido = $this->ingressoModel
+					->where('pedido_id', $ultimoPedido->id)
+					->findAll();
+				
+				foreach ($ingressosDoPedido as $ing) {
+					if ($ing->ticket_id) {
+						$ticketsComprados[$ing->ticket_id] = $ing->ticket_id;
+					}
 				}
 			}
 		}
+
+		// Log para debug
+		log_message('debug', 'Upsell - User ID: ' . ($id ?? 'null') . ', Tickets: ' . json_encode($ticketsComprados));
 
 		// Busca upsells para cada ticket comprado
 		foreach ($ticketsComprados as $ticketId) {
@@ -641,6 +669,8 @@ class Checkout extends BaseController
 				$upsellsDisponiveis[] = $u;
 			}
 		}
+		
+		log_message('debug', 'Upsell - Encontrados: ' . count($upsellsDisponiveis));
 
 		$data = [
 			'titulo' => 'Comprar ingressos',
@@ -1634,6 +1664,18 @@ class Checkout extends BaseController
 				$this->enviaEmailPedidoCartao($cliente, $event_id);
 
 				if (in_array($status, ['CONFIRMED', 'RECEIVED'])) {
+					// Salva os tickets comprados para exibir upsell na tela de obrigado
+					$ticketsParaUpsell = [];
+					if (isset($_SESSION['carrinho'])) {
+						foreach ($_SESSION['carrinho'] as $item) {
+							if (!empty($item['ticket_id'])) {
+								$ticketsParaUpsell[$item['ticket_id']] = $item['ticket_id'];
+							}
+						}
+					}
+					$_SESSION['tickets_upsell'] = $ticketsParaUpsell;
+					$_SESSION['pedido_upsell'] = $pedido_id ?? null;
+					
 					unset($_SESSION['carrinho']);
 					return redirect()->to(site_url("checkout/obrigado/"));
 				} else {
