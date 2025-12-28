@@ -17,6 +17,8 @@ class Orcamento extends Entity
         'valor_total' => 0.00,
         'valor_desconto' => 0.00,
         'valor_final' => 0.00,
+        'forma_pagamento' => null,
+        'quantidade_parcelas' => 1,
         'data_validade' => null,
         'data_aprovacao' => null,
         'observacoes' => null,
@@ -32,6 +34,7 @@ class Orcamento extends Entity
         'valor_total' => 'float',
         'valor_desconto' => 'float',
         'valor_final' => 'float',
+        'quantidade_parcelas' => 'integer',
     ];
 
     protected $dates = ['data_validade', 'data_aprovacao', 'created_at', 'updated_at', 'deleted_at'];

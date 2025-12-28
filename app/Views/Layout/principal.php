@@ -312,10 +312,17 @@
                             <div class="menu-title">Fornecedores</div>
                         </a>
                     </li>
+                    
+                    <li>
+                        <a href="<?php echo site_url('/artistas'); ?>">
+                            <div class="parent-icon"><i class="bx bx-microphone"></i></div>
+                            <div class="menu-title">Artistas</div>
+                        </a>
+                    </li>
 
-                    <hr>
+                    <hr><li class="menu-label">EVENTO ATUAL</li>
                     <?php if (evento_selecionado()) : ?>
-                        <li class="menu-label">EVENTO ATUAL</li>
+                        
                         <li>
                             <a href="<?php echo site_url('/dashboard-vendas'); ?>">
                                 <div class="parent-icon"><i class="bi bi-graph-up-arrow"></i>
@@ -356,6 +363,13 @@
                                 <div class="parent-icon"><i class="bx bx-calculator"></i>
                                 </div>
                                 <div class="menu-title">Orçamentos</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo site_url('/artista-contratacoes'); ?>">
+                                <div class="parent-icon"><i class="bx bx-microphone"></i>
+                                </div>
+                                <div class="menu-title">Contratações</div>
                             </a>
                         </li>
                         <li>

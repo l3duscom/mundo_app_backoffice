@@ -39,6 +39,38 @@
     </div>
 </div>
 
+<!-- Pagamento -->
+<div class="row mt-4">
+    <div class="col-12 mb-3">
+        <h6 class="text-primary"><i class="bx bx-credit-card me-2"></i>Pagamento</h6>
+        <hr class="mt-0">
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label class="form-control-label">Forma de Pagamento</label>
+        <select name="forma_pagamento" class="form-select">
+            <option value="">Selecione</option>
+            <option value="PIX" <?php echo ($orcamento->forma_pagamento ?? '') === 'PIX' ? 'selected' : ''; ?>>PIX</option>
+            <option value="Cartão de Crédito" <?php echo ($orcamento->forma_pagamento ?? '') === 'Cartão de Crédito' ? 'selected' : ''; ?>>Cartão de Crédito</option>
+            <option value="Cartão de Débito" <?php echo ($orcamento->forma_pagamento ?? '') === 'Cartão de Débito' ? 'selected' : ''; ?>>Cartão de Débito</option>
+            <option value="Boleto" <?php echo ($orcamento->forma_pagamento ?? '') === 'Boleto' ? 'selected' : ''; ?>>Boleto</option>
+            <option value="Transferência" <?php echo ($orcamento->forma_pagamento ?? '') === 'Transferência' ? 'selected' : ''; ?>>Transferência</option>
+            <option value="Dinheiro" <?php echo ($orcamento->forma_pagamento ?? '') === 'Dinheiro' ? 'selected' : ''; ?>>Dinheiro</option>
+        </select>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label class="form-control-label">Quantidade de Parcelas</label>
+        <input type="number" name="quantidade_parcelas" class="form-control" min="1" max="24" value="<?php echo $orcamento->quantidade_parcelas ?? 1; ?>">
+        <small class="text-muted">Parcelas serão geradas ao aprovar o orçamento</small>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label class="form-control-label">Data 1ª Parcela</label>
+        <input type="date" name="data_primeira_parcela" class="form-control" value="<?php echo date('Y-m-d'); ?>">
+    </div>
+</div>
+
 <!-- Itens do Orçamento -->
 <div class="col-12 mb-3 mt-4">
     <h6 class="text-primary"><i class="bx bx-list-ul me-2"></i>Itens do Orçamento</h6>

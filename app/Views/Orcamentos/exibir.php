@@ -203,6 +203,73 @@
             </div>
         </div>
 
+        <!-- Parcelas -->
+        <?php if (!empty($parcelas)): ?>
+        <div class="card shadow radius-10 mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="card-title mb-0"><i class="bx bx-credit-card me-2"></i>Parcelas</h6>
+                    <div>
+                        <span class="badge bg-success me-2"><?php echo $totaisParcelas['pagas']; ?> pagas</span>
+                        <span class="badge bg-warning"><?php echo $totaisParcelas['pendentes']; ?> pendentes</span>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th class="text-center" style="width: 60px;">#</th>
+                                <th>Vencimento</th>
+                                <th class="text-end">Valor</th>
+                                <th class="text-center">Status</th>
+                                <th>Pagamento</th>
+                                <th class="text-center" style="width: 100px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($parcelas as $parcela): ?>
+                            <tr>
+                                <td class="text-center"><?php echo $parcela->numero_parcela; ?></td>
+                                <td><?php echo $parcela->getDataVencimentoFormatada(); ?></td>
+                                <td class="text-end"><?php echo $parcela->getValorFormatado(); ?></td>
+                                <td class="text-center"><?php echo $parcela->exibeStatus(); ?></td>
+                                <td>
+                                    <?php if ($parcela->data_pagamento): ?>
+                                        <?php 
+                                            $dataPag = is_string($parcela->data_pagamento) ? new \DateTime($parcela->data_pagamento) : $parcela->data_pagamento;
+                                            echo $dataPag->format('d/m/Y'); 
+                                        ?>
+                                        <?php if ($parcela->forma_pagamento): ?>
+                                            <small class="text-muted">(<?php echo esc($parcela->forma_pagamento); ?>)</small>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="text-center">
+                                    <?php if ($parcela->status === 'pendente' || $parcela->status === 'vencido'): ?>
+                                    <button type="button" class="btn btn-sm btn-success btn-pagar-parcela" data-id="<?php echo $parcela->id; ?>" title="Marcar como paga">
+                                        <i class="bx bx-check"></i>
+                                    </button>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light">
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td class="text-end"><strong>R$ <?php echo number_format($totaisParcelas['total'], 2, ',', '.'); ?></strong></td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <!-- Anexos -->
         <div class="card shadow radius-10">
             <div class="card-body">
@@ -371,6 +438,32 @@ $(document).ready(function() {
                     return;
                 }
                 $('#anexo-' + anexoId).fadeOut();
+            }
+        });
+    });
+
+    // Pagar parcela
+    $('.btn-pagar-parcela').click(function() {
+        var parcelaId = $(this).data('id');
+        var formaPagamento = prompt('Forma de pagamento (deixe em branco para pular):', '');
+        
+        if (!confirm('Confirma o pagamento desta parcela?')) return;
+        
+        $.ajax({
+            url: '<?php echo site_url("orcamentos/pagarParcela"); ?>',
+            type: 'POST',
+            data: {
+                '<?php echo csrf_token(); ?>': '<?php echo csrf_hash(); ?>',
+                parcela_id: parcelaId,
+                forma_pagamento: formaPagamento
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.erro) {
+                    alert(response.erro);
+                    return;
+                }
+                location.reload();
             }
         });
     });

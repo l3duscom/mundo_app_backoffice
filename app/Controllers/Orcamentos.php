@@ -154,11 +154,15 @@ class Orcamentos extends BaseController
         $orcamento = $this->buscaOrcamentoOu404($id);
         $orcamento = $this->orcamentoModel->buscaOrcamentoCompleto($id);
 
+        $parcelaModel = new \App\Models\OrcamentoParcelaModel();
+
         $data = [
             'titulo' => 'Orçamento ' . $orcamento->codigo,
             'orcamento' => $orcamento,
             'itens' => $this->itemModel->buscarPorOrcamento($id),
             'anexos' => $this->anexoModel->buscarPorOrcamento($id),
+            'parcelas' => $parcelaModel->buscaPorOrcamento($id),
+            'totaisParcelas' => $parcelaModel->calculaTotais($id),
         ];
 
         return view('Orcamentos/exibir', $data);
@@ -257,10 +261,18 @@ class Orcamentos extends BaseController
 
         $dataUpdate = ['situacao' => $novaSituacao];
 
-        // Se aprovando, registrar data e criar lançamento financeiro
+        // Se aprovando, registrar data, criar lançamento financeiro e gerar parcelas
         if ($novaSituacao === 'aprovado') {
             $dataUpdate['data_aprovacao'] = date('Y-m-d');
-            $this->criarLancamentoFinanceiro($orcamento);
+            
+            // Gerar parcelas (lançamento financeiro será criado ao pagar cada parcela)
+            $parcelaModel = new \App\Models\OrcamentoParcelaModel();
+            $parcelaModel->gerarParcelas(
+                $orcamento->id,
+                $orcamento->quantidade_parcelas ?? 1,
+                $orcamento->valor_final,
+                date('Y-m-d')
+            );
         }
 
         $this->orcamentoModel->update($id, $dataUpdate);
@@ -490,6 +502,32 @@ class Orcamentos extends BaseController
     }
 
     /**
+     * Cria lançamento financeiro ao pagar parcela do orçamento
+     */
+    private function criarLancamentoFinanceiroParcela($orcamento, $parcela): void
+    {
+        $lancamentoModel = new LancamentoFinanceiroModel();
+
+        // Verifica se já existe lançamento para esta parcela
+        if ($lancamentoModel->existeReferencia('orcamento_parcelas', $parcela->id)) {
+            return;
+        }
+
+        $lancamentoModel->insert([
+            'event_id' => $orcamento->event_id,
+            'tipo' => 'SAIDA',
+            'origem' => 'ORCAMENTO',
+            'referencia_tipo' => 'orcamentos',
+            'referencia_id' => $orcamento->id,
+            'descricao' => "Orçamento #{$orcamento->codigo} - Parcela {$parcela->numero_parcela}/{$orcamento->quantidade_parcelas}",
+            'valor' => $parcela->valor,
+            'data_lancamento' => date('Y-m-d'),
+            'status' => 'pago',
+            'categoria' => 'Fornecedores',
+        ]);
+    }
+
+    /**
      * Limpa valor monetário
      */
     private function limparValor($valor): float
@@ -510,5 +548,42 @@ class Orcamentos extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Orçamento não encontrado');
         }
         return $orcamento;
+    }
+
+    /**
+     * Marcar parcela como paga (AJAX)
+     */
+    public function pagarParcela()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $parcelaId = $this->request->getPost('parcela_id');
+        $formaPagamento = $this->request->getPost('forma_pagamento');
+
+        $parcelaModel = new \App\Models\OrcamentoParcelaModel();
+        $parcela = $parcelaModel->find($parcelaId);
+
+        if (!$parcela) {
+            $retorno['erro'] = 'Parcela não encontrada';
+            return $this->response->setJSON($retorno);
+        }
+
+        if (!$parcelaModel->marcarComoPaga($parcelaId, $formaPagamento)) {
+            $retorno['erro'] = 'Erro ao registrar pagamento';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Buscar orçamento e criar lançamento financeiro para esta parcela
+        $orcamento = $this->orcamentoModel->buscaOrcamentoCompleto($parcela->orcamento_id);
+        if ($orcamento) {
+            $this->criarLancamentoFinanceiroParcela($orcamento, $parcela);
+        }
+
+        $retorno['sucesso'] = 'Parcela marcada como paga!';
+        return $this->response->setJSON($retorno);
     }
 }

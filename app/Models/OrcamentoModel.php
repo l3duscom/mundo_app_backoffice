@@ -19,6 +19,8 @@ class OrcamentoModel extends Model
         'valor_total',
         'valor_desconto',
         'valor_final',
+        'forma_pagamento',
+        'quantidade_parcelas',
         'data_validade',
         'data_aprovacao',
         'observacoes',

@@ -458,7 +458,28 @@ $routes->group('conquistas-admin', function ($routes) {
     $routes->post('revogar-usuario', 'Conquistas::revogarConquista');
 });
 
-
+// ========================================
+// ROTAS DE CONTRATAÇÕES DE ARTISTAS
+// ========================================
+$routes->group('artista-contratacoes', function ($routes) {
+    $routes->get('/', 'ArtistaContratacoes::index');
+    $routes->get('criar', 'ArtistaContratacoes::criar');
+    $routes->post('cadastrar', 'ArtistaContratacoes::cadastrar');
+    $routes->get('exibir/(:num)', 'ArtistaContratacoes::exibir/$1');
+    $routes->post('confirmar', 'ArtistaContratacoes::confirmar');
+    $routes->post('pagarParcela', 'ArtistaContratacoes::pagarParcela');
+    $routes->post('pagarCusto', 'ArtistaContratacoes::pagarCusto');
+    $routes->post('adicionarVoo', 'ArtistaContratacoes::adicionarVoo');
+    $routes->post('adicionarHospedagem', 'ArtistaContratacoes::adicionarHospedagem');
+    $routes->post('adicionarTranslado', 'ArtistaContratacoes::adicionarTranslado');
+    $routes->post('adicionarAlimentacao', 'ArtistaContratacoes::adicionarAlimentacao');
+    $routes->post('adicionarExtra', 'ArtistaContratacoes::adicionarExtra');
+    // Anexos
+    $routes->post('uploadAnexo', 'ArtistaContratacoes::uploadAnexo');
+    $routes->get('downloadAnexo/(:num)', 'ArtistaContratacoes::downloadAnexo/$1');
+    $routes->get('visualizarAnexo/(:num)', 'ArtistaContratacoes::visualizarAnexo/$1');
+    $routes->post('removerAnexo', 'ArtistaContratacoes::removerAnexo');
+});
 
 /*
  * --------------------------------------------------------------------
