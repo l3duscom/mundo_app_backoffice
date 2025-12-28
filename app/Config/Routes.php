@@ -47,14 +47,6 @@ $routes->post('import-csv', 'DeclarationsController::importCsv');
 $routes->get('eventos/buscar', 'Eventos::buscarEventos');
 $routes->post('cron', 'Cron::index');
 
-// Rotas do Checkout Upsell (com hífens)
-$routes->get('checkout/obrigado-upgrade', 'Checkout::obrigadoUpgrade');
-$routes->get('checkout/upsell/(:num)', 'Checkout::upsell/$1');
-$routes->post('checkout/processarUpsell', 'Checkout::processarUpsell');
-$routes->post('checkout/processarUpsellPagamento', 'Checkout::processarUpsellPagamento');
-$routes->get('checkout/upsellPix/(:num)', 'Checkout::upsellPix/$1');
-$routes->get('checkout/upsellCartao/(:num)', 'Checkout::upsellCartao/$1');
-
 $routes->group(
     'cron',
     function ($routes) {
