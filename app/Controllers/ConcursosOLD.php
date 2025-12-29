@@ -23,7 +23,6 @@ class Concursos extends BaseController
 	private $pedidosModel;
 	private $concursoModel;
 	private $inscricaoModel;
-	private $inscricaoHistoricoModel;
 	private $avaliacaoModel;
 	private $enderecoModel;
 	private $ingressoModel;
@@ -43,7 +42,6 @@ class Concursos extends BaseController
 		$this->pedidosModel = new \App\Models\PedidoModel();
 		$this->concursoModel = new \App\Models\ConcursoModel();
 		$this->inscricaoModel = new \App\Models\InscricaoModel();
-		$this->inscricaoHistoricoModel = new \App\Models\InscricaoHistoricoModel();
 		$this->avaliacaoModel = new \App\Models\AvaliacaoModel();
 		$this->enderecoModel = new \App\Models\EnderecoModel();
 		$this->ingressoModel = new \App\Models\IngressoModel();
@@ -86,191 +84,6 @@ class Concursos extends BaseController
 
         return view('Concursos/index', $data);
     }
-
-	/**
-	 * Exibe formulário de criação de concurso
-	 */
-	public function criar($evento_id)
-	{
-		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
-			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
-		}
-
-		$eventoModel = new \App\Models\EventoModel();
-		$evento = $eventoModel->find($evento_id);
-
-		if (!$evento) {
-			return redirect()->back()->with('erro', 'Evento não encontrado.');
-		}
-
-		$data = [
-			'titulo' => 'Novo Concurso',
-			'evento' => $evento,
-			'concurso' => null,
-		];
-
-		return view('Concursos/form_concurso', $data);
-	}
-
-	/**
-	 * Salva novo concurso
-	 */
-	public function salvar()
-	{
-		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
-			return redirect()->back()->with('atencao', 'Você não tem permissão para esta ação.');
-		}
-
-		$post = $this->request->getPost();
-
-		// Gera código automaticamente
-		$codigo = $this->concursoModel->geraCodigoPedido();
-		
-		// Gera slug a partir do nome
-		$slug = url_title($post['nome'], '-', true);
-
-		$dados = [
-			'evento_id' => $post['evento_id'],
-			'codigo' => $codigo,
-			'nome' => $post['nome'],
-			'slug' => $slug,
-			'tipo' => $post['tipo'],
-			'juri' => (int) $post['juri'],
-			'ativo' => isset($post['ativo']) ? 1 : 0,
-		];
-
-		if ($this->concursoModel->insert($dados)) {
-			return redirect()->to(site_url("concursos/{$post['evento_id']}"))->with('sucesso', 'Concurso criado com sucesso!');
-		}
-
-		return redirect()->back()->with('erro', 'Erro ao criar concurso. Tente novamente.')->withInput();
-	}
-
-	/**
-	 * Exibe formulário de edição de concurso
-	 */
-	public function editar($id)
-	{
-		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
-			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
-		}
-
-		$concurso = $this->concursoModel->find($id);
-
-		if (!$concurso) {
-			return redirect()->back()->with('erro', 'Concurso não encontrado.');
-		}
-
-		$eventoModel = new \App\Models\EventoModel();
-		$evento = $eventoModel->find($concurso->evento_id);
-
-		$data = [
-			'titulo' => 'Editar Concurso',
-			'evento' => $evento,
-			'concurso' => $concurso,
-		];
-
-		return view('Concursos/form_concurso', $data);
-	}
-
-	/**
-	 * Atualiza concurso existente
-	 */
-	public function atualizar()
-	{
-		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
-			return redirect()->back()->with('atencao', 'Você não tem permissão para esta ação.');
-		}
-
-		$post = $this->request->getPost();
-		$id = $post['id'];
-
-		$concurso = $this->concursoModel->find($id);
-		if (!$concurso) {
-			return redirect()->back()->with('erro', 'Concurso não encontrado.');
-		}
-
-		// Gera slug a partir do nome
-		$slug = url_title($post['nome'], '-', true);
-
-		$dados = [
-			'nome' => $post['nome'],
-			'slug' => $slug,
-			'tipo' => $post['tipo'],
-			'juri' => (int) $post['juri'],
-			'ativo' => isset($post['ativo']) ? 1 : 0,
-		];
-
-		if ($this->concursoModel->update($id, $dados)) {
-			return redirect()->to(site_url("concursos/{$concurso->evento_id}"))->with('sucesso', 'Concurso atualizado com sucesso!');
-		}
-
-		return redirect()->back()->with('erro', 'Erro ao atualizar concurso. Tente novamente.')->withInput();
-	}
-
-	/**
-	 * Exclui concurso (apenas se não tiver inscritos)
-	 */
-	public function excluir($id)
-	{
-		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
-			return redirect()->back()->with('atencao', 'Você não tem permissão para esta ação.');
-		}
-
-		$concurso = $this->concursoModel->find($id);
-		if (!$concurso) {
-			return redirect()->back()->with('erro', 'Concurso não encontrado.');
-		}
-
-		// Verificar se tem inscritos
-		$qtdInscritos = $this->inscricaoModel->where('concurso_id', $id)->countAllResults();
-		if ($qtdInscritos > 0) {
-			return redirect()->back()->with('atencao', "Não é possível excluir este concurso pois existem {$qtdInscritos} inscrição(ões) vinculadas.");
-		}
-
-		if ($this->concursoModel->delete($id)) {
-			return redirect()->to(site_url("concursos/{$concurso->evento_id}"))->with('sucesso', 'Concurso excluído com sucesso!');
-		}
-
-		return redirect()->back()->with('erro', 'Erro ao excluir concurso. Tente novamente.');
-	}
-
-	/**
-	 * Duplica concurso
-	 */
-	public function duplicar($id)
-	{
-		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
-			return redirect()->back()->with('atencao', 'Você não tem permissão para esta ação.');
-		}
-
-		$concurso = $this->concursoModel->find($id);
-		if (!$concurso) {
-			return redirect()->back()->with('erro', 'Concurso não encontrado.');
-		}
-
-		// Gera novo código
-		$codigo = $this->concursoModel->geraCodigoPedido();
-		
-		// Gera novo slug com sufixo
-		$slug = url_title($concurso->nome . ' copia', '-', true);
-
-		$dados = [
-			'evento_id' => $concurso->evento_id,
-			'codigo' => $codigo,
-			'nome' => $concurso->nome . ' (Cópia)',
-			'slug' => $slug,
-			'tipo' => $concurso->tipo,
-			'juri' => $concurso->juri,
-			'ativo' => 0, // Inativo por padrão
-		];
-
-		if ($this->concursoModel->insert($dados)) {
-			return redirect()->to(site_url("concursos/{$concurso->evento_id}"))->with('sucesso', 'Concurso duplicado com sucesso! O novo concurso está inativo.');
-		}
-
-		return redirect()->back()->with('erro', 'Erro ao duplicar concurso. Tente novamente.');
-	}
 
 	public function gerenciarold($id)
 	{
@@ -370,11 +183,7 @@ class Concursos extends BaseController
 			} else {
 				$nome = $inscricao->nome_social;
 			}
-			
-			$link1 = '';
-			$link2 = '';
-			
-			if ($inscricao->status == 'INICIADA' || $inscricao->status == 'CANCELADA' || $inscricao->status == 'EDITADA') {
+			if ($inscricao->status == 'INICIADA' || $inscricao->status == 'CANCELADA') {
 				$link1 = anchor("concursos/aprovaInscricao/" . $inscricao->id, "Aprovar", 'style="color:#7FFF00; font-weight: bold;"');
 				$link2 = anchor("concursos/rejeitaInscricao/" . $inscricao->id, "Rejeitar ", 'style="color: #FF4500; font-weight: bold;"');
 			} else if ($inscricao->status == 'APROVADA') {
@@ -390,25 +199,12 @@ class Concursos extends BaseController
 				$link1 = anchor("concursos/aprovaInscricao/" . $inscricao->id, "Aprovar", 'style="color:#7FFF00; font-weight: bold;"');
 				$link2 = '';
 			}
-			
-			// Buscar quantidade de edições
-			$qtdEdicoes = $this->inscricaoHistoricoModel->contaEdicoes($inscricao->id);
-			$historicoHtml = $qtdEdicoes > 0 
-				? '<a href="' . site_url("concursos/historico_edicoes/{$inscricao->id}") . '" class="badge bg-info">' . $qtdEdicoes . ' edição(ões)</a>'
-				: '<span class="badge bg-secondary">Sem edições</span>';
-			
-			// Formatar status com badge
-			$statusBadge = $inscricao->status;
-			if ($inscricao->status == 'EDITADA') {
-				$statusBadge = '<span class="badge bg-info">EDITADA</span>';
-			}
-			
 			$data[] = [
 				'nome_social' => esc($nome),
 				'codigo' => esc($inscricao->codigo),
 				'created_at' => esc(date('d/m/Y H:i:s', strtotime($inscricao->created_at))),
 				'categoria' => esc($inscricao->categoria),
-				'status' => $statusBadge,
+				'status' => esc($inscricao->status),
 				'email' => esc($inscricao->email),
 				'telefone' => anchor(
 					'https://wa.me/55' . str_replace(array("(", ")", " ", "-"), "", $inscricao->telefone),
@@ -420,7 +216,6 @@ class Concursos extends BaseController
 				'musica' => anchor("concursos/imagem/" . $inscricao->musica, "Abrir", array('target' => '_blank')),
 				'video_led' => anchor("concursos/imagem/" . $inscricao->video_led, "Abrir", array('target' => '_blank')),
 				'acao' => $link1 . ' || ' . $link2,
-				'historico' => $historicoHtml,
 			];
 		}
 
@@ -859,13 +654,6 @@ class Concursos extends BaseController
 		if ($cliente != null) {
 			$user_id = $cliente->usuario_id;
 
-			// Verificar se o usuário já tem inscrição neste concurso
-			$inscricaoExistente = $this->inscricaoModel->verificaInscricaoDuplicada($user_id, $post['concurso_id']);
-			if ($inscricaoExistente) {
-				return redirect()->to(site_url("concursos/inscricao_kpop/" . $post['concurso_id']))
-					->with('atencao', "Você já possui uma inscrição ativa neste concurso (Código: {$inscricaoExistente->codigo}). Cada participante pode ter apenas uma inscrição por concurso. Para fazer alterações, utilize a opção de edição na área 'Minhas Inscrições'.");
-			}
-
 			if ($cliente->telefone == null || $cliente->telefone == '') {
 				$this->clienteModel
 					->protect(false)
@@ -1023,14 +811,6 @@ class Concursos extends BaseController
 
 		if ($cliente != null) {
 			$user_id = $cliente->usuario_id;
-
-			// Verificar se o usuário já tem inscrição neste concurso
-			$inscricaoExistente = $this->inscricaoModel->verificaInscricaoDuplicada($user_id, $post['concurso_id']);
-			if ($inscricaoExistente) {
-				return redirect()->to(site_url("concursos/inscricao_cosplay/" . $post['concurso_id']))
-					->with('atencao', "Você já possui uma inscrição ativa neste concurso (Código: {$inscricaoExistente->codigo}). Cada participante pode ter apenas uma inscrição por concurso. Para fazer alterações, utilize a opção de edição na área 'Minhas Inscrições'.");
-			}
-
 			if ($cliente->telefone == null || $cliente->telefone == '') {
 				$this->clienteModel
 					->protect(false)
@@ -1187,14 +967,6 @@ class Concursos extends BaseController
 
 		if ($cliente != null) {
 			$user_id = $cliente->usuario_id;
-
-			// Verificar se o usuário já tem inscrição neste concurso
-			$inscricaoExistente = $this->inscricaoModel->verificaInscricaoDuplicada($user_id, $post['concurso_id']);
-			if ($inscricaoExistente) {
-				return redirect()->to(site_url("concursos/inscricao_cosplay_apresentacao/" . $post['concurso_id']))
-					->with('atencao', "Você já possui uma inscrição ativa neste concurso (Código: {$inscricaoExistente->codigo}). Cada participante pode ter apenas uma inscrição por concurso. Para fazer alterações, utilize a opção de edição na área 'Minhas Inscrições'.");
-			}
-
 			if ($cliente->telefone == null || $cliente->telefone == '') {
 				$this->clienteModel
 					->protect(false)
@@ -2016,372 +1788,5 @@ class Concursos extends BaseController
 			'Dados de acesso ao sistema',
 			$mensagem
 		);
-	}
-
-	/**
-	 * Exibe formulário de edição de inscrição K-Pop
-	 */
-	public function editar_inscricao_kpop($id)
-	{
-		$usuario_logado = $this->usuarioLogado()->id;
-
-		// Verificar se a inscrição pertence ao usuário
-		$inscricao = $this->inscricaoModel->recuperaInscricaoParaEdicao($id, $usuario_logado);
-
-		if (!$inscricao) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', 'Inscrição não encontrada ou você não tem permissão para editá-la.');
-		}
-
-		// Verificar se pode editar
-		$verificacao = $this->inscricaoModel->podeEditar($id);
-		if (!$verificacao['pode_editar']) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', $verificacao['motivo']);
-		}
-
-		$concurso = $this->concursoModel->find($inscricao->concurso_id);
-
-		$data = [
-			'titulo' => 'Editar Inscrição - ' . esc($concurso->nome),
-			'inscricao' => $inscricao,
-			'concurso' => $concurso,
-		];
-
-		return view('Concursos/editar_inscricao_kpop', $data);
-	}
-
-	/**
-	 * Exibe formulário de edição de inscrição Cosplay (Desfile)
-	 */
-	public function editar_inscricao_cosplay($id)
-	{
-		$usuario_logado = $this->usuarioLogado()->id;
-
-		$inscricao = $this->inscricaoModel->recuperaInscricaoParaEdicao($id, $usuario_logado);
-
-		if (!$inscricao) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', 'Inscrição não encontrada ou você não tem permissão para editá-la.');
-		}
-
-		$verificacao = $this->inscricaoModel->podeEditar($id);
-		if (!$verificacao['pode_editar']) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', $verificacao['motivo']);
-		}
-
-		$concurso = $this->concursoModel->find($inscricao->concurso_id);
-
-		$data = [
-			'titulo' => 'Editar Inscrição - ' . esc($concurso->nome),
-			'inscricao' => $inscricao,
-			'concurso' => $concurso,
-		];
-
-		return view('Concursos/editar_inscricao_cosplay', $data);
-	}
-
-	/**
-	 * Exibe formulário de edição de inscrição Cosplay (Apresentação)
-	 */
-	public function editar_inscricao_cosplay_apresentacao($id)
-	{
-		$usuario_logado = $this->usuarioLogado()->id;
-
-		$inscricao = $this->inscricaoModel->recuperaInscricaoParaEdicao($id, $usuario_logado);
-
-		if (!$inscricao) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', 'Inscrição não encontrada ou você não tem permissão para editá-la.');
-		}
-
-		$verificacao = $this->inscricaoModel->podeEditar($id);
-		if (!$verificacao['pode_editar']) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', $verificacao['motivo']);
-		}
-
-		$concurso = $this->concursoModel->find($inscricao->concurso_id);
-
-		$data = [
-			'titulo' => 'Editar Inscrição - ' . esc($concurso->nome),
-			'inscricao' => $inscricao,
-			'concurso' => $concurso,
-		];
-
-		return view('Concursos/editar_inscricao_cosplay_apresentacao', $data);
-	}
-
-	/**
-	 * Processa a edição de inscrição K-Pop
-	 */
-	public function atualizar_inscricao_kpop()
-	{
-		$post = $this->request->getPost();
-		$usuario_logado = $this->usuarioLogado()->id;
-		$inscricao_id = $post['inscricao_id'];
-
-		// Buscar inscrição atual
-		$inscricaoAtual = $this->inscricaoModel->recuperaInscricaoParaEdicao($inscricao_id, $usuario_logado);
-
-		if (!$inscricaoAtual) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', 'Inscrição não encontrada ou você não tem permissão para editá-la.');
-		}
-
-		// Verificar se pode editar
-		$verificacao = $this->inscricaoModel->podeEditar($inscricao_id);
-		if (!$verificacao['pode_editar']) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', $verificacao['motivo']);
-		}
-
-		// Preparar dados anteriores para histórico
-		$dadosAnteriores = [
-			'nome' => $inscricaoAtual->nome,
-			'nome_social' => $inscricaoAtual->nome_social,
-			'email' => $inscricaoAtual->email,
-			'telefone' => $inscricaoAtual->telefone,
-			'cpf' => $inscricaoAtual->cpf,
-			'video_apresentacao' => $inscricaoAtual->video_apresentacao,
-			'grupo' => $inscricaoAtual->grupo,
-			'integrantes' => $inscricaoAtual->integrantes,
-			'categoria' => $inscricaoAtual->categoria,
-			'referencia' => $inscricaoAtual->referencia,
-			'musica' => $inscricaoAtual->musica,
-			'video_led' => $inscricaoAtual->video_led,
-			'status' => $inscricaoAtual->status,
-		];
-
-		// Atualizar dados
-		$dadosAtualizar = [
-			'nome' => $post['nome'],
-			'nome_social' => $post['nome_social'],
-			'telefone' => $post['telefone'],
-			'video_apresentacao' => $post['video_apresentacao'],
-			'grupo' => $post['grupo'] ?? null,
-			'integrantes' => $post['integrantes'] ?? null,
-			'categoria' => $post['categoria'],
-			'status' => 'EDITADA',
-		];
-
-		// Processar arquivos se enviados
-		$imagem = $this->request->getFile('referencia');
-		if ($imagem && $imagem->isValid() && !$imagem->hasMoved()) {
-			$imagem->store('concursos');
-			$dadosAtualizar['referencia'] = $imagem->getName();
-		}
-
-		$musica = $this->request->getFile('musica');
-		if ($musica && $musica->isValid() && !$musica->hasMoved()) {
-			$musica->store('concursos');
-			$dadosAtualizar['musica'] = $musica->getName();
-		}
-
-		$video = $this->request->getFile('video_led');
-		if ($video && $video->isValid() && !$video->hasMoved()) {
-			$video->store('concursos');
-			$dadosAtualizar['video_led'] = $video->getName();
-		}
-
-		// Identificar campos alterados
-		$camposAlterados = [];
-		foreach ($dadosAtualizar as $campo => $valor) {
-			if (isset($dadosAnteriores[$campo]) && $dadosAnteriores[$campo] != $valor) {
-				$camposAlterados[] = $campo;
-			}
-		}
-
-		// Salvar alterações
-		if ($this->inscricaoModel->update($inscricao_id, $dadosAtualizar)) {
-			// Salvar histórico
-			$this->salvarHistoricoEdicao($inscricao_id, $usuario_logado, $dadosAnteriores, $dadosAtualizar, $camposAlterados);
-
-			return redirect()->to(site_url('concursos/my'))->with('sucesso', 'Sua inscrição foi atualizada com sucesso! O status foi alterado para "Inscrição Editada" e será reavaliada pela nossa equipe.');
-		}
-
-		return redirect()->back()->with('erro', 'Erro ao atualizar inscrição. Por favor, tente novamente.');
-	}
-
-	/**
-	 * Processa a edição de inscrição Cosplay (Desfile)
-	 */
-	public function atualizar_inscricao_cosplay()
-	{
-		$post = $this->request->getPost();
-		$usuario_logado = $this->usuarioLogado()->id;
-		$inscricao_id = $post['inscricao_id'];
-
-		$inscricaoAtual = $this->inscricaoModel->recuperaInscricaoParaEdicao($inscricao_id, $usuario_logado);
-
-		if (!$inscricaoAtual) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', 'Inscrição não encontrada ou você não tem permissão para editá-la.');
-		}
-
-		$verificacao = $this->inscricaoModel->podeEditar($inscricao_id);
-		if (!$verificacao['pode_editar']) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', $verificacao['motivo']);
-		}
-
-		$dadosAnteriores = [
-			'nome' => $inscricaoAtual->nome,
-			'nome_social' => $inscricaoAtual->nome_social,
-			'email' => $inscricaoAtual->email,
-			'telefone' => $inscricaoAtual->telefone,
-			'cpf' => $inscricaoAtual->cpf,
-			'motivacao' => $inscricaoAtual->motivacao,
-			'personagem' => $inscricaoAtual->personagem,
-			'obra' => $inscricaoAtual->obra,
-			'genero' => $inscricaoAtual->genero,
-			'observacoes' => $inscricaoAtual->observacoes,
-			'referencia' => $inscricaoAtual->referencia,
-			'status' => $inscricaoAtual->status,
-		];
-
-		$dadosAtualizar = [
-			'nome' => $post['nome'],
-			'nome_social' => $post['nome_social'],
-			'telefone' => $post['telefone'],
-			'motivacao' => $post['motivacao'],
-			'personagem' => $post['personagem'],
-			'obra' => $post['obra'],
-			'genero' => $post['genero'],
-			'observacoes' => $post['observacoes'],
-			'status' => 'EDITADA',
-		];
-
-		$imagem = $this->request->getFile('referencia');
-		if ($imagem && $imagem->isValid() && !$imagem->hasMoved()) {
-			$imagem->store('concursos');
-			$dadosAtualizar['referencia'] = $imagem->getName();
-		}
-
-		$camposAlterados = [];
-		foreach ($dadosAtualizar as $campo => $valor) {
-			if (isset($dadosAnteriores[$campo]) && $dadosAnteriores[$campo] != $valor) {
-				$camposAlterados[] = $campo;
-			}
-		}
-
-		if ($this->inscricaoModel->update($inscricao_id, $dadosAtualizar)) {
-			$this->salvarHistoricoEdicao($inscricao_id, $usuario_logado, $dadosAnteriores, $dadosAtualizar, $camposAlterados);
-
-			return redirect()->to(site_url('concursos/my'))->with('sucesso', 'Sua inscrição foi atualizada com sucesso! O status foi alterado para "Inscrição Editada" e será reavaliada pela nossa equipe.');
-		}
-
-		return redirect()->back()->with('erro', 'Erro ao atualizar inscrição. Por favor, tente novamente.');
-	}
-
-	/**
-	 * Processa a edição de inscrição Cosplay (Apresentação)
-	 */
-	public function atualizar_inscricao_cosplay_apresentacao()
-	{
-		$post = $this->request->getPost();
-		$usuario_logado = $this->usuarioLogado()->id;
-		$inscricao_id = $post['inscricao_id'];
-
-		$inscricaoAtual = $this->inscricaoModel->recuperaInscricaoParaEdicao($inscricao_id, $usuario_logado);
-
-		if (!$inscricaoAtual) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', 'Inscrição não encontrada ou você não tem permissão para editá-la.');
-		}
-
-		$verificacao = $this->inscricaoModel->podeEditar($inscricao_id);
-		if (!$verificacao['pode_editar']) {
-			return redirect()->to(site_url('concursos/my'))->with('erro', $verificacao['motivo']);
-		}
-
-		$dadosAnteriores = [
-			'nome' => $inscricaoAtual->nome,
-			'nome_social' => $inscricaoAtual->nome_social,
-			'email' => $inscricaoAtual->email,
-			'telefone' => $inscricaoAtual->telefone,
-			'cpf' => $inscricaoAtual->cpf,
-			'motivacao' => $inscricaoAtual->motivacao,
-			'personagem' => $inscricaoAtual->personagem,
-			'obra' => $inscricaoAtual->obra,
-			'genero' => $inscricaoAtual->genero,
-			'observacoes' => $inscricaoAtual->observacoes,
-			'referencia' => $inscricaoAtual->referencia,
-			'video_led' => $inscricaoAtual->video_led,
-			'status' => $inscricaoAtual->status,
-		];
-
-		$dadosAtualizar = [
-			'nome' => $post['nome'],
-			'nome_social' => $post['nome_social'],
-			'telefone' => $post['telefone'],
-			'motivacao' => $post['motivacao'],
-			'personagem' => $post['personagem'],
-			'obra' => $post['obra'],
-			'genero' => $post['genero'],
-			'observacoes' => $post['observacoes'],
-			'status' => 'EDITADA',
-		];
-
-		$imagem = $this->request->getFile('referencia');
-		if ($imagem && $imagem->isValid() && !$imagem->hasMoved()) {
-			$imagem->store('concursos');
-			$dadosAtualizar['referencia'] = $imagem->getName();
-		}
-
-		$video = $this->request->getFile('video_led');
-		if ($video && $video->isValid() && !$video->hasMoved()) {
-			$video->store('concursos');
-			$dadosAtualizar['video_led'] = $video->getName();
-		}
-
-		$camposAlterados = [];
-		foreach ($dadosAtualizar as $campo => $valor) {
-			if (isset($dadosAnteriores[$campo]) && $dadosAnteriores[$campo] != $valor) {
-				$camposAlterados[] = $campo;
-			}
-		}
-
-		if ($this->inscricaoModel->update($inscricao_id, $dadosAtualizar)) {
-			$this->salvarHistoricoEdicao($inscricao_id, $usuario_logado, $dadosAnteriores, $dadosAtualizar, $camposAlterados);
-
-			return redirect()->to(site_url('concursos/my'))->with('sucesso', 'Sua inscrição foi atualizada com sucesso! O status foi alterado para "Inscrição Editada" e será reavaliada pela nossa equipe.');
-		}
-
-		return redirect()->back()->with('erro', 'Erro ao atualizar inscrição. Por favor, tente novamente.');
-	}
-
-	/**
-	 * Salva o histórico de edição da inscrição
-	 */
-	private function salvarHistoricoEdicao(int $inscricao_id, int $user_id, array $dadosAnteriores, array $dadosNovos, array $camposAlterados): void
-	{
-		$historico = [
-			'inscricao_id' => $inscricao_id,
-			'user_id' => $user_id,
-			'dados_anteriores' => json_encode($dadosAnteriores),
-			'dados_novos' => json_encode($dadosNovos),
-			'campos_alterados' => implode(', ', $camposAlterados),
-			'ip_address' => $this->request->getIPAddress(),
-			'user_agent' => $this->request->getUserAgent()->getAgentString(),
-		];
-
-		$this->inscricaoHistoricoModel->insert($historico);
-	}
-
-	/**
-	 * Exibe o histórico de edições de uma inscrição
-	 */
-	public function historico_edicoes($id)
-	{
-		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
-			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
-		}
-
-		$inscricao = $this->inscricaoModel->find($id);
-
-		if (!$inscricao) {
-			return redirect()->back()->with('erro', 'Inscrição não encontrada.');
-		}
-
-		$historico = $this->inscricaoHistoricoModel->recuperaHistoricoPorInscricao($id);
-
-		$data = [
-			'titulo' => 'Histórico de Edições',
-			'inscricao' => $inscricao,
-			'historico' => $historico,
-		];
-
-		return view('Concursos/historico_edicoes', $data);
 	}
 }

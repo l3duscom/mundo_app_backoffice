@@ -29,7 +29,6 @@ class InscricaoModel extends Model
         'marca',
         'video_led',
         'musica',
-        'nome_musica',
         'integrantes',
         'grupo',
         'status',
@@ -228,100 +227,5 @@ class InscricaoModel extends Model
         } while ($this->countAllResults() > 1);
 
         return $codigo;
-    }
-
-    /**
-     * Verifica se o usuário já possui inscrição ativa no concurso
-     * 
-     * @param int $user_id ID do usuário
-     * @param int $concurso_id ID do concurso
-     * @return object|null Retorna a inscrição existente ou null
-     */
-    public function verificaInscricaoDuplicada(int $user_id, int $concurso_id)
-    {
-        return $this->where('user_id', $user_id)
-            ->where('concurso_id', $concurso_id)
-            ->whereNotIn('status', ['CANCELADA', 'REJEITADA'])
-            ->first();
-    }
-
-    /**
-     * Recupera inscrição para edição com validação de propriedade
-     * 
-     * @param int $inscricao_id ID da inscrição
-     * @param int $user_id ID do usuário
-     * @return object|null Retorna a inscrição ou null se não pertencer ao usuário
-     */
-    public function recuperaInscricaoParaEdicao(int $inscricao_id, int $user_id)
-    {
-        $atributos = [
-            'inscricoes.*',
-            'concursos.nome as nome_concurso',
-            'concursos.tipo',
-            'eventos.data_inicio as evento_data_inicio',
-        ];
-
-        return $this->select($atributos)
-            ->join('concursos', 'concursos.id = inscricoes.concurso_id')
-            ->join('eventos', 'eventos.id = concursos.evento_id')
-            ->where('inscricoes.id', $inscricao_id)
-            ->where('inscricoes.user_id', $user_id)
-            ->first();
-    }
-
-    /**
-     * Verifica se a inscrição pode ser editada (status e prazo)
-     * 
-     * @param int $inscricao_id ID da inscrição
-     * @return array ['pode_editar' => bool, 'motivo' => string]
-     */
-    public function podeEditar(int $inscricao_id): array
-    {
-        $atributos = [
-            'inscricoes.id',
-            'inscricoes.status',
-            'eventos.data_inicio as evento_data_inicio',
-        ];
-
-        $inscricao = $this->select($atributos)
-            ->join('concursos', 'concursos.id = inscricoes.concurso_id')
-            ->join('eventos', 'eventos.id = concursos.evento_id')
-            ->where('inscricoes.id', $inscricao_id)
-            ->first();
-
-        if (!$inscricao) {
-            return [
-                'pode_editar' => false,
-                'motivo' => 'Inscrição não encontrada.'
-            ];
-        }
-
-        // Status permitidos para edição
-        $statusPermitidos = ['INICIADA', 'APROVADA', 'CHECKIN-ONLINE', 'EDITADA'];
-
-        if (!in_array($inscricao->status, $statusPermitidos)) {
-            return [
-                'pode_editar' => false,
-                'motivo' => "Não é possível editar esta inscrição. Apenas inscrições com status 'Recebida', 'Aprovada', 'Check-in Online' ou 'Editada' podem ser editadas. Status atual: {$inscricao->status}"
-            ];
-        }
-
-        // Verificar prazo (7 dias antes do evento)
-        $dataEvento = strtotime($inscricao->evento_data_inicio);
-        $prazoLimite = strtotime('-7 days', $dataEvento);
-        $hoje = time();
-
-        if ($hoje > $prazoLimite) {
-            $dataLimite = date('d/m/Y', $prazoLimite);
-            return [
-                'pode_editar' => false,
-                'motivo' => "O prazo para edição desta inscrição encerrou em {$dataLimite}. Edições são permitidas apenas até 7 dias antes da data do evento."
-            ];
-        }
-
-        return [
-            'pode_editar' => true,
-            'motivo' => ''
-        ];
     }
 }

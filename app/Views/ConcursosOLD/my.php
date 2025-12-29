@@ -53,7 +53,7 @@
                                     </div>
                                     <div class="ms-auto">
                                         <div class="btn-group mt-2">
-                                            <?php if ($inscricao->status == 'INICIADA' || $inscricao->status == 'EDITADA') : ?>
+                                            <?php if ($inscricao->status == 'INICIADA') : ?>
                                                 <a href="#" class="btn btn-dark mt-0 shadow disabled">Em avaliação</a>
                                             <?php elseif ($inscricao->status == 'APROVADA') : ?>
                                                 <a href="<?= site_url('/concursos/checkin/' . $inscricao->id) ?>" class="btn btn-success mt-0 shadow disabled">Realizar Checkin</a>
@@ -61,23 +61,6 @@
                                                 <a href="<?= site_url('/concursos/avaliacao_kpop/' . $inscricao->id) ?>" class="btn btn-dark mt-0 shadow disabled">Checkin realizado em <?= date('d/m/Y H:i:s', strtotime($inscricao->updated_at)) ?></a>
                                             <?php endif; ?>
 
-                                            <?php 
-                                            // Verificar se pode editar (status e prazo)
-                                            $statusEditaveis = ['INICIADA', 'APROVADA', 'CHECKIN-ONLINE', 'EDITADA'];
-                                            $podeEditar = in_array($inscricao->status, $statusEditaveis);
-                                            
-                                            if ($podeEditar && $inscricao->tipo):
-                                                // Determinar URL de edição baseado no tipo
-                                                if ($inscricao->tipo == 'kpop_solo' || $inscricao->tipo == 'kpop_grupo' || $inscricao->tipo == 'kpop') {
-                                                    $urlEditar = site_url("concursos/editar_inscricao_kpop/{$inscricao->id}");
-                                                } elseif ($inscricao->tipo == 'apresentacao_cosplay') {
-                                                    $urlEditar = site_url("concursos/editar_inscricao_cosplay_apresentacao/{$inscricao->id}");
-                                                } else {
-                                                    $urlEditar = site_url("concursos/editar_inscricao_cosplay/{$inscricao->id}");
-                                                }
-                                            ?>
-                                                <a href="<?= $urlEditar ?>" class="btn btn-outline-primary mt-0 shadow ms-2"><i class="bx bx-edit"></i> Editar</a>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
 
@@ -90,16 +73,12 @@
                                         <p class="mb-0 text-muted" style="font-size: 10px;">Status</p>
                                         <?php if ($inscricao->status == 'INICIADA') : ?>
                                             <storng class="text-secondary" style="font-weight: 700;">INSCRIÇÃO RECEBIDA</storng>
-                                        <?php elseif ($inscricao->status == 'EDITADA') : ?>
-                                            <storng class="text-info" style="font-weight: 700;">INSCRIÇÃO EDITADA</storng>
                                         <?php elseif ($inscricao->status == 'CANCELADA') : ?>
                                             <storng class="text-danger" style="font-weight: 700;">INSCRIÇÃO CANCELADA</storng>
                                         <?php elseif ($inscricao->status == 'APROVADA') : ?>
                                             <storng class="text-warning" style="font-weight: 700;">APROVADA</storng>
                                         <?php elseif ($inscricao->status == 'CHECKIN') : ?>
                                             <storng class="text-success" style="font-weight: 700;">APRESENTAÇÃO LIBERADA</storng>
-                                        <?php elseif ($inscricao->status == 'CHECKIN-ONLINE') : ?>
-                                            <storng class="text-primary" style="font-weight: 700;">CHECK-IN ONLINE</storng>
                                         <?php elseif ($inscricao->status == 'REJEITADA') : ?>
                                             <storng class="text-danger" style="font-weight: 700;">INSCRIÇÃO REJEITADA</storng>
                                         <?php endif; ?>

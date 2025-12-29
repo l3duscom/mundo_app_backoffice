@@ -62,7 +62,7 @@
 
                                     <div class="card shadow radius-10">
                                         <div class="card-body">
-                                            <?php echo form_open_multipart('Concursos/registrar_inscricao_cosplay_open_apresentacao', ['id' => 'form-inscricao']) ?>
+                                            <?php echo form_open_multipart('Concursos/registrar_inscricao_cosplay_open', ['id' => 'form-inscricao']) ?>
 
                                             <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" id="csrf_token_field">
                                             <input type="hidden" name="concurso_id" value="<?= $concurso->id ?>">
@@ -168,11 +168,6 @@
                                                                     <label class="form-control-label text-muted mb-3" style="font-size: 10px; padding-left:5px;"><i class="fadeIn animated bx bx-info-circle" style="  font-size: 13px; font-weight: 600px"></i>
                                                                         REFERÊNCIA VISUAL OBRIGATÓRIA, insira seu arquivo de referência (Imagem de Referência) - SOMENTE 1 ARQUIVO. | Somente 1 Imagem de Referência em formato JPG ou PNG. (Preferencialmente no tamanho de 1200 x 675 pixels). Este arquivo é obrigatório para validar a inscrição.</label>
                                                                 </div>
-                                                                <div class="form-group col-md-12">
-                                                                    <label class="form-control-label">Vídeo LED <a href="https://www.youtube.com/watch?v=gSoFw92w-zo" target="_blank"><u>( Ver Exemplo )</u></a> <span style="color: red;"> Máx. 100mb</span></label>
-                                                                    <input type="file" name="video_led" class="form-control" required>
-                                                                    <label class="form-control-label text-muted mb-3" style="font-size: 10px; padding-left:5px;"><i class="fadeIn animated bx bx-info-circle" style="  font-size: 13px; font-weight: 600px"></i></label>
-                                                                </div>
 
                                                             </div>
                                                         </div>
@@ -254,10 +249,11 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Se houver mensagem de sucesso ou erro, faz scroll até ela
     const responseDiv = document.getElementById('response');
     if (responseDiv && responseDiv.querySelector('.alert')) {
         responseDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        window.scrollBy(0, -100);
+        window.scrollBy(0, -100); // Ajusta para não ficar muito grudado no topo
     }
     
     const form = document.getElementById('form-inscricao');
@@ -265,92 +261,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnText = document.getElementById('btn-text');
     const btnSpinner = document.getElementById('btn-spinner');
     
-    const MAX_TOTAL_SIZE = 95 * 1024 * 1024;
-    const ALLOWED_IMAGE = ['image/jpeg', 'image/png'];
-    const ALLOWED_VIDEO = ['video/mp4'];
-    
-    function formatBytes(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-    
-    function validateFiles() {
-        let totalSize = 0;
-        const errors = [];
-        
-        const fileInputs = form.querySelectorAll('input[type="file"]');
-        fileInputs.forEach(input => {
-            if (input.files.length > 0) {
-                const file = input.files[0];
-                totalSize += file.size;
-                
-                if (input.name === 'referencia' && !ALLOWED_IMAGE.includes(file.type)) {
-                    errors.push('A imagem de referência deve estar no formato JPG ou PNG.');
-                }
-                if (input.name === 'video_led' && !ALLOWED_VIDEO.includes(file.type)) {
-                    errors.push('O vídeo LED deve estar no formato MP4.');
-                }
-            }
-        });
-        
-        if (totalSize > MAX_TOTAL_SIZE) {
-            errors.push(`O tamanho total dos arquivos (${formatBytes(totalSize)}) excede o limite de 95MB.`);
-        }
-        
-        return errors;
-    }
-    
-    function showFileErrors(errors) {
-        const existingAlert = document.getElementById('file-error-alert');
-        if (existingAlert) existingAlert.remove();
-        
-        const alertDiv = document.createElement('div');
-        alertDiv.id = 'file-error-alert';
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.innerHTML = `
-            <i class="bx bx-x-circle me-2"></i>
-            <strong>Erro nos arquivos:</strong>
-            <ul class="mb-0 mt-2">${errors.map(e => `<li>${e}</li>`).join('')}</ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        responseDiv.prepend(alertDiv);
-        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    
     if (form && btn) {
         form.addEventListener('submit', function(e) {
-            const fileErrors = validateFiles();
-            if (fileErrors.length > 0) {
-                e.preventDefault();
-                showFileErrors(fileErrors);
-                return false;
-            }
-            
+            // Valida campos obrigatórios
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return false;
             }
             
+            // Atualiza o CSRF token antes de enviar (importante!)
             const csrfField = document.getElementById('csrf_token_field');
             if (csrfField) {
+                // Pega o token atualizado do meta tag ou cookie se disponível
                 const metaCsrf = document.querySelector('meta[name="<?= csrf_token() ?>"]');
                 if (metaCsrf) {
                     csrfField.value = metaCsrf.content;
                 }
             }
             
+            // Desabilita o botão e mostra spinner
             btn.disabled = true;
             btnText.textContent = 'Processando...';
             btnSpinner.classList.remove('d-none');
             
+            // Mostra modal de processamento após um pequeno delay
             setTimeout(function() {
                 var modalProcessando = new bootstrap.Modal(document.getElementById('modalProcessando'));
                 modalProcessando.show();
             }, 100);
             
+            // Deixa o formulário enviar normalmente
             return true;
         });
     }

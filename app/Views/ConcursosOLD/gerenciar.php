@@ -27,38 +27,14 @@
     </div>
 
     <!--end breadcrumb-->
-    
-    <!-- Campo de Busca -->
-    <div class="col-12 mb-3">
-        <div class="card shadow radius-10">
-            <div class="card-body py-3">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text bg-transparent"><i class="bx bx-search"></i></span>
-                            <input type="text" id="filtro-busca" class="form-control" placeholder="Buscar por nome, nome social, grupo ou email...">
-                            <button type="button" id="btn-limpar" class="btn btn-outline-secondary d-none" onclick="limparFiltro()">
-                                <i class="bx bx-x"></i> Limpar
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <span id="contador-resultados" class="badge bg-primary"><?= count($inscricoes) ?> inscrição(ões)</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="ms-auto">
+
     </div>
 
-    <div class="row" id="lista-inscricoes">
+
+    <div class="row">
         <?php foreach ($inscricoes as $inscricao) : ?>
-            <div class="col-lg-12 inscricao-card" 
-                 data-nome="<?= esc(strtolower($inscricao->nome ?? '')) ?>" 
-                 data-nome-social="<?= esc(strtolower($inscricao->nome_social ?? '')) ?>" 
-                 data-grupo="<?= esc(strtolower($inscricao->grupo ?? '')) ?>" 
-                 data-email="<?= esc(strtolower($inscricao->email ?? '')) ?>"
-                 data-codigo="<?= esc(strtolower($inscricao->codigo ?? '')) ?>"
-                 data-personagem="<?= esc(strtolower($inscricao->personagem ?? '')) ?>">
+            <div class="col-lg-12">
 
                 <div class="row">
                     <div class="col-lg-12">
@@ -86,7 +62,7 @@
                                     </div>
                                     <div class="ms-auto">
                                         <div class="btn-group mt-2">
-                                            <?php if ($inscricao->status == 'INICIADA' || $inscricao->status == 'CANCELADA' || $inscricao->status == 'EDITADA') : ?>
+                                            <?php if ($inscricao->status == 'INICIADA' || $inscricao->status == 'CANCELADA') : ?>
                                                 <a href="<?= site_url('/concursos/aprovaInscricao/' . $inscricao->id) ?>" class="btn btn-success mt-0 shadow">Aprovar inscrição</a>
                                                 <a href="<?= site_url('/concursos/rejeitaInscricao/' . $inscricao->id) ?>" class="btn btn-danger mt-0 shadow">Rejeitar inscrição</a>
                                             <?php elseif ($inscricao->status == 'APROVADA') : ?>
@@ -157,19 +133,6 @@
                                         <span><a href="<?= site_url("concursos/imagem/$inscricao->video_led"); ?>" target="_blank"> Visualizar Video LED</a></span>
                                     </div>
 
-                                    <?php 
-                                    $historicoModel = new \App\Models\InscricaoHistoricoModel();
-                                    $qtdEdicoes = $historicoModel->contaEdicoes($inscricao->id);
-                                    ?>
-                                    <div class="col-lg-12 mt-3">
-                                        <p class="mb-0 text-muted" style="font-size: 10px;">Histórico de Edições</p>
-                                        <?php if ($qtdEdicoes > 0): ?>
-                                            <a href="<?= site_url("concursos/historico_edicoes/{$inscricao->id}") ?>" class="badge bg-info"><?= $qtdEdicoes ?> edição(ões)</a>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary">Sem edições</span>
-                                        <?php endif; ?>
-                                    </div>
-
 
 
 
@@ -192,8 +155,7 @@
 
 
 
-            </div> <!-- fecha inscricao-card -->
-        <?php endforeach; ?>
+            <?php endforeach; ?>
 
             <hr>
 
@@ -218,53 +180,8 @@
 
 <script type="text/javascript" src="<?php echo site_url('recursos/vendor/datatable/datatables-combinado.min.js') ?>"></script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const filtroInput = document.getElementById('filtro-busca');
-    const btnLimpar = document.getElementById('btn-limpar');
-    const contador = document.getElementById('contador-resultados');
-    const cards = document.querySelectorAll('.inscricao-card');
-    const totalCards = cards.length;
-    
-    filtroInput.addEventListener('input', function() {
-        const termo = this.value.toLowerCase().trim();
-        let visiveis = 0;
-        
-        cards.forEach(card => {
-            const nome = (card.getAttribute('data-nome') || '').toLowerCase();
-            const nomeSocial = (card.getAttribute('data-nome-social') || '').toLowerCase();
-            const grupo = (card.getAttribute('data-grupo') || '').toLowerCase();
-            const email = (card.getAttribute('data-email') || '').toLowerCase();
-            const codigo = (card.getAttribute('data-codigo') || '').toLowerCase();
-            const personagem = (card.getAttribute('data-personagem') || '').toLowerCase();
-            
-            const textoCompleto = nome + ' ' + nomeSocial + ' ' + grupo + ' ' + email + ' ' + codigo + ' ' + personagem;
-            
-            if (termo === '' || textoCompleto.includes(termo)) {
-                card.style.display = '';
-                visiveis++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        
-        contador.textContent = visiveis + ' de ' + totalCards + ' inscrição(ões)';
-        
-        if (termo.length > 0) {
-            btnLimpar.classList.remove('d-none');
-        } else {
-            btnLimpar.classList.add('d-none');
-        }
-    });
-});
 
-function limparFiltro() {
-    const filtroInput = document.getElementById('filtro-busca');
-    filtroInput.value = '';
-    filtroInput.dispatchEvent(new Event('input'));
-    filtroInput.focus();
-}
-</script>
+
 
 
 

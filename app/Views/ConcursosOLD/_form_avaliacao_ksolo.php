@@ -1,0 +1,79 @@
+<div class="row">
+    <input type="hidden" id="inscricao_id" name="inscricao_id" value="<?php echo $inscricao->id; ?>">
+    <input type="hidden" id="jurado_id" name="jurado_id" value="<?php echo $user_id; ?>">
+    <input type="hidden" id="nota_2" name="nota_2" value="0">
+    <div class="col-lg-4">
+        <div class="block text-center">
+            <strong>Execução dos passos</strong>
+            <hr>
+            <select id="nota_1" name="nota_1" class="form-control form-control-lg text-center" style="font-size: 38px; height: 100px">
+                <option value="0">--</option>
+                <option value="10">10</option>
+                <option value="9.5">9.5</option>
+                <option value="9">9</option>
+                <option value="8.5">8.5</option>
+                <option value="8">8</option>
+                <option value="7.5">7.5</option>
+                <option value="7">7</option>
+                <option value="6.5">6.5</option>
+                <option value="6">6</option>
+                <option value="5.5">5.5</option>
+                <option value="5">5</option>
+            </select>
+            <hr>
+            <span style="font-size: 12px; font-weight: 600;">20pts</sp>
+
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="block text-center">
+            <strong>Lip-sync e carisma</strong>
+            <hr>
+            <select id="nota_3" name="nota_3" class="form-control form-control-lg text-center" style="font-size: 38px; height: 100px">
+
+                <option value="0">--</option>
+                <option value="10">10</option>
+                <option value="9.5">9.5</option>
+                <option value="9">9</option>
+                <option value="8.5">8.5</option>
+                <option value="8">8</option>
+                <option value="7.5">7.5</option>
+                <option value="7">7</option>
+                <option value="6.5">6.5</option>
+                <option value="6">6</option>
+                <option value="5.5">5.5</option>
+                <option value="5">5</option>
+            </select>
+            <hr>
+            <span style="font-size: 12px; font-weight: 600;">20pts</sp>
+
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="block text-center">
+            <strong>Figurino:</strong>
+            <hr>
+            <select id="nota_4" name="nota_4" class="form-control form-control-lg text-center" style="font-size: 38px; height: 100px">
+                <option value="0">--</option>
+                <option value="10">10</option>
+                <option value="9.5">9.5</option>
+                <option value="9">9</option>
+                <option value="8.5">8.5</option>
+                <option value="8">8</option>
+                <option value="7.5">7.5</option>
+                <option value="7">7</option>
+                <option value="6.5">6.5</option>
+                <option value="6">6</option>
+                <option value="5.5">5.5</option>
+                <option value="5">5</option>
+            </select>
+            <hr>
+            <span style="font-size: 12px; font-weight: 600;">20pts</sp>
+
+        </div>
+    </div>
+
+
+
+</div>

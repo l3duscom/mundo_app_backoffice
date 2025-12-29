@@ -160,6 +160,12 @@
                                                                         Figurino: 1 (uma) imagem .Jpeg, colorida.</label>
                                                                 </div>
                                                                 <div class="form-group col-md-12">
+                                                                    <label class="form-control-label">Nome da Música</label>
+                                                                    <input type="text" name="nome_musica" class="form-control mb-2" placeholder="Ex: Dynamite - BTS" required>
+                                                                    <label class="form-control-label text-muted mb-3" style="font-size: 10px; padding-left:5px;"><i class="fadeIn animated bx bx-info-circle" style="  font-size: 13px; font-weight: 600px"></i>
+                                                                        Informe o nome da música e artista que será usada na apresentação.</label>
+                                                                </div>
+                                                                <div class="form-group col-md-12">
                                                                     <label class="form-control-label">Música <span style="color: red;"> Máx. 50mb</span></label>
                                                                     <input type="file" name="musica" class="form-control" required>
                                                                     <label class="form-control-label text-muted mb-3" style="font-size: 10px; padding-left:5px;"><i class="fadeIn animated bx bx-info-circle" style="  font-size: 13px; font-weight: 600px"></i>
@@ -255,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const responseDiv = document.getElementById('response');
     if (responseDiv && responseDiv.querySelector('.alert')) {
         responseDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        window.scrollBy(0, -100); // Ajusta para não ficar muito grudado no topo
+        window.scrollBy(0, -100);
     }
     
     const form = document.getElementById('form-inscricao');
@@ -263,18 +269,87 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnText = document.getElementById('btn-text');
     const btnSpinner = document.getElementById('btn-spinner');
     
+    // Configurações de validação de arquivos
+    const MAX_TOTAL_SIZE = 95 * 1024 * 1024; // 95MB
+    const ALLOWED_IMAGE = ['image/jpeg', 'image/png'];
+    const ALLOWED_AUDIO = ['audio/mpeg', 'audio/mp3'];
+    const ALLOWED_VIDEO = ['video/mp4'];
+    
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function validateFiles() {
+        let totalSize = 0;
+        const errors = [];
+        
+        const fileInputs = form.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                totalSize += file.size;
+                
+                if (input.name === 'referencia' && !ALLOWED_IMAGE.includes(file.type)) {
+                    errors.push('A imagem de referência deve estar no formato JPG ou PNG.');
+                }
+                if (input.name === 'musica' && !ALLOWED_AUDIO.includes(file.type)) {
+                    errors.push('O arquivo de música deve estar no formato MP3.');
+                }
+                if (input.name === 'video_led' && !ALLOWED_VIDEO.includes(file.type)) {
+                    errors.push('O vídeo LED deve estar no formato MP4.');
+                }
+            }
+        });
+        
+        if (totalSize > MAX_TOTAL_SIZE) {
+            errors.push(`O tamanho total dos arquivos (${formatBytes(totalSize)}) excede o limite permitido de 95MB. Por favor, reduza o tamanho dos arquivos e tente novamente.`);
+        }
+        
+        return errors;
+    }
+    
+    function showFileErrors(errors) {
+        // Remover alertas anteriores de arquivo
+        const existingAlert = document.getElementById('file-error-alert');
+        if (existingAlert) existingAlert.remove();
+        
+        // Criar novo alerta
+        const alertDiv = document.createElement('div');
+        alertDiv.id = 'file-error-alert';
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="bx bx-x-circle me-2"></i>
+            <strong>Erro nos arquivos:</strong>
+            <ul class="mb-0 mt-2">${errors.map(e => `<li>${e}</li>`).join('')}</ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        responseDiv.prepend(alertDiv);
+        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
     if (form && btn) {
         form.addEventListener('submit', function(e) {
+            // Valida arquivos primeiro
+            const fileErrors = validateFiles();
+            if (fileErrors.length > 0) {
+                e.preventDefault();
+                showFileErrors(fileErrors);
+                return false;
+            }
+            
             // Valida campos obrigatórios
             if (!form.checkValidity()) {
                 form.reportValidity();
                 return false;
             }
             
-            // Atualiza o CSRF token antes de enviar (importante!)
+            // Atualiza o CSRF token antes de enviar
             const csrfField = document.getElementById('csrf_token_field');
             if (csrfField) {
-                // Pega o token atualizado do meta tag ou cookie se disponível
                 const metaCsrf = document.querySelector('meta[name="<?= csrf_token() ?>"]');
                 if (metaCsrf) {
                     csrfField.value = metaCsrf.content;
@@ -292,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 modalProcessando.show();
             }, 100);
             
-            // Deixa o formulário enviar normalmente
             return true;
         });
     }
