@@ -100,6 +100,15 @@
                                             </ol>
                                         </nav>
                                     </div>
+                                    <?php 
+                                    $inscricaoModel = new \App\Models\InscricaoModel();
+                                    $totalInscricoes = $inscricaoModel->contaInscricoesPorEmail($inscricao->email);
+                                    ?>
+                                    <?php if ($totalInscricoes > 1): ?>
+                                        <span class="badge bg-purple ms-2" title="Este usuário já se inscreveu em <?= $totalInscricoes ?> concursos">
+                                            <i class="bx bx-trophy"></i> <?= $totalInscricoes ?> inscrições
+                                        </span>
+                                    <?php endif; ?>
                                     <div class="ms-auto">
                                         <div class="btn-group mt-2">
                                             <?php if ($inscricao->status == 'INICIADA' || $inscricao->status == 'CANCELADA' || $inscricao->status == 'EDITADA') : ?>

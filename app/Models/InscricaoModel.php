@@ -324,4 +324,20 @@ class InscricaoModel extends Model
             'motivo' => ''
         ];
     }
+
+    /**
+     * Conta quantos concursos diferentes o usuário se inscreveu
+     * 
+     * @param string $email Email do usuário
+     * @return int Número de concursos diferentes
+     */
+    public function contaInscricoesPorEmail(string $email): int
+    {
+        $result = $this->select('COUNT(DISTINCT concurso_id) as total')
+            ->where('email', $email)
+            ->whereNotIn('status', ['CANCELADA', 'REJEITADA'])
+            ->first();
+        
+        return $result ? (int) $result->total : 0;
+    }
 }
