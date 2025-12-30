@@ -319,7 +319,12 @@
                         </td>
                         <td>
                             <strong><?= esc($item['participante']) ?></strong>
-                            <?php if (!empty($item['nome_social']) && $item['participante'] !== $item['nome_social']): ?>
+                            <?php 
+                            // Para K-Pop solo: mostrar nome do RG abaixo do nome social
+                            if (!$isCosplay && ($item['categoria'] ?? '') === 'solo' && !empty($item['nome']) && $item['participante'] !== $item['nome']): 
+                            ?>
+                                <br><small class="text-muted"><?= esc($item['nome']) ?></small>
+                            <?php elseif (!empty($item['nome_social']) && $item['participante'] !== $item['nome_social']): ?>
                                 <br><small class="text-muted"><?= esc($item['nome_social']) ?></small>
                             <?php endif; ?>
                         </td>

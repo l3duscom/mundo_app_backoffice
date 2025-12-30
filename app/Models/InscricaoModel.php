@@ -406,6 +406,7 @@ class InscricaoModel extends Model
                         WHEN i.categoria = 'solo' THEN i.nome_social
                         ELSE i.grupo
                     END AS participante,
+                    i.nome,
                     i.nome_social,
                     i.grupo,
                     i.marca,
