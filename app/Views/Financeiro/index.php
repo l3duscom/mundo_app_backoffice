@@ -91,6 +91,9 @@
         </nav>
     </div>
     <div class="ms-auto">
+        <a href="<?php echo site_url('financeiro/calendario'); ?>" class="btn btn-outline-info">
+            <i class="bx bx-calendar me-1"></i>Calendário
+        </a>
         <a href="<?php echo site_url('financeiro/criar'); ?>" class="btn btn-primary">
             <i class="bx bx-plus me-1"></i>Novo Lançamento
         </a>

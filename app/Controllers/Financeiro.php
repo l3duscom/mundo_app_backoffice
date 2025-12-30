@@ -403,4 +403,162 @@ class Financeiro extends BaseController
 
         return $this->response->setJSON($retorno);
     }
+
+    /**
+     * Calendário Financeiro Interativo
+     */
+    public function calendario()
+    {
+        if (!$this->usuarioLogado()->is_admin) {
+            return redirect()->back()->with('atencao', 'Você não tem permissão para acessar esse menu.');
+        }
+
+        // Lista de eventos para o filtro
+        $eventos = $this->eventoModel->orderBy('id', 'DESC')->findAll();
+
+        $data = [
+            'titulo' => 'Calendário Financeiro',
+            'eventos' => $eventos,
+        ];
+
+        return view('Financeiro/calendario', $data);
+    }
+
+    /**
+     * Recupera eventos para o calendário via AJAX (formato FullCalendar)
+     */
+    public function recuperaEventosCalendario()
+    {
+
+        $eventoId = $this->request->getGet('event_id');
+        $start = $this->request->getGet('start'); // FullCalendar envia start e end
+        $end = $this->request->getGet('end');
+
+        // Se event_id for 'todos', deixa null
+        if ($eventoId === 'todos' || $eventoId === '') {
+            $eventoId = null;
+        }
+
+        // Busca lançamentos no período
+        $lancamentos = $this->lancamentoModel->recuperaLancamentos(
+            $eventoId ? (int) $eventoId : null,
+            null, // tipo
+            null, // status
+            $start ? substr($start, 0, 10) : null,
+            $end ? substr($end, 0, 10) : null
+        );
+
+        $events = [];
+        foreach ($lancamentos as $lancamento) {
+            $valor = (float) ($lancamento->valor ?? 0);
+            $isEntrada = $lancamento->tipo === 'ENTRADA';
+            
+            // Cores por tipo
+            $color = $isEntrada ? '#28a745' : '#dc3545';
+            $textColor = '#fff';
+            
+            // Status pendente fica mais claro
+            if ($lancamento->status === 'pendente') {
+                $color = $isEntrada ? '#90EE90' : '#FFB6C1';
+                $textColor = '#333';
+            }
+
+            $prefixo = $isEntrada ? '+' : '-';
+            $valorFormatado = $prefixo . ' R$ ' . number_format($valor, 2, ',', '.');
+
+            // Converter data para string (FullCalendar espera formato Y-m-d)
+            $dataLancamento = $lancamento->data_lancamento;
+            if ($dataLancamento instanceof \DateTime) {
+                $dataLancamento = $dataLancamento->format('Y-m-d');
+            } elseif (is_object($dataLancamento) && method_exists($dataLancamento, 'toDateString')) {
+                $dataLancamento = $dataLancamento->toDateString();
+            }
+
+            $events[] = [
+                'id' => $lancamento->id,
+                'title' => $valorFormatado,
+                'start' => $dataLancamento,
+                'backgroundColor' => $color,
+                'borderColor' => $color,
+                'textColor' => $textColor,
+                'extendedProps' => [
+                    'tipo' => $lancamento->tipo,
+                    'descricao' => $lancamento->descricao,
+                    'status' => $lancamento->status,
+                    'origem' => $lancamento->origem,
+                    'valor' => $valor,
+                    'valor_formatado' => 'R$ ' . number_format($valor, 2, ',', '.'),
+                    'evento_nome' => $lancamento->evento_nome ?? '-',
+                ]
+            ];
+        }
+
+        return $this->response->setJSON($events);
+    }
+
+    /**
+     * Recupera lançamentos de um dia específico (AJAX)
+     */
+    public function recuperaLancamentosDia()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $data = $this->request->getGet('data');
+        $eventoId = $this->request->getGet('event_id');
+
+        if (!$data) {
+            return $this->response->setJSON(['erro' => 'Data não informada']);
+        }
+
+        // Se event_id for 'todos', deixa null
+        if ($eventoId === 'todos' || $eventoId === '') {
+            $eventoId = null;
+        }
+
+        $lancamentos = $this->lancamentoModel->recuperaLancamentos(
+            $eventoId ? (int) $eventoId : null,
+            null,
+            null,
+            $data,
+            $data
+        );
+
+        $totalEntradas = 0;
+        $totalSaidas = 0;
+        $lista = [];
+
+        foreach ($lancamentos as $lancamento) {
+            $valor = (float) ($lancamento->valor ?? 0);
+            
+            if ($lancamento->tipo === 'ENTRADA') {
+                $totalEntradas += $valor;
+            } else {
+                $totalSaidas += $valor;
+            }
+
+            $lista[] = [
+                'id' => $lancamento->id,
+                'descricao' => $lancamento->descricao,
+                'tipo' => $lancamento->tipo,
+                'origem' => $lancamento->origem,
+                'status' => $lancamento->status,
+                'valor' => 'R$ ' . number_format($valor, 2, ',', '.'),
+                'evento_nome' => $lancamento->evento_nome ?? '-',
+            ];
+        }
+
+        return $this->response->setJSON([
+            'sucesso' => true,
+            'data' => $data,
+            'lancamentos' => $lista,
+            'resumo' => [
+                'total_entradas' => 'R$ ' . number_format($totalEntradas, 2, ',', '.'),
+                'total_saidas' => 'R$ ' . number_format($totalSaidas, 2, ',', '.'),
+                'saldo' => 'R$ ' . number_format($totalEntradas - $totalSaidas, 2, ',', '.'),
+            ]
+        ]);
+    }
 }
+
