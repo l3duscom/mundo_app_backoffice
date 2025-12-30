@@ -389,7 +389,6 @@ class InscricaoModel extends Model
                   AND i.deleted_at IS NULL
                   AND i.status NOT IN ('CANCELADA', 'REJEITADA')
                 GROUP BY i.id, participante, c.tipo, c.nome, c.evento_id, c.id, c.juri
-                HAVING COUNT(DISTINCT a_data.jurado_id) = c.juri
                 ORDER BY media_nota_total DESC
             ";
             
@@ -447,7 +446,6 @@ class InscricaoModel extends Model
             
             $sql .= "
                 GROUP BY i.id, participante, c.tipo, c.nome, c.evento_id, c.id, c.juri
-                HAVING COUNT(DISTINCT a_data.jurado_id) = c.juri
                 ORDER BY media_nota_total DESC
             ";
             
