@@ -127,6 +127,7 @@
                                 <div class="col-lg-12">
                                     <div class="d-flex gap-2 flex-wrap">
                                         <a href="<?= site_url('/concursos/gerenciar/' . $concurso->id) ?>" class="btn btn-sm btn-primary mt-0 shadow">GERENCIAR / VOTAR</a>
+                                        <a href="<?= site_url('/concursos/ranking/' . $concurso->id) ?>" class="btn btn-sm btn-warning mt-0"><i class="bx bx-trophy"></i> Ver Ranking</a>
                                         <a href="<?= site_url('/concursos/editar/' . $concurso->id) ?>" class="btn btn-sm btn-outline-secondary mt-0"><i class="bx bx-edit"></i> Editar</a>
                                         <a href="<?= site_url('/concursos/duplicar/' . $concurso->id) ?>" class="btn btn-sm btn-outline-info mt-0" onclick="return confirm('Deseja duplicar este concurso?');"><i class="bx bx-copy"></i> Duplicar</a>
                                         <a href="<?= site_url('/concursos/excluir/' . $concurso->id) ?>" class="btn btn-sm btn-outline-danger mt-0" onclick="return confirm('Tem certeza que deseja excluir este concurso? Esta ação não pode ser desfeita.');"><i class="bx bx-trash"></i> Excluir</a>

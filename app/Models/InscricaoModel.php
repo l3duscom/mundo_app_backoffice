@@ -340,4 +340,120 @@ class InscricaoModel extends Model
         
         return $result ? (int) $result->total : 0;
     }
+
+    /**
+     * Recupera o ranking de um concurso com base nas avaliações dos jurados
+     * 
+     * @param int $concurso_id ID do concurso
+     * @param string $tipo Tipo do concurso (kpop, desfile_cosplay, apresentacao_cosplay, etc)
+     * @param string $categoria Categoria para filtro (solo, grupo, dupla, todos)
+     * @return array Ranking ordenado por média de notas
+     */
+    public function getRankingConcurso(int $concurso_id, string $tipo, string $categoria = 'todos'): array
+    {
+        $db = \Config\Database::connect();
+        
+        // Verifica se é concurso de cosplay ou kpop
+        $isCosplay = in_array($tipo, ['desfile_cosplay', 'apresentacao_cosplay', 'cosplay_kids']);
+        
+        if ($isCosplay) {
+            // Query para Cosplay
+            $sql = "
+                SELECT 
+                    i.telefone,
+                    i.id AS inscricao_id,
+                    i.nome AS participante,
+                    i.nome_social,
+                    i.personagem,
+                    i.obra,
+                    i.email,
+                    c.tipo AS concurso_tipo,
+                    c.nome AS concurso_nome,
+                    c.evento_id,
+                    c.id AS concurso_id,
+                    COUNT(DISTINCT a_data.jurado_id) AS total_avaliacoes,
+                    c.juri AS jurados_necessarios,
+                    ROUND(AVG(a_data.nota_total), 2) AS media_nota_total
+                FROM inscricoes i
+                JOIN concursos c ON i.concurso_id = c.id
+                JOIN (
+                    SELECT 
+                        inscricao_id,
+                        jurado_id,
+                        MAX(nota_total) AS nota_total
+                    FROM avaliacoes
+                    WHERE deleted_at IS NULL
+                    GROUP BY inscricao_id, jurado_id
+                ) AS a_data ON i.id = a_data.inscricao_id
+                WHERE c.id = ?
+                  AND i.deleted_at IS NULL
+                  AND i.status NOT IN ('CANCELADA', 'REJEITADA')
+                GROUP BY i.id, participante, c.tipo, c.nome, c.evento_id, c.id, c.juri
+                HAVING COUNT(DISTINCT a_data.jurado_id) = c.juri
+                ORDER BY media_nota_total DESC
+            ";
+            
+            $query = $db->query($sql, [$concurso_id]);
+        } else {
+            // Query para K-Pop
+            $sql = "
+                SELECT 
+                    i.id AS inscricao_id, 
+                    i.categoria,
+                    i.integrantes,
+                    i.telefone,
+                    i.email,
+                    CASE 
+                        WHEN i.categoria = 'solo' THEN i.nome_social
+                        ELSE i.grupo
+                    END AS participante,
+                    i.nome_social,
+                    i.grupo,
+                    i.marca,
+                    i.nome_musica,
+                    c.tipo AS concurso_tipo,
+                    c.nome AS concurso_nome,
+                    c.evento_id,
+                    c.id AS concurso_id,
+                    COUNT(DISTINCT a_data.jurado_id) AS total_avaliacoes,
+                    c.juri AS jurados_necessarios,
+                    ROUND(AVG(a_data.nota_total), 2) AS media_nota_total
+                FROM inscricoes i
+                JOIN concursos c ON i.concurso_id = c.id
+                JOIN (
+                    SELECT 
+                        inscricao_id,
+                        jurado_id,
+                        MAX(nota_total) AS nota_total
+                    FROM avaliacoes
+                    WHERE deleted_at IS NULL
+                    GROUP BY inscricao_id, jurado_id
+                ) AS a_data ON i.id = a_data.inscricao_id
+                WHERE c.id = ?
+                  AND i.deleted_at IS NULL
+                  AND i.status NOT IN ('CANCELADA', 'REJEITADA')
+            ";
+            
+            // Aplicar filtro de categoria
+            $params = [$concurso_id];
+            
+            if ($categoria === 'solo') {
+                $sql .= " AND i.categoria = 'solo'";
+            } elseif ($categoria === 'dupla') {
+                $sql .= " AND i.categoria = 'grupo' AND i.integrantes = 2";
+            } elseif ($categoria === 'grupo') {
+                $sql .= " AND i.categoria = 'grupo' AND i.integrantes > 2";
+            }
+            
+            $sql .= "
+                GROUP BY i.id, participante, c.tipo, c.nome, c.evento_id, c.id, c.juri
+                HAVING COUNT(DISTINCT a_data.jurado_id) = c.juri
+                ORDER BY media_nota_total DESC
+            ";
+            
+            $query = $db->query($sql, $params);
+        }
+        
+        return $query->getResultArray();
+    }
 }

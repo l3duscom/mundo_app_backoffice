@@ -331,6 +331,7 @@ $routes->group('api/checkout', ['filter' => 'apiKey'], function ($routes) {
     $routes->post('finalizarcartao/(:num)', 'ApiCheckout::finalizarcartao/$1');
 });
 
+$routes->get('concursos/ranking/(:num)', 'Concursos::ranking/$1');
 $routes->get('concursos/(:num)', 'Concursos::index/$1');
 $routes->get('concursos', 'Concursos::index');
 

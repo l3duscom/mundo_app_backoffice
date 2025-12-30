@@ -352,6 +352,55 @@ class Concursos extends BaseController
 		}
 	}
 
+	/**
+	 * Exibe o ranking/pódio de um concurso
+	 * 
+	 * @param int $id ID do concurso
+	 */
+	public function ranking($id)
+	{
+		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
+			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+		}
+
+		$concurso = $this->concursoModel->withDeleted(true)->where('id', $id)->first();
+
+		if (!$concurso) {
+			return redirect()->back()->with('erro', 'Concurso não encontrado.');
+		}
+
+		// Pegar filtro de categoria (para K-Pop)
+		$categoria = $this->request->getGet('categoria') ?? 'todos';
+
+		// Verificar se é concurso de cosplay
+		$isCosplay = in_array($concurso->tipo, ['desfile_cosplay', 'apresentacao_cosplay', 'cosplay_kids']);
+
+		// Buscar ranking
+		$ranking = $this->inscricaoModel->getRankingConcurso($id, $concurso->tipo, $categoria);
+
+		// Calcular estatísticas
+		$totalParticipantes = count($ranking);
+		$mediaGeral = $totalParticipantes > 0 
+			? round(array_sum(array_column($ranking, 'media_nota_total')) / $totalParticipantes, 2)
+			: 0;
+		$maiorNota = $totalParticipantes > 0 
+			? max(array_column($ranking, 'media_nota_total'))
+			: 0;
+
+		$data = [
+			'titulo' => 'Ranking - ' . esc($concurso->nome),
+			'concurso' => $concurso,
+			'ranking' => $ranking,
+			'categoria' => $categoria,
+			'isCosplay' => $isCosplay,
+			'totalParticipantes' => $totalParticipantes,
+			'mediaGeral' => $mediaGeral,
+			'maiorNota' => $maiorNota,
+		];
+
+		return view('Concursos/ranking', $data);
+	}
+
 	public function recuperaconcursoskpop($id)
 	{
 		if (!$this->request->isAJAX()) {
