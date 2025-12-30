@@ -305,6 +305,7 @@
                         <?php endif; ?>
                         <th class="text-center">Avaliações</th>
                         <th class="text-end">Média</th>
+                        <th class="text-center" style="width: 80px;">Detalhes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -361,6 +362,11 @@
                                 <?= number_format($item['media_nota_total'], 2, ',', '.') ?>
                             </span>
                         </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-info" onclick="verDetalhes(<?= $item['inscricao_id'] ?>, '<?= esc($item['participante']) ?>')" title="Ver notas detalhadas">
+                                <i class="bx bx-show"></i>
+                            </button>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -373,6 +379,33 @@
             <p class="text-muted">Os participantes aparecerão aqui após receberem todas as avaliações dos jurados.</p>
         </div>
         <?php endif; ?>
+    </div>
+</div>
+
+<!-- Modal de Detalhes das Avaliações -->
+<div class="modal fade" id="modalDetalhes" tabindex="-1" aria-labelledby="modalDetalhesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="modalDetalhesLabel">
+                    <i class="bx bx-bar-chart-alt-2 me-2"></i>Detalhes das Avaliações
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modalDetalhesConteudo">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Carregando avaliações...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -391,6 +424,122 @@ function filtrarCategoria() {
     }
     
     window.location.href = url.toString();
+}
+
+function verDetalhes(inscricaoId, participante) {
+    // Atualizar título do modal
+    document.getElementById('modalDetalhesLabel').innerHTML = '<i class="bx bx-bar-chart-alt-2 me-2"></i>Avaliações - ' + participante;
+    
+    // Mostrar loading
+    document.getElementById('modalDetalhesConteudo').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="mt-2 text-muted">Carregando avaliações...</p>
+        </div>
+    `;
+    
+    // Abrir modal
+    var modal = new bootstrap.Modal(document.getElementById('modalDetalhes'));
+    modal.show();
+    
+    // Buscar dados via AJAX
+    fetch('<?= site_url('concursos/detalhesAvaliacao') ?>/' + inscricaoId, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            renderizarDetalhes(data.avaliacoes, data.categorias);
+        } else {
+            document.getElementById('modalDetalhesConteudo').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bx bx-error me-2"></i>${data.mensagem || 'Erro ao carregar avaliações.'}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        document.getElementById('modalDetalhesConteudo').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bx bx-error me-2"></i>Erro ao conectar com o servidor.
+            </div>
+        `;
+    });
+}
+
+function renderizarDetalhes(avaliacoes, categorias) {
+    if (avaliacoes.length === 0) {
+        document.getElementById('modalDetalhesConteudo').innerHTML = `
+            <div class="alert alert-info">
+                <i class="bx bx-info-circle me-2"></i>Nenhuma avaliação encontrada.
+            </div>
+        `;
+        return;
+    }
+    
+    var html = `
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Jurado</th>
+                        <th class="text-center">${categorias.nota_1}</th>
+                        <th class="text-center">${categorias.nota_2}</th>
+                        <th class="text-center">${categorias.nota_3}</th>
+                        <th class="text-center">${categorias.nota_4}</th>
+                        <th class="text-center bg-primary">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    var somaTotal = 0;
+    avaliacoes.forEach(function(av) {
+        var total = parseFloat(av.nota_total) || 0;
+        somaTotal += total;
+        
+        html += `
+            <tr>
+                <td><strong>${av.jurado_nome}</strong></td>
+                <td class="text-center">${formatarNota(av.nota_1)}</td>
+                <td class="text-center">${formatarNota(av.nota_2)}</td>
+                <td class="text-center">${formatarNota(av.nota_3)}</td>
+                <td class="text-center">${formatarNota(av.nota_4)}</td>
+                <td class="text-center fw-bold text-primary">${formatarNota(av.nota_total)}</td>
+            </tr>
+        `;
+    });
+    
+    // Linha de média
+    var media = somaTotal / avaliacoes.length;
+    html += `
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <td colspan="5" class="text-end"><strong>Média do Participante:</strong></td>
+                        <td class="text-center"><strong class="text-success fs-5">${formatarNota(media)}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="mt-3 text-muted small">
+            <i class="bx bx-info-circle me-1"></i>
+            Total de ${avaliacoes.length} avaliação(ões) registrada(s).
+        </div>
+    `;
+    
+    document.getElementById('modalDetalhesConteudo').innerHTML = html;
+}
+
+function formatarNota(valor) {
+    if (valor === null || valor === undefined || valor === '') return '-';
+    return parseFloat(valor).toFixed(2).replace('.', ',');
 }
 </script>
 <?php echo $this->endSection() ?>

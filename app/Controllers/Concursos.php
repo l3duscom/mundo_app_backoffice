@@ -401,6 +401,59 @@ class Concursos extends BaseController
 		return view('Concursos/ranking', $data);
 	}
 
+	/**
+	 * Retorna detalhes das avaliações de uma inscrição (AJAX)
+	 * 
+	 * @param int $inscricao_id ID da inscrição
+	 */
+	public function detalhesAvaliacao($inscricao_id)
+	{
+		if (!$this->request->isAJAX()) {
+			return redirect()->back();
+		}
+
+		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
+			return $this->response->setJSON([
+				'sucesso' => false,
+				'mensagem' => 'Sem permissão para acessar.'
+			]);
+		}
+
+		$avaliacoes = $this->avaliacaoModel->getAvaliacoesDetalhadas($inscricao_id);
+
+		// Buscar informações da inscrição para saber o tipo de concurso
+		$inscricao = $this->inscricaoModel->select('inscricoes.*, concursos.tipo')
+			->join('concursos', 'concursos.id = inscricoes.concurso_id')
+			->where('inscricoes.id', $inscricao_id)
+			->first();
+
+		$isCosplay = in_array($inscricao->tipo ?? '', ['desfile_cosplay', 'apresentacao_cosplay', 'cosplay_kids']);
+
+		// Labels das categorias de notas
+		if ($isCosplay) {
+			$categorias = [
+				'nota_1' => 'Dificuldade',
+				'nota_2' => 'Fidelidade',
+				'nota_3' => 'Naturalidade',
+				'nota_4' => 'Itens/Acessórios',
+			];
+		} else {
+			$categorias = [
+				'nota_1' => 'Coreografia',
+				'nota_2' => 'Sincronia',
+				'nota_3' => 'Performance',
+				'nota_4' => 'Figurino',
+			];
+		}
+
+		return $this->response->setJSON([
+			'sucesso' => true,
+			'avaliacoes' => $avaliacoes,
+			'categorias' => $categorias,
+			'isCosplay' => $isCosplay
+		]);
+	}
+
 	public function recuperaconcursoskpop($id)
 	{
 		if (!$this->request->isAJAX()) {

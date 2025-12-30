@@ -105,4 +105,39 @@ class AvaliacaoModel extends Model
         }
         return $data;
     }
+
+    /**
+     * Recupera avaliações detalhadas de uma inscrição com nome do jurado
+     * 
+     * @param int $inscricao_id ID da inscrição
+     * @return array Avaliações com detalhes por jurado
+     */
+    public function getAvaliacoesDetalhadas(int $inscricao_id): array
+    {
+        $db = \Config\Database::connect();
+        
+        $sql = "
+            SELECT 
+                a.id,
+                a.inscricao_id,
+                a.jurado_id,
+                u.nome AS jurado_nome,
+                a.nota_1,
+                a.nota_2,
+                a.nota_3,
+                a.nota_4,
+                a.nota_total,
+                a.created_at
+            FROM avaliacoes a
+            JOIN usuarios u ON a.jurado_id = u.id
+            WHERE a.inscricao_id = ?
+              AND a.deleted_at IS NULL
+            ORDER BY a.created_at ASC
+        ";
+        
+        $query = $db->query($sql, [$inscricao_id]);
+        
+        return $query->getResultArray();
+    }
 }
+
