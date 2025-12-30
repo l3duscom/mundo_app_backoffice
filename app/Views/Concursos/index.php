@@ -134,12 +134,14 @@
                                     
                                     <?php 
                                     // Gerar link de inscrição baseado no tipo
+                                    // Usando mundodream.com.br ao invés do site_url padrão
+                                    $baseUrl = 'https://mundodream.com.br';
                                     if ($concurso->tipo == 'kpop') {
-                                        $linkInscricao = site_url("concursos/inscricao_kpop/{$concurso->id}");
+                                        $linkInscricao = "{$baseUrl}/concursos/inscricao_kpop/{$concurso->id}";
                                     } elseif ($concurso->tipo == 'apresentacao_cosplay') {
-                                        $linkInscricao = site_url("concursos/inscricao_cosplay_apresentacao/{$concurso->id}");
+                                        $linkInscricao = "{$baseUrl}/concursos/inscricao_cosplay_apresentacao/{$concurso->id}";
                                     } else {
-                                        $linkInscricao = site_url("concursos/inscricao_cosplay/{$concurso->id}");
+                                        $linkInscricao = "{$baseUrl}/concursos/inscricao_cosplay/{$concurso->id}";
                                     }
                                     ?>
                                     <div class="mt-2">
