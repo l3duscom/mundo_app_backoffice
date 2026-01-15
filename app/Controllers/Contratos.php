@@ -87,19 +87,19 @@ class Contratos extends BaseController
         $documentoModel = new \App\Models\ContratoDocumentoModel();
         $credenciamentoModel = new \App\Models\CredenciamentoModel();
 
-        // Agrupar por situação
+        // Agrupar por situação com totais
         $situacoes = [
-            'proposta' => [],
-            'proposta_aceita' => [],
-            'contrato_assinado' => [],
-            'aguardando_credenciamento' => [],
-            'pagamento_aberto' => [],
-            'pagamento_andamento' => [],
-            'aguardando_contrato' => [],
-            'pagamento_confirmado' => [],
-            'finalizado' => [],
-            'cancelado' => [],
-            'banido' => [],
+            'proposta' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'proposta_aceita' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'contrato_assinado' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'aguardando_credenciamento' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'pagamento_aberto' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'pagamento_andamento' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'aguardando_contrato' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'pagamento_confirmado' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'finalizado' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'cancelado' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
+            'banido' => ['cards' => [], 'total_valor' => 0, 'total_pago' => 0],
         ];
 
         $hoje = date('Y-m-d');
@@ -123,33 +123,60 @@ class Contratos extends BaseController
                 $credBadge = $credenciamento->getBadgeStatus();
             }
 
-            // Verifica parcela vencida
-            $parcelaBadge = '';
-            $parcelaVencida = $this->parcelaModel
+            // Busca próxima parcela pendente
+            $proximaParcela = $this->parcelaModel
                 ->where('contrato_id', $contrato->id)
                 ->whereIn('status_local', ['pendente', 'vencido'])
-                ->where('data_vencimento <', $hoje)
                 ->orderBy('data_vencimento', 'ASC')
                 ->first();
             
-            if ($parcelaVencida) {
-                $parcelaBadge = '<span class="badge bg-danger"><i class="bx bx-time-five me-1"></i>Vencido</span>';
+            $parcelaBadge = '';
+            $proximaParcelaData = null;
+            if ($proximaParcela) {
+                $dataVenc = $proximaParcela->data_vencimento;
+                $proximaParcelaData = date('d/m', strtotime($dataVenc));
+                if ($dataVenc < $hoje) {
+                    $parcelaBadge = '<span class="badge bg-danger"><i class="bx bx-time-five me-1"></i>Vencido</span>';
+                } elseif ($dataVenc <= date('Y-m-d', strtotime('+7 days'))) {
+                    $parcelaBadge = '<span class="badge bg-warning text-dark"><i class="bx bx-time-five me-1"></i>Próximo</span>';
+                }
             }
+
+            // Calcular progresso de pagamento
+            $valorFinal = floatval($contrato->valor_final);
+            $valorPago = floatval($contrato->valor_pago);
+            $progresso = $valorFinal > 0 ? round(($valorPago / $valorFinal) * 100) : 0;
 
             $situacao = $contrato->situacao ?? 'proposta';
             
             if (isset($situacoes[$situacao])) {
-                $situacoes[$situacao][] = [
+                $situacoes[$situacao]['cards'][] = [
                     'id' => $contrato->id,
                     'codigo' => $contrato->codigo,
                     'expositor' => esc($nomeExpositor ?? 'N/A'),
                     'valor_final' => $contrato->getValorFinalFormatado(),
+                    'valor_final_raw' => $valorFinal,
+                    'valor_pago' => 'R$ ' . number_format($valorPago, 2, ',', '.'),
+                    'valor_pago_raw' => $valorPago,
+                    'progresso' => $progresso,
                     'situacao' => $situacao,
                     'documento_badge' => $documentoBadge,
                     'credenciamento_badge' => $credBadge,
                     'parcela_badge' => $parcelaBadge,
+                    'proxima_parcela' => $proximaParcelaData,
                 ];
+                
+                // Somar totais da coluna
+                $situacoes[$situacao]['total_valor'] += $valorFinal;
+                $situacoes[$situacao]['total_pago'] += $valorPago;
             }
+        }
+
+        // Formatar totais
+        foreach ($situacoes as $key => $data) {
+            $situacoes[$key]['total_valor_formatado'] = 'R$ ' . number_format($data['total_valor'], 2, ',', '.');
+            $situacoes[$key]['total_pago_formatado'] = 'R$ ' . number_format($data['total_pago'], 2, ',', '.');
+            $situacoes[$key]['count'] = count($data['cards']);
         }
 
         return $this->response->setJSON($situacoes);
