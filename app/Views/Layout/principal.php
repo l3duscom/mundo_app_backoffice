@@ -280,6 +280,13 @@
                         </a>
                     </li>
                     <li>
+                        <a href="<?php echo site_url('/pipeline'); ?>">
+                            <div class="parent-icon"><i class="bx bx-git-branch"></i>
+                            </div>
+                            <div class="menu-title">Pipeline CRM</div>
+                        </a>
+                    </li>
+                    <li>
                         <a href="<?php echo site_url('/itenscatalogo'); ?>">
                             <div class="parent-icon"><i class="bx bx-box"></i>
                             </div>

@@ -510,6 +510,24 @@ $routes->group('email-templates', function ($routes) {
 });
 
 // ========================================
+// ROTAS DO PIPELINE CRM
+// ========================================
+$routes->group('pipeline', function ($routes) {
+    $routes->get('/', 'Pipeline::index');
+    $routes->get('kanban', 'Pipeline::kanban');
+    $routes->get('recuperaLeadsKanban', 'Pipeline::recuperaLeadsKanban');
+    $routes->get('criar', 'Pipeline::criar');
+    $routes->post('cadastrar', 'Pipeline::cadastrar');
+    $routes->get('exibir/(:num)', 'Pipeline::exibir/$1');
+    $routes->get('editar/(:num)', 'Pipeline::editar/$1');
+    $routes->post('atualizar', 'Pipeline::atualizar');
+    $routes->post('alterarEtapa', 'Pipeline::alterarEtapa');
+    $routes->post('registrarAtividade', 'Pipeline::registrarAtividade');
+    $routes->post('converterEmExpositor', 'Pipeline::converterEmExpositor');
+    $routes->match(['get', 'post'], 'excluir/(:num)', 'Pipeline::excluir/$1');
+});
+
+// ========================================
 // ROTAS DE TICKET UPSELLS
 // ========================================
 $routes->group('ticket-upsells', function ($routes) {
