@@ -9,8 +9,10 @@
     display: flex;
     gap: 12px;
     overflow-x: auto;
-    padding: 0 0 20px 0;
-    min-height: calc(100vh - 280px);
+    overflow-y: hidden;
+    padding: 0 0 12px 0;
+    height: calc(100vh - 280px);
+    max-height: calc(100vh - 280px);
 }
 
 /* Kanban Column */
