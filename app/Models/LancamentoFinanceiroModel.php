@@ -172,6 +172,49 @@ class LancamentoFinanceiroModel extends Model
     }
 
     /**
+     * Atualiza o status dos lançamentos financeiros de parcelas existentes
+     * Sincroniza quando o status da parcela muda de pendente para pago (ou vice-versa)
+     */
+    public function atualizarStatusParcelas(): int
+    {
+        $db = \Config\Database::connect();
+        
+        // Busca lançamentos de parcelas com status divergente
+        $query = $db->query("
+            SELECT lf.id as lancamento_id, 
+                   cp.status_local, cp.data_pagamento, cp.valor_liquido, cp.forma_pagamento
+            FROM lancamentos_financeiros lf
+            INNER JOIN contrato_parcelas cp ON lf.referencia_id = cp.id
+            WHERE lf.referencia_tipo = 'contrato_parcelas'
+              AND lf.deleted_at IS NULL
+              AND (
+                  (cp.status_local = 'pago' AND lf.status = 'pendente')
+                  OR (cp.status_local != 'pago' AND lf.status = 'pago')
+              )
+            LIMIT 500
+        ");
+        
+        $divergentes = $query->getResultArray();
+        $count = 0;
+
+        foreach ($divergentes as $item) {
+            $novoStatus = $item['status_local'] === 'pago' ? 'pago' : 'pendente';
+            
+            $updateData = [
+                'status' => $novoStatus,
+                'data_pagamento' => $item['data_pagamento'],
+                'valor_liquido' => $item['valor_liquido'],
+                'forma_pagamento' => $item['forma_pagamento'],
+            ];
+
+            $this->update($item['lancamento_id'], $updateData);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
      * Sincroniza entradas de pedidos (ingressos/PDV) - processamento otimizado
      */
     public function sincronizarPedidos(): int
@@ -271,6 +314,7 @@ class LancamentoFinanceiroModel extends Model
     {
         return [
             'parcelas' => $this->sincronizarParcelas(),
+            'parcelas_atualizadas' => $this->atualizarStatusParcelas(),
             'pedidos' => $this->sincronizarPedidos(),
             'contas_pagar' => $this->sincronizarContasPagar(),
         ];

@@ -387,10 +387,19 @@ class Financeiro extends BaseController
         try {
             $resultado = $this->lancamentoModel->sincronizarTodos();
 
-            $total = array_sum($resultado);
+            $novos = ($resultado['parcelas'] ?? 0) + ($resultado['pedidos'] ?? 0) + ($resultado['contas_pagar'] ?? 0);
+            $atualizados = $resultado['parcelas_atualizadas'] ?? 0;
+            $total = $novos + $atualizados;
 
             if ($total > 0) {
-                $retorno['sucesso'] = "Sincronização concluída! {$total} lançamentos importados.";
+                $msg = "Sincronização concluída!";
+                if ($novos > 0) {
+                    $msg .= " {$novos} lançamentos importados.";
+                }
+                if ($atualizados > 0) {
+                    $msg .= " {$atualizados} lançamentos atualizados.";
+                }
+                $retorno['sucesso'] = $msg;
             } else {
                 $retorno['info'] = 'Nenhum novo lançamento para sincronizar.';
             }

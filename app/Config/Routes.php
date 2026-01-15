@@ -502,6 +502,14 @@ $routes->group('agentes', function ($routes) {
 });
 
 // ========================================
+// ROTAS DE TEMPLATES DE EMAIL
+// ========================================
+$routes->group('email-templates', function ($routes) {
+    $routes->get('/', 'EmailTemplates::index');
+    $routes->get('exibir/(:segment)/(:segment)', 'EmailTemplates::exibir/$1/$2');
+});
+
+// ========================================
 // ROTAS DE TICKET UPSELLS
 // ========================================
 $routes->group('ticket-upsells', function ($routes) {
