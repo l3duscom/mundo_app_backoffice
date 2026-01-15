@@ -393,6 +393,14 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo site_url('/order-bumps'); ?>">
+                                <div class="parent-icon"><i class="bx bx-package"></i>
+                                </div>
+                                <div class="menu-title">Order Bumps</div>
+                            </a>
+                        </li>
+
+                        <li>
                             <a href="<?php echo site_url('/credenciamento/listar?evento_id=' . evento_selecionado()); ?>">
                                 <div class="parent-icon"><i class="bx bx-id-card"></i>
                                 </div>

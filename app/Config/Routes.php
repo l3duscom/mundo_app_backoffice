@@ -540,6 +540,21 @@ $routes->group('ticket-upsells', function ($routes) {
     $routes->get('calcularDiferenca', 'TicketUpsells::calcularDiferenca');
 });
 
+// ========================================
+// ROTAS DE ORDER BUMPS
+// ========================================
+$routes->group('order-bumps', function ($routes) {
+    $routes->get('/', 'OrderBumps::index');
+    $routes->get('criar', 'OrderBumps::criar');
+    $routes->post('cadastrar', 'OrderBumps::cadastrar');
+    $routes->get('editar/(:num)', 'OrderBumps::editar/$1');
+    $routes->post('atualizar', 'OrderBumps::atualizar');
+    $routes->post('excluir/(:num)', 'OrderBumps::excluir/$1');
+    $routes->post('alterarStatus', 'OrderBumps::alterarStatus');
+    $routes->post('uploadImagem', 'OrderBumps::uploadImagem');
+    $routes->post('removerImagem', 'OrderBumps::removerImagem');
+});
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing
