@@ -22,6 +22,7 @@ class Pedidos extends BaseController
 	private $resendService;
 	private $dadosEnvioModel;
 	private $bonusModel;
+	private $pedidoOrderBumpModel;
 
 
 
@@ -38,6 +39,7 @@ class Pedidos extends BaseController
 		$this->resendService = new ResendService();
 		$this->dadosEnvioModel = new \App\Models\DadosEnvioModel();
 		$this->bonusModel = new \App\Models\BonusModel();
+		$this->pedidoOrderBumpModel = new \App\Models\PedidoOrderBumpModel();
 	}
 
 	public function index()
@@ -737,6 +739,9 @@ class Pedidos extends BaseController
 		// Buscar bônus do usuário indexados por ingresso_id
 		$bonus_por_ingresso = $this->bonusModel->getBonusPorUsuarioIndexado($pedido->user_id);
 
+		// Buscar order bumps do pedido
+		$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+
 		$data = [
 			'titulo' => 'Ingressos do pedido' . esc($pedido->cod_pedido),
 			'todos' => $todos,
@@ -748,6 +753,7 @@ class Pedidos extends BaseController
 			'acessosPorIngresso' => $acessosPorIngresso,
 			'ultimoAcessoPorIngresso' => $ultimoAcessoPorIngresso,
 			'bonus_por_ingresso' => $bonus_por_ingresso,
+			'orderBumps' => $orderBumps,
 		];
 
 
@@ -1287,6 +1293,44 @@ class Pedidos extends BaseController
 		];
 
 		return view('Pedidos/meu_refound_detalhe', $data);
+	}
+
+	/**
+	 * Marca um order bump do pedido como usado via AJAX
+	 */
+	public function marcarOrderBumpUsado(int $id = null)
+	{
+		if (!$this->request->isAJAX()) {
+			return $this->response->setJSON(['erro' => true, 'mensagem' => 'Requisição inválida']);
+		}
+
+		if (!$id) {
+			return $this->response->setJSON(['erro' => true, 'mensagem' => 'ID inválido']);
+		}
+
+		$pedidoId = $this->request->getPost('pedido_id');
+		
+		if (!$pedidoId) {
+			return $this->response->setJSON(['erro' => true, 'mensagem' => 'Pedido não informado']);
+		}
+
+		// Verificar se o order bump pertence ao pedido
+		$orderBump = $this->pedidoOrderBumpModel->getOrderBumpDoPedido($id, $pedidoId);
+		
+		if (!$orderBump) {
+			return $this->response->setJSON(['erro' => true, 'mensagem' => 'Order bump não encontrado']);
+		}
+
+		// Marcar como usado
+		if ($this->pedidoOrderBumpModel->marcarComoUsado($id)) {
+			return $this->response->setJSON([
+				'erro' => false,
+				'mensagem' => 'Order bump marcado como usado com sucesso',
+				'usado_em' => date('d/m/Y H:i'),
+			]);
+		}
+
+		return $this->response->setJSON(['erro' => true, 'mensagem' => 'Erro ao marcar como usado']);
 	}
 }
 

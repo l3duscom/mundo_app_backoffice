@@ -225,6 +225,90 @@
 
 
                 <?php endforeach; ?>
+
+            <!-- Seção de Order Bumps -->
+            <?php if (!empty($orderBumps)) : ?>
+                <div class="col-lg-12 mt-4">
+                    <div class="card shadow radius-10 border-start border-3 border-primary">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-0">
+                                        <i class="bx bx-gift me-2 text-primary"></i>Order Bumps do Pedido
+                                    </h5>
+                                    <small class="text-muted">Produtos/serviços adicionais adquiridos</small>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th class="text-center">Qtd</th>
+                                            <th class="text-end">Preço Unit.</th>
+                                            <th class="text-end">Total</th>
+                                            <th class="text-center">Status</th>
+                                            <th class="text-center">Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($orderBumps as $ob) : ?>
+                                            <tr id="orderbump-row-<?= $ob->id ?>">
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <?php if (!empty($ob->imagem)) : ?>
+                                                            <img src="<?= site_url('uploads/order_bumps/' . $ob->imagem) ?>" 
+                                                                 alt="<?= esc($ob->nome) ?>" 
+                                                                 class="rounded me-2" 
+                                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                                        <?php else : ?>
+                                                            <div class="rounded me-2 d-flex align-items-center justify-content-center bg-light" 
+                                                                 style="width: 40px; height: 40px;">
+                                                                <i class="bx bx-package text-muted"></i>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                        <div>
+                                                            <strong><?= esc($ob->nome) ?></strong>
+                                                            <?php if (!empty($ob->descricao)) : ?>
+                                                                <br><small class="text-muted"><?= esc(substr($ob->descricao, 0, 50)) ?><?= strlen($ob->descricao) > 50 ? '...' : '' ?></small>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center align-middle">
+                                                    <span class="badge bg-secondary"><?= $ob->quantidade ?></span>
+                                                </td>
+                                                <td class="text-end align-middle"><?= $ob->getPrecoFormatado() ?></td>
+                                                <td class="text-end align-middle fw-bold"><?= $ob->getTotalFormatado() ?></td>
+                                                <td class="text-center align-middle" id="orderbump-status-<?= $ob->id ?>">
+                                                    <?= $ob->exibeStatusUsado() ?>
+                                                </td>
+                                                <td class="text-center align-middle">
+                                                    <?php if (!$ob->usado) : ?>
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-outline-success btn-marcar-usado" 
+                                                                data-id="<?= $ob->id ?>"
+                                                                data-nome="<?= esc($ob->nome) ?>"
+                                                                title="Marcar como usado">
+                                                            <i class="bx bx-check-circle"></i> Marcar usado
+                                                        </button>
+                                                    <?php else : ?>
+                                                        <span class="text-success">
+                                                            <i class="bx bx-check-double"></i> Utilizado
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
                 <hr>
                 <h5>Todos os ingressos e adicionais deste usuário</h5>
                 <?php foreach ($todos as $t) : ?>
@@ -562,6 +646,63 @@
 
         });
 
+        // Marcar Order Bump como usado
+        $(".btn-marcar-usado").on('click', function() {
+            var btn = $(this);
+            var id = btn.data('id');
+            var nome = btn.data('nome');
+            
+            // Primeira confirmação
+            if (!confirm('Deseja marcar "' + nome + '" como usado?')) {
+                return;
+            }
+            
+            // Segunda confirmação (ação irreversível)
+            if (!confirm('ATENÇÃO: Esta ação NÃO pode ser desfeita. Confirma?')) {
+                return;
+            }
+            
+            btn.prop('disabled', true);
+            btn.html('<i class="bx bx-loader-alt bx-spin"></i> Processando...');
+            
+            $.ajax({
+                type: 'POST',
+                url: '<?= site_url("pedidos/marcarOrderBumpUsado/") ?>' + id,
+                data: {
+                    pedido_id: <?= $pedido->id ?>,
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (!response.erro) {
+                        // Atualizar status
+                        $('#orderbump-status-' + id).html(
+                            '<span class="badge bg-success"><i class="bx bx-check-circle me-1"></i>Usado em ' + response.usado_em + '</span>'
+                        );
+                        
+                        // Substituir botão por texto
+                        btn.closest('td').html(
+                            '<span class="text-success"><i class="bx bx-check-double"></i> Utilizado</span>'
+                        );
+                        
+                        // Feedback visual
+                        $('#orderbump-row-' + id).addClass('table-success');
+                        setTimeout(function() {
+                            $('#orderbump-row-' + id).removeClass('table-success');
+                        }, 3000);
+                    } else {
+                        alert('Erro: ' + response.mensagem);
+                        btn.prop('disabled', false);
+                        btn.html('<i class="bx bx-check-circle"></i> Marcar usado');
+                    }
+                },
+                error: function() {
+                    alert('Erro ao processar a solicitação. Tente novamente.');
+                    btn.prop('disabled', false);
+                    btn.html('<i class="bx bx-check-circle"></i> Marcar usado');
+                }
+            });
+        });
 
     });
 </script>
