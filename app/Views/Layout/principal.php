@@ -501,6 +501,21 @@
                             <div class="menu-title">Códigos Bonus</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('/planos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-crown"></i>
+                            </div>
+                            <div class="menu-title">Planos de Assinatura</div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('/assinaturas-admin'); ?>">
+                            <div class="parent-icon"><i class="bx bx-user-check"></i>
+                            </div>
+                            <div class="menu-title">Gerenciar Assinaturas</div>
+                        </a>
+                    </li>
+
                 <?php endif; ?>
 
                 <!-- Tab links 

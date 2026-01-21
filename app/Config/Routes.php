@@ -555,6 +555,32 @@ $routes->group('order-bumps', function ($routes) {
     $routes->post('removerImagem', 'OrderBumps::removerImagem');
 });
 
+// ========================================
+// ROTAS DE PLANOS DE ASSINATURA
+// ========================================
+$routes->group('planos', function ($routes) {
+    $routes->get('/', 'Planos::index');
+    $routes->get('criar', 'Planos::criar');
+    $routes->post('cadastrar', 'Planos::cadastrar');
+    $routes->get('editar/(:num)', 'Planos::editar/$1');
+    $routes->post('atualizar', 'Planos::atualizar');
+    $routes->post('excluir/(:num)', 'Planos::excluir/$1');
+    $routes->post('alterarStatus', 'Planos::alterarStatus');
+});
+
+// ========================================
+// ROTAS ADMIN DE ASSINATURAS
+// ========================================
+$routes->group('assinaturas-admin', function ($routes) {
+    $routes->get('/', 'AssinaturasAdmin::index');
+    $routes->get('exibir/(:num)', 'AssinaturasAdmin::exibir/$1');
+    $routes->post('cancelar', 'AssinaturasAdmin::cancelar');
+    $routes->post('reativar', 'AssinaturasAdmin::reativar');
+    $routes->get('historico/(:num)', 'AssinaturasAdmin::historico/$1');
+    $routes->get('exportar', 'AssinaturasAdmin::exportar');
+});
+
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

@@ -650,7 +650,110 @@ class Clientes extends BaseController
         return redirect()->back()->with('sucesso', "Cliente $cliente->nome recuperado com sucesso!");
     }
 
+    /**
+     * Tornar um cliente premium manualmente
+     */
+    public function tornarPremium()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $clienteId = $this->request->getPost('cliente_id');
+        $duracao = $this->request->getPost('duracao') ?? 30; // dias
+
+        $cliente = $this->buscaclienteOu404($clienteId);
+
+        // Calcular data de expiração
+        $dataExpiracao = new \DateTime();
+        $dataExpiracao->add(new \DateInterval("P{$duracao}D"));
+
+        // Atualizar usuário para premium
+        $this->usuarioModel->protect(false)->update($cliente->usuario_id, [
+            'is_premium' => 1,
+            'premium_ate' => $dataExpiracao->format('Y-m-d H:i:s'),
+        ]);
+
+        // Criar assinatura manual (sem integração Asaas)
+        $assinaturaModel = new \App\Models\AssinaturaModel();
+        $planoModel = new \App\Models\PlanoModel();
+        
+        // Buscar plano padrão (ou criar um se não existir)
+        $plano = $planoModel->where('ativo', 1)->first();
+        
+        if ($plano) {
+            $assinaturaId = $assinaturaModel->insert([
+                'usuario_id' => $cliente->usuario_id,
+                'plano_id' => $plano->id,
+                'status' => 'ACTIVE',
+                'data_inicio' => date('Y-m-d H:i:s'),
+                'data_fim' => $dataExpiracao->format('Y-m-d H:i:s'),
+                'proximo_vencimento' => $dataExpiracao->format('Y-m-d'),
+                'valor_pago' => 0,
+                'forma_pagamento' => null,
+            ]);
+
+            // Registrar no histórico
+            $historicoModel = new \App\Models\AssinaturaHistoricoModel();
+            $historicoModel->registra($assinaturaId, 'CREATED', 'Premium concedido manualmente pelo administrador', [
+                'admin_id' => $this->usuarioLogado()->id,
+                'duracao_dias' => $duracao,
+            ]);
+        }
+
+        $retorno['sucesso'] = true;
+        $retorno['mensagem'] = "Cliente {$cliente->nome} agora é Premium até " . $dataExpiracao->format('d/m/Y');
+
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Remover status premium de um cliente
+     */
+    public function removerPremium()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        $clienteId = $this->request->getPost('cliente_id');
+        $cliente = $this->buscaclienteOu404($clienteId);
+
+        // Remover status premium do usuário
+        $this->usuarioModel->protect(false)->update($cliente->usuario_id, [
+            'is_premium' => 0,
+            'premium_ate' => null,
+        ]);
+
+        // Cancelar assinaturas ativas
+        $assinaturaModel = new \App\Models\AssinaturaModel();
+        $assinaturaAtiva = $assinaturaModel->buscaAtivaDoUsuario($cliente->usuario_id);
+        
+        if ($assinaturaAtiva) {
+            $assinaturaModel->update($assinaturaAtiva->id, [
+                'status' => 'CANCELLED',
+                'data_fim' => date('Y-m-d H:i:s'),
+            ]);
+
+            // Registrar no histórico
+            $historicoModel = new \App\Models\AssinaturaHistoricoModel();
+            $historicoModel->registra($assinaturaAtiva->id, 'CANCELLED', 'Premium removido manualmente pelo administrador', [
+                'admin_id' => $this->usuarioLogado()->id,
+            ]);
+        }
+
+        $retorno['sucesso'] = true;
+        $retorno['mensagem'] = "Status Premium removido do cliente {$cliente->nome}";
+
+        return $this->response->setJSON($retorno);
+    }
+
     /*--------------------------------Método privados-------------------------*/
+
 
     /**
      * Método que recupera o cliente

@@ -20,6 +20,9 @@ class UsuarioModel extends Model
         'reset_expira_em',
         'imagem',
         'pontos', // Pontos do sistema de conquistas
+        'is_premium',
+        'premium_ate',
+        'asaas_subscription_id',
         // Não colocaremos o campo ativo.... Pois existe a manipulação de formulário
     ];
 

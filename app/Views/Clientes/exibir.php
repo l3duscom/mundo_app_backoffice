@@ -86,6 +86,15 @@
                     <i class="bx bx-history me-2"></i>Histórico de atendimentos</a></li>
                 <li><hr class="dropdown-divider"></li>
                 
+                <?php if ($cliente->grupo_id != 3): ?>
+                    <li><a class="dropdown-item text-warning" href="#" data-bs-toggle="modal" data-bs-target="#modalPremium">
+                        <i class="bx bx-crown me-2"></i>Tornar Premium</a></li>
+                <?php else: ?>
+                    <li><a class="dropdown-item text-secondary btn-remover-premium" href="#">
+                        <i class="bx bx-x-circle me-2"></i>Remover Premium</a></li>
+                <?php endif; ?>
+                
+                <li><hr class="dropdown-divider"></li>
                 <?php if ($cliente->deletado_em == null) : ?>
                     <li><a class="dropdown-item text-danger" href="<?php echo site_url("clientes/excluir/$cliente->id"); ?>">
                         <i class="bx bx-trash me-2"></i>Excluir cliente</a></li>
@@ -329,14 +338,109 @@
     </div>
 </div>
 
+<!-- Modal para Tornar Premium -->
+<div class="modal fade" id="modalPremium" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bx bx-crown me-2"></i>Tornar Cliente Premium</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Você está prestes a conceder status <strong>Premium</strong> para:</p>
+                <div class="alert alert-light">
+                    <strong><?php echo esc($cliente->nome); ?></strong><br>
+                    <small class="text-muted"><?php echo esc($cliente->email); ?></small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Duração do Premium</label>
+                    <select class="form-select" id="duracaoPremium">
+                        <option value="30">30 dias</option>
+                        <option value="90">90 dias (3 meses)</option>
+                        <option value="180">180 dias (6 meses)</option>
+                        <option value="365" selected>365 dias (1 ano)</option>
+                        <option value="730">730 dias (2 anos)</option>
+                        <option value="9999">Vitalício</option>
+                    </select>
+                </div>
+
+                <div class="alert alert-info small">
+                    <i class="bx bx-info-circle me-1"></i>
+                    O cliente receberá acesso a todos os benefícios Premium imediatamente.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" id="btnConfirmarPremium">
+                    <i class="bx bx-crown me-1"></i>Confirmar Premium
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php echo $this->endSection() ?>
 
 
-
-
 <?php echo $this->section('scripts') ?>
 
-<!-- Aqui coloco os scripts da view-->
+<script>
+$(document).ready(function() {
+    var clienteId = <?php echo $cliente->id; ?>;
+    var modalPremium = new bootstrap.Modal(document.getElementById('modalPremium'));
+
+    // Confirmar tornar premium
+    $('#btnConfirmarPremium').click(function() {
+        var btn = $(this);
+        var duracao = $('#duracaoPremium').val();
+
+        btn.prop('disabled', true).html('<i class="bx bx-loader bx-spin me-1"></i>Processando...');
+
+        $.post('<?php echo site_url("clientes/tornarPremium"); ?>', {
+            '<?php echo csrf_token(); ?>': '<?php echo csrf_hash(); ?>',
+            'cliente_id': clienteId,
+            'duracao': duracao
+        }, function(r) {
+            if (r.erro) {
+                alert(r.erro);
+                btn.prop('disabled', false).html('<i class="bx bx-crown me-1"></i>Confirmar Premium');
+                return;
+            }
+            
+            modalPremium.hide();
+            alert(r.mensagem);
+            location.reload();
+        }, 'json').fail(function() {
+            alert('Erro ao processar. Tente novamente.');
+            btn.prop('disabled', false).html('<i class="bx bx-crown me-1"></i>Confirmar Premium');
+        });
+    });
+
+    // Remover premium
+    $('.btn-remover-premium').click(function(e) {
+        e.preventDefault();
+        
+        if (!confirm('Tem certeza que deseja remover o status Premium deste cliente?')) {
+            return;
+        }
+
+        $.post('<?php echo site_url("clientes/removerPremium"); ?>', {
+            '<?php echo csrf_token(); ?>': '<?php echo csrf_hash(); ?>',
+            'cliente_id': clienteId
+        }, function(r) {
+            if (r.erro) {
+                alert(r.erro);
+                return;
+            }
+            
+            alert(r.mensagem);
+            location.reload();
+        }, 'json').fail(function() {
+            alert('Erro ao processar. Tente novamente.');
+        });
+    });
+});
+</script>
 
 <?php echo $this->endSection() ?>
