@@ -348,6 +348,59 @@ class LancamentoFinanceiroModel extends Model
             'parcelas_atualizadas' => $this->atualizarStatusParcelas(),
             'pedidos' => $this->sincronizarPedidos(),
             'contas_pagar' => $this->sincronizarContasPagar(),
+            'assinaturas' => $this->sincronizarAssinaturas(),
         ];
+    }
+
+    /**
+     * Sincroniza entradas de assinaturas premium - pagamentos confirmados
+     */
+    public function sincronizarAssinaturas(): int
+    {
+        $db = \Config\Database::connect();
+        
+        // Busca assinaturas com pagamentos confirmados que ainda não foram sincronizadas
+        $query = $db->query("
+            SELECT a.id, a.usuario_id, a.plano_id, a.valor_pago, a.forma_pagamento, a.data_inicio,
+                   p.nome as plano_nome, p.preco as plano_preco,
+                   u.nome as usuario_nome
+            FROM assinaturas a
+            INNER JOIN planos p ON p.id = a.plano_id
+            INNER JOIN usuarios u ON u.id = a.usuario_id
+            LEFT JOIN lancamentos_financeiros lf ON lf.referencia_tipo = 'assinaturas' AND lf.referencia_id = a.id AND lf.deleted_at IS NULL
+            WHERE a.status = 'ACTIVE'
+            AND a.valor_pago > 0
+            AND a.deleted_at IS NULL
+            AND lf.id IS NULL
+            LIMIT 500
+        ");
+        
+        $assinaturas = $query->getResultArray();
+        $count = 0;
+
+        foreach ($assinaturas as $assinatura) {
+            $descricao = "Assinatura #{$assinatura['id']} - {$assinatura['usuario_nome']} - {$assinatura['plano_nome']}";
+            
+            $data = [
+                'event_id' => null, // Assinaturas não são vinculadas a eventos
+                'tipo' => 'ENTRADA',
+                'origem' => 'ASSINATURA',
+                'referencia_tipo' => 'assinaturas',
+                'referencia_id' => $assinatura['id'],
+                'descricao' => $descricao,
+                'valor' => $assinatura['valor_pago'],
+                'valor_liquido' => $assinatura['valor_pago'] * 0.97, // Estima taxa Asaas ~3%
+                'data_lancamento' => date('Y-m-d', strtotime($assinatura['data_inicio'])),
+                'data_pagamento' => date('Y-m-d', strtotime($assinatura['data_inicio'])),
+                'status' => 'pago',
+                'forma_pagamento' => $assinatura['forma_pagamento'] ?? 'PIX',
+                'categoria' => 'Assinaturas Premium',
+            ];
+
+            $this->insert($data);
+            $count++;
+        }
+
+        return $count;
     }
 }

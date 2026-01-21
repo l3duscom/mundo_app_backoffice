@@ -6,6 +6,10 @@ use App\Models\AuditoriaModel;
 use App\Models\PedidoModel;
 use App\Models\ContratoModel;
 use App\Models\ContratoParcelaModel;
+use App\Models\AssinaturaModel;
+use App\Models\AssinaturaHistoricoModel;
+use App\Models\UsuarioModel;
+use App\Models\PlanoModel;
 use App\Services\PontosCompraService;
 
 class Webhook extends BaseController
@@ -132,6 +136,22 @@ class Webhook extends BaseController
                 
                 $this->processarPagamentoContrato($contrato, $payment_status, $payment_value, $payment_transactionReceiptUrl, $payment_id);
                 log_message('info', 'Contrato atualizado com sucesso: ' . $contrato->codigo);
+            }
+
+            // ========================================
+            // PROCESSAMENTO DE ASSINATURAS
+            // ========================================
+            $payment_subscription = $data['payment']['subscription'] ?? null;
+            
+            if ($payment_subscription) {
+                log_message('info', 'Pagamento de assinatura detectado: ' . $payment_subscription);
+                $this->processarPagamentoAssinatura(
+                    $payment_subscription,
+                    $payment_status,
+                    $payment_value,
+                    $payment_billingType,
+                    $payment_id
+                );
             }
 
             return $this->response->setJSON(['status' => 'success', 'message' => 'Webhook processado com sucesso']);
@@ -268,5 +288,195 @@ class Webhook extends BaseController
                 log_message('info', "Contrato {$contrato->codigo}: Estorno de R$ {$valor}. Novo valor pago: R$ {$novoValorPago}");
                 break;
         }
+    }
+
+    /**
+     * Processa pagamento de assinatura baseado no status do Asaas
+     * 
+     * @param string $subscriptionId ID da assinatura no Asaas
+     * @param string $status Status do pagamento
+     * @param float $valor Valor do pagamento
+     * @param string|null $formaPagamento Forma de pagamento (PIX, CREDIT_CARD, BOLETO)
+     * @param string|null $paymentId ID do pagamento no Asaas
+     */
+    private function processarPagamentoAssinatura(
+        string $subscriptionId,
+        string $status,
+        float $valor,
+        ?string $formaPagamento = null,
+        ?string $paymentId = null
+    ): void {
+        $assinaturaModel = new AssinaturaModel();
+        $historicoModel = new AssinaturaHistoricoModel();
+        $usuarioModel = new UsuarioModel();
+        $planoModel = new PlanoModel();
+
+        // Busca assinatura pelo ID do Asaas
+        $assinatura = $assinaturaModel->where('asaas_subscription_id', $subscriptionId)->first();
+
+        if (!$assinatura) {
+            log_message('warning', "Assinatura não encontrada para subscription_id: {$subscriptionId}");
+            return;
+        }
+
+        log_message('info', "Processando assinatura #{$assinatura->id} - Status: {$status}");
+
+        // Mapeia status do Asaas para ações
+        switch ($status) {
+            case 'CONFIRMED':
+            case 'RECEIVED':
+            case 'RECEIVED_IN_CASH':
+                // Pagamento confirmado - ativa assinatura
+                $plano = $planoModel->find($assinatura->plano_id);
+                
+                // Calcula próxima data de vencimento baseada no ciclo do plano
+                $dataFim = new \DateTime();
+                if ($plano && $plano->ciclo === 'YEARLY') {
+                    $dataFim->add(new \DateInterval('P1Y'));
+                } else {
+                    $dataFim->add(new \DateInterval('P1M'));
+                }
+
+                // Atualiza assinatura
+                $assinaturaModel->update($assinatura->id, [
+                    'status' => 'ACTIVE',
+                    'data_inicio' => $assinatura->data_inicio ?? date('Y-m-d H:i:s'),
+                    'data_fim' => $dataFim->format('Y-m-d H:i:s'),
+                    'proximo_vencimento' => $dataFim->format('Y-m-d'),
+                    'valor_pago' => ($assinatura->valor_pago ?? 0) + $valor,
+                    'forma_pagamento' => $formaPagamento,
+                ]);
+
+                // Atualiza usuário como premium
+                $usuarioModel->protect(false)->update($assinatura->usuario_id, [
+                    'is_premium' => 1,
+                    'premium_ate' => $dataFim->format('Y-m-d H:i:s'),
+                    'asaas_subscription_id' => $subscriptionId,
+                ]);
+
+                // Registra histórico
+                $historicoModel->registra($assinatura->id, 'PAYMENT_CONFIRMED', 
+                    "Pagamento de R$ " . number_format($valor, 2, ',', '.') . " confirmado via webhook", 
+                    ['payment_id' => $paymentId, 'valor' => $valor, 'forma_pagamento' => $formaPagamento]
+                );
+
+                // ==== REGISTRA NO MÓDULO FINANCEIRO ====
+                $this->registrarLancamentoAssinatura($assinatura, $valor, $formaPagamento, $paymentId, $plano);
+
+                log_message('info', "Assinatura #{$assinatura->id}: Ativada. Usuário #{$assinatura->usuario_id} marcado como premium até {$dataFim->format('d/m/Y')}");
+                break;
+
+            case 'OVERDUE':
+                // Pagamento atrasado
+                $assinaturaModel->update($assinatura->id, [
+                    'status' => 'OVERDUE',
+                ]);
+
+                $historicoModel->registra($assinatura->id, 'PAYMENT_FAILED', 
+                    "Pagamento atrasado detectado via webhook"
+                );
+
+                log_message('warning', "Assinatura #{$assinatura->id}: Pagamento atrasado!");
+                break;
+
+            case 'REFUNDED':
+            case 'REFUND_REQUESTED':
+                // Estorno - pode precisar ajustar premium
+                $historicoModel->registra($assinatura->id, 'PAYMENT_FAILED', 
+                    "Pagamento estornado: R$ " . number_format($valor, 2, ',', '.'),
+                    ['payment_id' => $paymentId, 'valor' => $valor]
+                );
+
+                log_message('info', "Assinatura #{$assinatura->id}: Pagamento estornado.");
+                break;
+
+            case 'DELETED':
+            case 'CANCELLED':
+                // Assinatura cancelada
+                $assinaturaModel->update($assinatura->id, [
+                    'status' => 'CANCELLED',
+                    'data_fim' => date('Y-m-d H:i:s'),
+                ]);
+
+                // Remove premium do usuário
+                $usuarioModel->protect(false)->update($assinatura->usuario_id, [
+                    'is_premium' => 0,
+                    'premium_ate' => null,
+                ]);
+
+                $historicoModel->registra($assinatura->id, 'CANCELLED', 
+                    "Assinatura cancelada via webhook"
+                );
+
+                log_message('info', "Assinatura #{$assinatura->id}: Cancelada. Premium removido do usuário #{$assinatura->usuario_id}");
+                break;
+
+            case 'PENDING':
+            case 'AWAITING_RISK_ANALYSIS':
+                // Pagamento pendente - apenas log
+                log_message('info', "Assinatura #{$assinatura->id}: Pagamento pendente.");
+                break;
+
+            default:
+                log_message('info', "Assinatura #{$assinatura->id}: Status {$status} não requer ação especial.");
+                break;
+        }
+    }
+
+    /**
+     * Registra lançamento financeiro para pagamento de assinatura
+     * 
+     * @param object $assinatura Entidade da assinatura
+     * @param float $valor Valor do pagamento
+     * @param string|null $formaPagamento Forma de pagamento
+     * @param string|null $paymentId ID do pagamento no Asaas
+     * @param object|null $plano Entidade do plano
+     */
+    private function registrarLancamentoAssinatura(
+        $assinatura,
+        float $valor,
+        ?string $formaPagamento = null,
+        ?string $paymentId = null,
+        $plano = null
+    ): void {
+        $lancamentoModel = new \App\Models\LancamentoFinanceiroModel();
+        
+        // Verifica se já existe lançamento para este payment_id (evita duplicação)
+        if ($paymentId && $lancamentoModel->where('observacoes', 'LIKE', "%{$paymentId}%")->countAllResults() > 0) {
+            log_message('info', "Lançamento financeiro já existe para payment_id: {$paymentId}");
+            return;
+        }
+
+        // Busca dados do usuário para descrição
+        $usuarioModel = new UsuarioModel();
+        $usuario = $usuarioModel->find($assinatura->usuario_id);
+        
+        $descricao = "Assinatura #{$assinatura->id}";
+        if ($usuario) {
+            $descricao .= " - " . $usuario->nome;
+        }
+        if ($plano) {
+            $descricao .= " - " . $plano->nome;
+        }
+
+        $data = [
+            'event_id' => null, // Assinaturas não são vinculadas a eventos
+            'tipo' => 'ENTRADA',
+            'origem' => 'ASSINATURA',
+            'referencia_tipo' => 'assinaturas',
+            'referencia_id' => $assinatura->id,
+            'descricao' => $descricao,
+            'valor' => $valor,
+            'valor_liquido' => $valor * 0.97, // Estima taxa Asaas ~3%
+            'data_lancamento' => date('Y-m-d'),
+            'data_pagamento' => date('Y-m-d'),
+            'status' => 'pago',
+            'forma_pagamento' => $formaPagamento ?? 'PIX',
+            'categoria' => 'Assinaturas Premium',
+            'observacoes' => "Payment ID: {$paymentId}",
+        ];
+
+        $lancamentoModel->insert($data);
+        log_message('info', "Lançamento financeiro registrado para assinatura #{$assinatura->id}");
     }
 } 
