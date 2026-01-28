@@ -52,6 +52,12 @@ class Login extends BaseController
 
 		//session()->setFlashdata('sucesso', "Olá $usuarioLogado->nome, que bom que está de volta!");
 
+		// Usuário de vendas - acesso restrito ao pipeline
+		if ($usuarioLogado->is_vendas) {
+			$retorno['redirect'] = 'pipeline/kanban';
+			return $this->response->setJSON($retorno);
+		}
+
 		// PDV também é expositor, então segue o fluxo normal de cliente
 		// O aviso de PDV será mostrado na dashboard_parceiro
 

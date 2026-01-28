@@ -282,6 +282,24 @@ class Autenticacao
         return true;
     }
 
+    private function isVendas(): bool
+    {
+        // Definimos o ID do grupo Vendas.
+        // Não esqueçam que esse ID jamais poderá ser alterado.
+        $grupoVendas = 10;
+
+        // Verificamos se o usuário logado está no grupo de Vendas
+        $vendas = $this->grupoUsuarioModel->usuarioEstaNoGrupo($grupoVendas, session()->get('usuario_id'));
+
+        // Verificamos se foi encontrado o registro
+        if ($vendas == null) {
+            return false;
+        }
+
+        // Retornamos true, ou seja, o usuário logado faz parte do grupo Vendas
+        return true;
+    }
+
 
 
 
@@ -307,6 +325,7 @@ class Autenticacao
             $usuario->is_parceiro = false;
             $usuario->is_influencer = false;
             $usuario->is_pdv = false;
+            $usuario->is_vendas = false;
         } else {
 
             // Nesse ponto, podemos verificar se o usuário logado é um cliente, visto que ele não é admin
@@ -315,6 +334,7 @@ class Autenticacao
             $usuario->is_parceiro = $this->isParceiro();
             $usuario->is_influencer = $this->isInfluencer();
             $usuario->is_pdv = $this->isPdv();
+            $usuario->is_vendas = $this->isVendas();
         }
 
 

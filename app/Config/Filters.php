@@ -22,6 +22,7 @@ class Filters extends BaseConfig
         'login' => \App\Filters\LoginFilter::class, // Filtro de login
         'visitante' => \App\Filters\VisitanteFilter::class, // Filtro visitante
         'cliente' => \App\Filters\ClienteFilter::class, // Filtro cliente
+        'vendas' => \App\Filters\VendasFilter::class, // Filtro vendas (grupo 10) - acesso restrito ao pipeline
         'webhook' => \App\Filters\WebhookFilter::class, // Filtro webhook
         'eventoContext' => \App\Filters\EventoContextFilter::class, // Filtro contexto de evento
         'apiKey' => \App\Filters\ApiKeyFilter::class, // Filtro API Key
@@ -143,10 +144,44 @@ class Filters extends BaseConfig
                 'expositores(/*)?',
                 'relatorios(/*)?',
                 'pdv(/*)?',
+                'pipeline(/*)?',
             ],
             'except' => [
                 'api/*', // Exclui todas as rotas da API do filtro de login web
                 'eventos/imagem/*', // Imagens de eventos são públicas
+            ],
+        ],
+        'vendas' => [
+            'before' => [
+                '/',
+                'home(/*)?',
+                'usuarios(/*)?',
+                'grupos(/*)?',
+                'fornecedores(/*)?',
+                'itens(/*)?',
+                'itenscatalogo(/*)?',
+                'formasPagamentos(/*)?',
+                'eventos(/*)?',
+                'ordens(/*)?',
+                'contas(/*)?',
+                'formas(/*)?',
+                'ordensitens(/*)?',
+                'ordensevidencias(/*)?',
+                'transacoes(/*)?',
+                'clientes(/*)?',
+                'declarations(/*)?',
+                'ingressos(/*)?',
+                'pedidos(/*)?',
+                'dashboard(/*)?',
+                'concursos(/*)?',
+                'contratos(/*)?',
+                'contratoitens(/*)?',
+                'contratodocumentos(/*)?',
+                'expositores(/*)?',
+                'relatorios(/*)?',
+                'pdv(/*)?',
+                'pipeline(/*)?',
+                'console(/*)?',
             ],
         ],
         'visitante' => [
