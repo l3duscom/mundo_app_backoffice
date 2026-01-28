@@ -33,7 +33,7 @@ class GrupoPermissaoModel extends Model
 					->join('grupos', 'grupos.id = grupos_permissoes.grupo_id')
 					->join('permissoes', 'permissoes.id = grupos_permissoes.permissao_id')
 					->where('grupos_permissoes.grupo_id', $grupo_id)
-					->groupBy('permissoes.nome')
+					->orderBy('permissoes.nome', 'ASC')
 					->paginate($quantidade_paginacao);
 
 

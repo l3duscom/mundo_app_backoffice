@@ -198,9 +198,46 @@ class Usuarios extends BaseController
 
         $usuario = $this->buscaUsuarioOu404($id);
 
+        // Recupera os grupos do usuário
+        $grupos = $this->grupoUsuarioModel->recuperaGruposDoUsuario($id, 20);
+
+        // Recupera dados do cliente se existir
+        $clienteModel = new \App\Models\ClienteModel();
+        $cliente = $clienteModel->where('usuario_id', $id)->first();
+
+        // Recupera total de pedidos do usuário
+        $totalPedidos = 0;
+        $totalGasto = 0;
+        $pedidoModel = new \App\Models\PedidoModel();
+        
+        // Busca por user_id diretamente
+        $totalPedidos = $pedidoModel->where('user_id', $id)
+                                    ->where('status !=', 'cancelado')
+                                    ->countAllResults();
+        
+        $gastoResult = $pedidoModel->selectSum('total')
+                                   ->where('user_id', $id)
+                                   ->where('status', 'pago')
+                                   ->first();
+        $totalGasto = $gastoResult->total ?? 0;
+
+        // Recupera conquistas do usuário
+        $totalConquistas = 0;
+        try {
+            $usuarioConquistaModel = new \App\Models\UsuarioConquistaModel();
+            $totalConquistas = $usuarioConquistaModel->where('usuario_id', $id)->countAllResults();
+        } catch (\Exception $e) {
+            // Model pode não existir
+        }
+
         $data = [
             'titulo' => "Detalhando o usuário " . esc($usuario->nome),
             'usuario' => $usuario,
+            'grupos' => $grupos,
+            'cliente' => $cliente,
+            'totalPedidos' => $totalPedidos,
+            'totalGasto' => $totalGasto,
+            'totalConquistas' => $totalConquistas,
         ];
 
 

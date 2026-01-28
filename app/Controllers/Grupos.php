@@ -142,9 +142,24 @@ class Grupos extends BaseController
 
         $grupo = $this->buscaGrupoOu404($id);
 
+        // Recupera quantidade de usuários no grupo
+        $grupoUsuarioModel = new \App\Models\GrupoUsuarioModel();
+        $totalUsuarios = $grupoUsuarioModel->where('grupo_id', $id)->countAllResults();
+
+        // Recupera permissões do grupo (se não for admin ou cliente)
+        $permissoes = [];
+        $totalPermissoes = 0;
+        if ($id > 2) {
+            $permissoes = $this->grupoPermissaoModel->recuperaPermissoesDoGrupo($id, 10);
+            $totalPermissoes = $this->grupoPermissaoModel->where('grupo_id', $id)->countAllResults();
+        }
+
         $data = [
             'titulo' => "Detalhando o grupo de acesso " . esc($grupo->nome),
             'grupo' => $grupo,
+            'totalUsuarios' => $totalUsuarios,
+            'permissoes' => $permissoes,
+            'totalPermissoes' => $totalPermissoes,
         ];
 
 
