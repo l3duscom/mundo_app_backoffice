@@ -413,12 +413,6 @@
             <option value="<?php echo $evento['id']; ?>"><?php echo esc($evento['nome']); ?></option>
         <?php endforeach; ?>
     </select>
-    <select class="form-select form-select-sm" id="filtroVendedor">
-        <option value="">Todos os vendedores</option>
-        <?php foreach ($vendedores as $vendedor): ?>
-            <option value="<?php echo $vendedor['id']; ?>"><?php echo esc($vendedor['nome']); ?></option>
-        <?php endforeach; ?>
-    </select>
 </div>
 
 <!-- Summary Cards -->
@@ -535,12 +529,11 @@ $(document).ready(function() {
     // Carregar dados
     function carregarKanban() {
         var eventoId = $('#filtroEvento').val();
-        var vendedorId = $('#filtroVendedor').val();
         
         $.ajax({
             url: '<?php echo site_url("pipeline/recuperaLeadsKanban"); ?>',
             type: 'GET',
-            data: { evento_id: eventoId, vendedor_id: vendedorId },
+            data: { evento_id: eventoId },
             dataType: 'json',
             success: function(data) {
                 dadosKanban = data.etapas;
@@ -787,7 +780,7 @@ $(document).ready(function() {
     carregarKanban();
 
     // Filtros
-    $('#filtroEvento, #filtroVendedor').on('change', function() {
+    $('#filtroEvento').on('change', function() {
         carregarKanban();
     });
 });

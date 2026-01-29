@@ -45,18 +45,10 @@ class Pipeline extends BaseController
             ->where('deleted_at IS NULL')
             ->get()
             ->getResultArray();
-            
-        $vendedores = $db->table('usuarios')
-            ->select('id, nome')
-            ->where('deleted_at IS NULL')
-            ->where('ativo', 1)
-            ->get()
-            ->getResultArray();
 
         $data = [
             'titulo'     => 'Pipeline de Vendas',
             'eventos'    => $eventos,
-            'vendedores' => $vendedores,
         ];
 
         return view('Pipeline/kanban', $data);
