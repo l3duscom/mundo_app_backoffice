@@ -109,11 +109,7 @@ class Webhook extends BaseController
                             $clienteModel = new \App\Models\ClienteModel();
                             $cliente = $clienteModel->where('usuario_id', $pedido->user_id)->first();
                             $utmifyService = new UtmifyService();
-                            $utmifyResult = $utmifyService->notifyPurchase(
-                                $pedido,
-                                $cliente->email ?? '',
-                                $cliente->nome ?? ''
-                            );
+                            $utmifyResult = $utmifyService->notifyPurchase($pedido, $cliente);
                             log_message('info', 'UTMify postback para pedido #' . $pedido->id . ': ' . json_encode($utmifyResult));
                         } catch (\Exception $e) {
                             log_message('error', 'UTMify postback erro para pedido #' . $pedido->id . ': ' . $e->getMessage());

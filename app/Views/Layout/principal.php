@@ -515,6 +515,13 @@
                             <div class="menu-title">Gerenciar Assinaturas</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('/logs'); ?>">
+                            <div class="parent-icon"><i class="bx bx-terminal"></i>
+                            </div>
+                            <div class="menu-title">Logs do Sistema</div>
+                        </a>
+                    </li>
 
                 <?php endif; ?>
 

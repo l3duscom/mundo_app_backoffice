@@ -580,6 +580,14 @@ $routes->group('assinaturas-admin', function ($routes) {
     $routes->get('exportar', 'AssinaturasAdmin::exportar');
 });
 
+// ========================================
+// ROTAS DE LOGS DO SISTEMA
+// ========================================
+$routes->group('logs', function ($routes) {
+    $routes->get('/', 'Logs::index');
+    $routes->get('view/(:any)', 'Logs::view/$1');
+});
+
 
 /*
  * --------------------------------------------------------------------

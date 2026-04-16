@@ -10,48 +10,97 @@ class UtmifyService
     private string $apiUrl   = 'https://api.utmify.com.br/api-credentials/orders';
 
     /**
+     * Mapeia forma de pagamento do sistema para o formato aceito pelo UTMify
+     */
+    private function mapPaymentMethod(?string $formaPagamento): string
+    {
+        $map = [
+            'PIX'         => 'pix',
+            'CREDIT_CARD' => 'credit_card',
+            'BOLETO'      => 'boleto',
+            'PACK'        => 'pix',
+        ];
+
+        return $map[strtoupper($formaPagamento ?? '')] ?? 'unknown';
+    }
+
+    /**
+     * Converte created_at (pode ser string ou objeto DateTime) para string ISO
+     */
+    private function formatDate($date): string
+    {
+        if ($date === null) {
+            return date('Y-m-d\TH:i:s\Z');
+        }
+
+        if (is_string($date)) {
+            return date('Y-m-d\TH:i:s\Z', strtotime($date));
+        }
+
+        if ($date instanceof \DateTime || $date instanceof \DateTimeInterface) {
+            return $date->format('Y-m-d\TH:i:s\Z');
+        }
+
+        // Se for objeto serializado do CI4, tenta extrair a data
+        if (is_object($date) && isset($date->date)) {
+            return date('Y-m-d\TH:i:s\Z', strtotime($date->date));
+        }
+
+        return date('Y-m-d\TH:i:s\Z');
+    }
+
+    /**
      * Envia postback de venda confirmada para o UTMify
      *
-     * @param object $pedido   Entidade do pedido
-     * @param string $email    Email do cliente
-     * @param string $nome     Nome do cliente
-     * @return array           Resultado da chamada
+     * @param object      $pedido   Entidade do pedido
+     * @param object|null $cliente  Entidade do cliente (com nome, email, telefone, cpf)
+     * @return array                Resultado da chamada
      */
-    public function notifyPurchase(object $pedido, string $email, string $nome = ''): array
+    public function notifyPurchase(object $pedido, ?object $cliente = null): array
     {
         // Busca UTMs do pedido
         $pedidoUtmModel = new PedidoUtmModel();
         $utms = $pedidoUtmModel->buscaPorPedido($pedido->id);
 
+        $valorTotal = (float) ($pedido->total ?? 0);
+        $valorCentavos = (int) round($valorTotal * 100);
+
         $payload = [
             'orderId'       => (string) $pedido->id,
             'platform'      => 'mundo_dream',
-            'paymentMethod'  => $pedido->forma_pagamento ?? 'PIX',
+            'paymentMethod' => $this->mapPaymentMethod($pedido->forma_pagamento ?? null),
             'status'        => 'paid',
-            'createdAt'     => $pedido->created_at ?? date('c'),
-            'approvedDate'  => date('c'),
+            'createdAt'     => $this->formatDate($pedido->created_at ?? null),
+            'approvedDate'  => date('Y-m-d\TH:i:s\Z'),
             'customer'      => [
-                'name'  => $nome,
-                'email' => $email,
+                'name'     => $cliente->nome ?? '',
+                'email'    => $cliente->email ?? '',
+                'phone'    => $cliente->telefone ?? null,
+                'document' => $cliente->cpf ?? null,
             ],
-            'purchase'      => [
+            'products'      => [
                 [
                     'productName' => 'Ingresso - Pedido #' . ($pedido->codigo ?? $pedido->id),
                     'plans'       => [
                         [
                             'planName' => $pedido->forma_pagamento ?? 'PIX',
-                            'value'    => (float) ($pedido->total ?? 0),
+                            'value'    => $valorTotal,
                         ]
                     ],
                 ]
             ],
+            'commission'    => [
+                'totalPriceInCents'      => $valorCentavos,
+                'gatewayFeeInCents'      => 0,
+                'userCommissionInCents'  => $valorCentavos,
+            ],
             'trackingParameters' => [
-                'src'             => $utms->utm_source ?? null,
-                'utm_source'      => $utms->utm_source ?? null,
-                'utm_medium'      => $utms->utm_medium ?? null,
-                'utm_campaign'    => $utms->utm_campaign ?? null,
-                'utm_content'     => $utms->utm_content ?? null,
-                'utm_term'        => $utms->utm_term ?? null,
+                'src'          => $utms->utm_source ?? null,
+                'utm_source'   => $utms->utm_source ?? null,
+                'utm_medium'   => $utms->utm_medium ?? null,
+                'utm_campaign' => $utms->utm_campaign ?? null,
+                'utm_content'  => $utms->utm_content ?? null,
+                'utm_term'     => $utms->utm_term ?? null,
             ],
         ];
 
