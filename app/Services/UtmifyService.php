@@ -80,13 +80,12 @@ class UtmifyService
             ],
             'products'      => [
                 [
-                    'productName' => 'Ingresso - Pedido #' . ($pedido->codigo ?? $pedido->id),
-                    'plans'       => [
-                        [
-                            'planName' => $pedido->forma_pagamento ?? 'PIX',
-                            'value'    => $valorTotal,
-                        ]
-                    ],
+                    'id'           => (string) ($pedido->id ?? ''),
+                    'name'         => 'Ingresso - Pedido #' . ($pedido->codigo ?? $pedido->id),
+                    'planId'       => (string) ($pedido->evento_id ?? '1'),
+                    'planName'     => $pedido->forma_pagamento ?? 'PIX',
+                    'quantity'     => 1,
+                    'priceInCents' => $valorCentavos,
                 ]
             ],
             'commission'    => [
