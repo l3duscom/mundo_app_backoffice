@@ -454,6 +454,16 @@ $event_id = session()->get('event_id');
 
 <?php echo $this->section('scripts') ?>
 
+<!-- UTMify Pixel - InitiateCheckout -->
+<script>
+    if (typeof window.utmifyPixel !== 'undefined') {
+        window.utmifyPixel.track('InitiateCheckout', {
+            value: <?= $total ?? 0 ?>,
+            currency: 'BRL'
+        });
+    }
+</script>
+
 <script src="<?php echo site_url('recursos/vendor/loadingoverlay/loadingoverlay.min.js') ?>"></script>
 
 

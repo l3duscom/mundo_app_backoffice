@@ -4,6 +4,19 @@
 <head>
     <script type="text/javascript" async src="https://d335luupugsy2.cloudfront.net/js/loader-scripts/6639d235-fa2e-48ea-8c75-671781a1155d-loader.js"></script>
 
+    <!-- UTMify - Captura de UTM params -->
+    <script src="https://cdn.utmify.com.br/scripts/utms/latest.js" async defer></script>
+
+    <!-- UTMify Pixel -->
+    <script>
+        window.pixelId = "69e0fc350d119a03b6f17a74";
+        var a = document.createElement("script");
+        a.setAttribute("async", "");
+        a.setAttribute("defer", "");
+        a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
+        document.head.appendChild(a);
+    </script>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-44FJHSWB33"></script>
     <!--<script src="https://kit.fontawesome.com/f5b74051e7.js" crossorigin="anonymous"></script>-->

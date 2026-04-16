@@ -258,6 +258,16 @@ $totalComDesconto = $total - $descontoPix;
 
 <?php echo $this->section('scripts') ?>
 
+<!-- UTMify Pixel - InitiateCheckout -->
+<script>
+    if (typeof window.utmifyPixel !== 'undefined') {
+        window.utmifyPixel.track('InitiateCheckout', {
+            value: <?= $total ?? 0 ?>,
+            currency: 'BRL'
+        });
+    }
+</script>
+
 <!-- Modal de Processamento -->
 <div class="modal fade" id="modalProcessando" tabindex="-1" aria-labelledby="modalProcessandoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">

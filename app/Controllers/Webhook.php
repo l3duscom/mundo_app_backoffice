@@ -11,6 +11,7 @@ use App\Models\AssinaturaHistoricoModel;
 use App\Models\UsuarioModel;
 use App\Models\PlanoModel;
 use App\Services\PontosCompraService;
+use App\Services\UtmifyService;
 
 class Webhook extends BaseController
 {
@@ -96,11 +97,26 @@ class Webhook extends BaseController
                     if ($pedido) {
                         $pontosService = new PontosCompraService();
                         $pontosResult = $pontosService->atribuirPontosDoPedido($pedido->id);
-                        
+
                         if ($pontosResult['success']) {
                             log_message('info', 'Pontos atribuídos para pedido #' . $pedido->id . ': ' . ($pontosResult['data']['pontos'] ?? 0) . ' pontos');
                         } else {
                             log_message('info', 'Pontos: ' . ($pontosResult['message'] ?? 'Já atribuídos ou valor zero'));
+                        }
+
+                        // Envia postback ao UTMify
+                        try {
+                            $clienteModel = new \App\Models\ClienteModel();
+                            $cliente = $clienteModel->where('usuario_id', $pedido->user_id)->first();
+                            $utmifyService = new UtmifyService();
+                            $utmifyResult = $utmifyService->notifyPurchase(
+                                $pedido,
+                                $cliente->email ?? '',
+                                $cliente->nome ?? ''
+                            );
+                            log_message('info', 'UTMify postback para pedido #' . $pedido->id . ': ' . json_encode($utmifyResult));
+                        } catch (\Exception $e) {
+                            log_message('error', 'UTMify postback erro para pedido #' . $pedido->id . ': ' . $e->getMessage());
                         }
                     }
                 }

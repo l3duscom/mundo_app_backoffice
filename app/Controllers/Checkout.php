@@ -424,6 +424,8 @@ class Checkout extends BaseController
 
 	public function pix($event_id)
 	{
+		helper('utmify');
+		capture_utm_params();
 
 		if ($this->usuarioLogado()) {
 			$id = $this->usuarioLogado()->id;
@@ -491,8 +493,8 @@ class Checkout extends BaseController
 
 	public function cartao($event_id)
 	{
-
-
+		helper('utmify');
+		capture_utm_params();
 
 		if ($this->usuarioLogado()) {
 			$id = $this->usuarioLogado()->id;
@@ -1663,10 +1665,16 @@ class Checkout extends BaseController
 		];
 
 		$this->pedidoModel->skipValidation(true)->protect(false)->insert($data);
-		return $this->pedidoModel->getInsertID();
+		$pedidoId = $this->pedidoModel->getInsertID();
+
+		// Salva UTMs do pedido
+		$pedidoUtmModel = new \App\Models\PedidoUtmModel();
+		$pedidoUtmModel->salvaUtmsDoPedido($pedidoId);
+
+		return $pedidoId;
 	}
 
-	
+
 	public function finalizarpix($event_id)
 	{
 		// Debug log
@@ -1825,7 +1833,13 @@ class Checkout extends BaseController
 		];
 
 		$this->pedidoModel->skipValidation(true)->protect(false)->insert($data);
-		return $this->pedidoModel->getInsertID();
+		$pedidoId = $this->pedidoModel->getInsertID();
+
+		// Salva UTMs do pedido
+		$pedidoUtmModel = new \App\Models\PedidoUtmModel();
+		$pedidoUtmModel->salvaUtmsDoPedido($pedidoId);
+
+		return $pedidoId;
 	}
 
 	private function registraIngressos(int $pedido_id, int $user_id): void

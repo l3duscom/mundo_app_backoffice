@@ -443,6 +443,17 @@ fbq('track', 'Purchase', {
 </script>
 <?php endif; ?>
 
+<!-- UTMify Pixel - Purchase Event -->
+<script>
+    if (typeof window.utmifyPixel !== 'undefined') {
+        window.utmifyPixel.track('Purchase', {
+            value: <?= $total ?? 0 ?>,
+            currency: 'BRL',
+            order_id: '<?= $order_id ?? '' ?>'
+        });
+    }
+</script>
+
 <script src="<?php echo site_url('recursos/vendor/loadingoverlay/loadingoverlay.min.js') ?>"></script>
 
 
