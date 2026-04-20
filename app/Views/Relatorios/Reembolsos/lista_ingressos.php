@@ -88,21 +88,19 @@ $queryExport = http_build_query($q);
                         <th>Cliente</th>
                         <th>Pedido</th>
                         <th>Evento</th>
-                        <th>Tipo</th>
                         <th>Situação</th>
                         <th>Pagamento</th>
                         <th>Data sol.</th>
                         <th>Ingresso</th>
                         <th>Código</th>
                         <th>Participante</th>
-                        <th>Tipo ing.</th>
                         <th class="text-end">Valor ing.</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($linhas)) : ?>
                         <tr>
-                            <td colspan="13" class="text-center text-muted py-4">Nenhum ingresso encontrado para as solicitações deste período (verifique se os pedidos possuem ingressos cadastrados).</td>
+                            <td colspan="11" class="text-center text-muted py-4">Nenhum ingresso encontrado para as solicitações deste período (verifique se os pedidos possuem ingressos cadastrados).</td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($linhas as $l) : ?>
@@ -111,14 +109,12 @@ $queryExport = http_build_query($q);
                                 <td><?= esc($l['cliente_nome']) ?></td>
                                 <td><?= esc($l['pedido_codigo']) ?></td>
                                 <td><?= esc($l['evento_nome']) ?></td>
-                                <td><?= esc($l['tipo_solicitacao']) ?></td>
                                 <td><span class="badge bg-success"><?= esc($l['situacao']) ?></span></td>
                                 <td><?= esc($l['pagamento']) ?></td>
                                 <td><?= esc($l['data_solicitacao']) ?></td>
                                 <td><?= esc($l['ingresso_nome']) ?></td>
                                 <td><code class="small"><?= esc($l['ingresso_codigo']) ?></code></td>
                                 <td><?= esc($l['ingresso_participante']) ?></td>
-                                <td><?= esc($l['ingresso_tipo']) ?></td>
                                 <td class="text-end">R$ <?= number_format($l['ingresso_valor'], 2, ',', '.') ?></td>
                             </tr>
                         <?php endforeach; ?>

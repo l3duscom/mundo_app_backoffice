@@ -75,7 +75,6 @@ class RelatorioReembolsos extends BaseController
                 'pedido_codigo' => $r->pedido_codigo ?? '',
                 'valor' => (float) ($r->pedido_valor_total ?? 0),
                 'evento_nome' => $r->evento_nome ?? '',
-                'tipo_solicitacao' => $this->rotuloTipo($r->tipo_solicitacao ?? ''),
                 'situacao' => 'Aprovado',
                 'pagamento' => $this->textoPagamento($r->status ?? ''),
                 'data_solicitacao' => $r->created_at ? date('d/m/Y H:i', strtotime($r->created_at)) : '',
@@ -166,7 +165,6 @@ class RelatorioReembolsos extends BaseController
             'E-mail',
             'Pedido',
             'Evento',
-            'Tipo solicitação',
             'Situação',
             'Pagamento',
             'Data solicitação',
@@ -175,7 +173,6 @@ class RelatorioReembolsos extends BaseController
             'Ingresso',
             'Código ingresso',
             'Participante',
-            'Tipo ingresso',
             'Valor ingresso',
         ];
         fputcsv($output, $cabecalho, ';');
@@ -188,7 +185,6 @@ class RelatorioReembolsos extends BaseController
                 $l['cliente_email'],
                 $l['pedido_codigo'],
                 $l['evento_nome'],
-                $l['tipo_solicitacao'],
                 $l['situacao'],
                 $l['pagamento'],
                 $l['data_solicitacao'],
@@ -197,7 +193,6 @@ class RelatorioReembolsos extends BaseController
                 $l['ingresso_nome'],
                 $l['ingresso_codigo'],
                 $l['ingresso_participante'],
-                $l['ingresso_tipo'],
                 number_format($l['ingresso_valor'], 2, ',', '.'),
             ], ';');
         }
@@ -288,7 +283,7 @@ class RelatorioReembolsos extends BaseController
         fputcsv($output, ['Valor total (pedido)', 'R$ ' . number_format((float) ($totais->valor_total ?? 0), 2, ',', '.')], ';');
         fputcsv($output, [], ';');
 
-        $cabecalho = ['ID', 'Cliente', 'E-mail', 'Pedido', 'Valor', 'Evento', 'Tipo', 'Situação', 'Pagamento', 'Data solicitação', 'Processado em'];
+        $cabecalho = ['ID', 'Cliente', 'E-mail', 'Pedido', 'Valor', 'Evento', 'Situação', 'Pagamento', 'Data solicitação', 'Processado em'];
         fputcsv($output, $cabecalho, ';');
 
         foreach ($registros as $r) {
@@ -299,7 +294,6 @@ class RelatorioReembolsos extends BaseController
                 $r->pedido_codigo ?? '',
                 number_format((float) ($r->pedido_valor_total ?? 0), 2, ',', '.'),
                 $r->evento_nome ?? '',
-                $this->rotuloTipo($r->tipo_solicitacao ?? ''),
                 'Aprovado',
                 $this->textoPagamento($r->status ?? ''),
                 $r->created_at ? date('d/m/Y H:i', strtotime($r->created_at)) : '',
@@ -343,7 +337,6 @@ class RelatorioReembolsos extends BaseController
                 'pedido_codigo' => $r->pedido_codigo ?? '-',
                 'valor' => (float) ($r->pedido_valor_total ?? 0),
                 'evento_nome' => $r->evento_nome ?? '-',
-                'tipo_solicitacao' => $this->rotuloTipo($r->tipo_solicitacao ?? ''),
                 'situacao' => 'Aprovado',
                 'pagamento' => $this->textoPagamento($r->status ?? ''),
                 'data_solicitacao' => $r->created_at ? date('d/m/Y H:i', strtotime($r->created_at)) : '-',
@@ -413,19 +406,6 @@ class RelatorioReembolsos extends BaseController
         }
     }
 
-    private function rotuloTipo(string $tipo): string
-    {
-        $t = strtolower($tipo);
-        switch ($t) {
-            case 'reembolso':
-                return 'Reembolso';
-            case 'upgrade':
-                return 'Upgrade';
-            default:
-                return $tipo !== '' ? ucfirst($tipo) : '-';
-        }
-    }
-
     /**
      * @param object $row resultado do join refounds + ingressos
      *
@@ -439,7 +419,6 @@ class RelatorioReembolsos extends BaseController
             'cliente_email' => $row->cliente_email ?? '',
             'pedido_codigo' => $row->pedido_codigo ?? '',
             'evento_nome' => $row->evento_nome ?? '',
-            'tipo_solicitacao' => $this->rotuloTipo($row->tipo_solicitacao ?? ''),
             'situacao' => 'Aprovado',
             'pagamento' => $this->textoPagamento($row->status ?? ''),
             'data_solicitacao' => ! empty($row->refound_created_at)
@@ -452,7 +431,6 @@ class RelatorioReembolsos extends BaseController
             'ingresso_nome' => $row->ingresso_nome ?? '',
             'ingresso_codigo' => $row->ingresso_codigo ?? '',
             'ingresso_participante' => $row->ingresso_participante ?? '',
-            'ingresso_tipo' => $row->ingresso_tipo ?? '',
             'ingresso_valor' => (float) ($row->ingresso_valor ?? 0),
         ];
     }

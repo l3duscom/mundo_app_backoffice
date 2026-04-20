@@ -70,14 +70,12 @@
                 <th>Cliente</th>
                 <th>Pedido</th>
                 <th>Evento</th>
-                <th>Tipo</th>
                 <th>Sit.</th>
                 <th>Pag.</th>
                 <th>Data sol.</th>
                 <th>Ingresso</th>
                 <th>Cód.</th>
                 <th>Part.</th>
-                <th>T.</th>
                 <th class="text-end">R$</th>
             </tr>
         </thead>
@@ -88,14 +86,12 @@
                     <td><?= esc($l['cliente_nome']) ?></td>
                     <td><?= esc($l['pedido_codigo']) ?></td>
                     <td><?= esc($l['evento_nome']) ?></td>
-                    <td><?= esc($l['tipo_solicitacao']) ?></td>
                     <td><?= esc($l['situacao']) ?></td>
                     <td><?= esc($l['pagamento']) ?></td>
                     <td><?= esc($l['data_solicitacao']) ?></td>
                     <td><?= esc($l['ingresso_nome']) ?></td>
                     <td><?= esc($l['ingresso_codigo']) ?></td>
                     <td><?= esc($l['ingresso_participante']) ?></td>
-                    <td><?= esc($l['ingresso_tipo']) ?></td>
                     <td class="text-end"><?= number_format($l['ingresso_valor'], 2, ',', '.') ?></td>
                 </tr>
             <?php endforeach; ?>

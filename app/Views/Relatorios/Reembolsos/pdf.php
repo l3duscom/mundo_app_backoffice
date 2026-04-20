@@ -71,7 +71,6 @@
                 <th>Pedido</th>
                 <th class="text-end">Valor</th>
                 <th>Evento</th>
-                <th>Tipo</th>
                 <th>Situação</th>
                 <th>Pagamento</th>
                 <th>Data sol.</th>
@@ -86,7 +85,6 @@
                     <td><?= esc($l['pedido_codigo']) ?></td>
                     <td class="text-end">R$ <?= number_format($l['valor'], 2, ',', '.') ?></td>
                     <td><?= esc($l['evento_nome']) ?></td>
-                    <td><?= esc($l['tipo_solicitacao']) ?></td>
                     <td><?= esc($l['situacao']) ?></td>
                     <td><?= esc($l['pagamento']) ?></td>
                     <td><?= esc($l['data_solicitacao']) ?></td>

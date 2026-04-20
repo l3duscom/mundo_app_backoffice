@@ -87,7 +87,6 @@ $queryExport = http_build_query($q);
                         <th>Pedido</th>
                         <th class="text-end">Valor</th>
                         <th>Evento</th>
-                        <th>Tipo</th>
                         <th>Situação</th>
                         <th>Pagamento</th>
                         <th>Data solicitação</th>
@@ -97,7 +96,7 @@ $queryExport = http_build_query($q);
                 <tbody>
                     <?php if (empty($linhas)) : ?>
                         <tr>
-                            <td colspan="11" class="text-center text-muted py-4">Nenhum registro no período.</td>
+                            <td colspan="10" class="text-center text-muted py-4">Nenhum registro no período.</td>
                         </tr>
                     <?php else : ?>
                         <?php foreach ($linhas as $l) : ?>
@@ -108,7 +107,6 @@ $queryExport = http_build_query($q);
                                 <td><?= esc($l['pedido_codigo']) ?></td>
                                 <td class="text-end">R$ <?= number_format($l['valor'], 2, ',', '.') ?></td>
                                 <td><?= esc($l['evento_nome']) ?></td>
-                                <td><?= esc($l['tipo_solicitacao']) ?></td>
                                 <td><span class="badge bg-success"><?= esc($l['situacao']) ?></span></td>
                                 <td><?= esc($l['pagamento']) ?></td>
                                 <td><?= esc($l['data_solicitacao']) ?></td>
