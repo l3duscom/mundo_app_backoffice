@@ -464,6 +464,13 @@
                             <div class="menu-title">Participantes Concursos</div>
                         </a>
                     </li>
+                    <li>
+                        <a href="<?php echo site_url('relatorios/reembolsos'); ?>">
+                            <div class="parent-icon"><i class="bx bx-receipt"></i>
+                            </div>
+                            <div class="menu-title">Relatório Reembolsos</div>
+                        </a>
+                    </li>
                     <hr>
                     <li class="menu-label">CONFIGURAÇÕES</li>
                     <li>

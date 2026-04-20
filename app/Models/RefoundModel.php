@@ -116,4 +116,56 @@ class RefoundModel extends Model
                     ->where('status', 'pendente')
                     ->countAllResults();
     }
+
+    /**
+     * Lista refounds para relatório (filtro por data da solicitação: created_at).
+     *
+     * @param array $filtros data_inicio, data_fim (Y-m-d), evento_id?, tipo_solicitacao?, status?
+     */
+    public function listarParaRelatorio(array $filtros): array
+    {
+        $q = $this->where('DATE(created_at) >=', $filtros['data_inicio'])
+            ->where('DATE(created_at) <=', $filtros['data_fim']);
+
+        if (! empty($filtros['evento_id'])) {
+            $q = $q->where('evento_id', (int) $filtros['evento_id']);
+        }
+
+        if (! empty($filtros['tipo_solicitacao'])) {
+            $q = $q->where('tipo_solicitacao', $filtros['tipo_solicitacao']);
+        }
+
+        if (! empty($filtros['status'])) {
+            $q = $q->where('status', $filtros['status']);
+        }
+
+        return $q->orderBy('created_at', 'DESC')->findAll();
+    }
+
+    /**
+     * Totais agregados para o mesmo conjunto de filtros do relatório.
+     *
+     * @return object{total_registros: int|string, valor_total: float|string}
+     */
+    public function totaisParaRelatorio(array $filtros)
+    {
+        $builder = $this->builder();
+        $builder->select('COUNT(*) AS total_registros, COALESCE(SUM(pedido_valor_total), 0) AS valor_total', false);
+        $builder->where('DATE(created_at) >=', $filtros['data_inicio']);
+        $builder->where('DATE(created_at) <=', $filtros['data_fim']);
+
+        if (! empty($filtros['evento_id'])) {
+            $builder->where('evento_id', (int) $filtros['evento_id']);
+        }
+
+        if (! empty($filtros['tipo_solicitacao'])) {
+            $builder->where('tipo_solicitacao', $filtros['tipo_solicitacao']);
+        }
+
+        if (! empty($filtros['status'])) {
+            $builder->where('status', $filtros['status']);
+        }
+
+        return $builder->get()->getRow();
+    }
 }
