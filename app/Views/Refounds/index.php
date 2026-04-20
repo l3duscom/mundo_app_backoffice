@@ -83,10 +83,10 @@
         </div>
     </div>
     <div class="col-md-2 col-sm-6 mb-3 mb-md-0">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #dc3545 !important;">
+        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #198754 !important;">
             <div class="card-body py-3">
-                <p class="text-muted mb-1 small text-uppercase fw-bold">Rejeitados</p>
-                <h2 class="mb-0 text-danger" id="rejeitados">-</h2>
+                <p class="text-muted mb-1 small text-uppercase fw-bold">Concluídas (rejeitadas)</p>
+                <h2 class="mb-0 text-success" id="rejeitados">-</h2>
                 <small class="text-muted" id="valorRejeitados">R$ 0,00</small>
             </div>
         </div>
@@ -135,7 +135,7 @@
                             <option value="pendente">Pendente</option>
                             <option value="processando">Processando</option>
                             <option value="concluido">Concluído</option>
-                            <option value="cancelado">Cancelado</option>
+                            <option value="cancelado">Concluído (rejeitado no fluxo)</option>
                             <option value="erro">Erro</option>
                         </select>
                     </div>

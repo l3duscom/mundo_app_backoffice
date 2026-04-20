@@ -241,7 +241,7 @@ class RelatorioReembolsos extends BaseController
             case 'concluido':
                 return 'Concluído';
             case 'cancelado':
-                return 'Cancelado';
+                return 'Concluído';
             case 'erro':
                 return 'Erro';
             default:

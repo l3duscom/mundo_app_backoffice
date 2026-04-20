@@ -64,7 +64,7 @@
                     <option value="pendente">Pendente</option>
                     <option value="processando">Processando</option>
                     <option value="concluido">Concluído</option>
-                    <option value="cancelado">Cancelado</option>
+                    <option value="cancelado">Concluído (rejeitado no fluxo)</option>
                     <option value="erro">Erro</option>
                 </select>
             </div>

@@ -292,7 +292,7 @@ function formatarBeneficiosCliente($jsonString) {
                     'pendente' => 'bg-warning text-dark',
                     'processando' => 'bg-info',
                     'concluido' => 'bg-success',
-                    'cancelado' => 'bg-danger',
+                    'cancelado' => 'bg-success',
                     'erro' => 'bg-dark',
                     default => 'bg-secondary'
                 };
@@ -301,7 +301,7 @@ function formatarBeneficiosCliente($jsonString) {
                     'pendente' => 'Pendente de pagamento',
                     'processando' => 'Processando',
                     'concluido' => 'Concluído',
-                    'cancelado' => 'Cancelado',
+                    'cancelado' => 'Concluído',
                     'erro' => 'Erro',
                     default => $refound->status !== null && $refound->status !== '' ? $refound->status : 'N/A'
                 };
@@ -332,11 +332,11 @@ function formatarBeneficiosCliente($jsonString) {
                         <div class="timeline-circle"><i class="bx bx-search"></i></div>
                         <span class="timeline-label">Em Análise</span>
                     </div>
-                    <div class="timeline-step <?= $statusLower === 'cancelado' ? 'rejected' : ($statusLower === 'concluido' ? 'completed' : '') ?>">
+                    <div class="timeline-step <?= in_array($statusLower, ['concluido', 'cancelado'], true) ? 'completed' : '' ?>">
                         <div class="timeline-circle">
-                            <i class="bx <?= $statusLower === 'cancelado' ? 'bx-x' : 'bx-check' ?>"></i>
+                            <i class="bx bx-check"></i>
                         </div>
-                        <span class="timeline-label"><?= $statusLower === 'cancelado' ? 'Cancelada' : 'Concluída' ?></span>
+                        <span class="timeline-label">Concluída</span>
                     </div>
                 </div>
                 

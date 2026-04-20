@@ -103,8 +103,8 @@
             </div>
             <div class="col-md-3 col-6">
                 <div class="card shadow-sm border-0 text-center py-3">
-                    <div class="text-danger fw-bold" style="font-size:1.8rem;"><?= count(array_filter($refounds, fn($r) => strtolower($r->status) === 'cancelado')) ?></div>
-                    <div class="text-muted small">Canceladas</div>
+                    <div class="text-success fw-bold" style="font-size:1.8rem;"><?= count(array_filter($refounds, fn($r) => strtolower($r->status) === 'cancelado')) ?></div>
+                    <div class="text-muted small">Concluídas (rejeitadas)</div>
                 </div>
             </div>
         </div>
@@ -118,7 +118,7 @@
                 'pendente' => ['bg-warning text-dark', 'Pendente de pagamento', 'bx-time'],
                 'processando' => ['bg-info', 'Processando', 'bx-loader-alt'],
                 'concluido' => ['bg-success', 'Concluído', 'bx-check'],
-                'cancelado' => ['bg-danger', 'Cancelado', 'bx-x'],
+                'cancelado' => ['bg-success', 'Concluído', 'bx-check'],
                 'erro' => ['bg-dark', 'Erro', 'bx-error'],
                 default => ['bg-secondary', ucfirst($statusLower), 'bx-question-mark']
             };

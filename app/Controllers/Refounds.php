@@ -182,15 +182,19 @@ class Refounds extends BaseController
     private function getPagamentoBadge($status)
     {
         $s = strtolower(trim($status ?? ''));
+        // cancelado no banco exibe como Concluído (regra de negócio)
         $badges = [
             'pendente' => '<span class="badge bg-warning text-dark fs-6"><i class="bx bx-time me-1"></i>Pendente de pagamento</span>',
             'processando' => '<span class="badge bg-info fs-6"><i class="bx bx-loader-alt me-1"></i>Processando</span>',
             'concluido' => '<span class="badge bg-success fs-6"><i class="bx bx-check me-1"></i>Concluído</span>',
-            'cancelado' => '<span class="badge bg-danger fs-6"><i class="bx bx-x me-1"></i>Cancelado</span>',
+            'cancelado' => '<span class="badge bg-success fs-6"><i class="bx bx-check me-1"></i>Concluído</span>',
             'erro' => '<span class="badge bg-dark fs-6"><i class="bx bx-error me-1"></i>Erro</span>',
         ];
 
-        return $badges[$s] ?? '<span class="badge bg-secondary fs-6">' . esc($status ?? 'N/A') . '</span>';
+        $html = $badges[$s] ?? '<span class="badge bg-secondary fs-6">' . esc($status ?? 'N/A') . '</span>';
+
+        // Mantém o valor interno pesquisável no filtro da DataTable
+        return $html . '<span class="d-none">' . esc($s !== '' ? $s : 'na') . '</span>';
     }
 
     /**

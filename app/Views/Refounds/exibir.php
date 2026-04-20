@@ -296,7 +296,7 @@ function formatarOfertaDetalhes($jsonString) {
                                 'pendente' => 'bg-warning text-dark',
                                 'processando' => 'bg-info',
                                 'concluido' => 'bg-success',
-                                'cancelado' => 'bg-danger',
+                                'cancelado' => 'bg-success',
                                 'erro' => 'bg-dark',
                                 default => 'bg-secondary'
                             };
@@ -305,7 +305,7 @@ function formatarOfertaDetalhes($jsonString) {
                                 'pendente' => 'Pendente de pagamento',
                                 'processando' => 'Processando',
                                 'concluido' => 'Concluído',
-                                'cancelado' => 'Cancelado',
+                                'cancelado' => 'Concluído',
                                 'erro' => 'Erro',
                                 default => $statusTexto !== '' ? $statusTexto : 'N/A'
                             };
