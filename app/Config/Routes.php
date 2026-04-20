@@ -280,6 +280,9 @@ $routes->group('relatorios', function ($routes) {
     $routes->get('vendas/exportar-pdf/(:segment)', 'RelatorioVendas::exportarPdf/$1');
 
     // Reembolsos (rotas mais específicas primeiro)
+    $routes->get('reembolsos/exportar-excel-detalhe', 'RelatorioReembolsos::exportarExcelDetalhe');
+    $routes->get('reembolsos/exportar-pdf-detalhe', 'RelatorioReembolsos::exportarPdfDetalhe');
+    $routes->get('reembolsos/detalhe-ingressos', 'RelatorioReembolsos::listaDetalheIngressos');
     $routes->get('reembolsos/exportar-excel', 'RelatorioReembolsos::exportarExcel');
     $routes->get('reembolsos/exportar-pdf', 'RelatorioReembolsos::exportarPdf');
     $routes->get('reembolsos/lista', 'RelatorioReembolsos::lista');

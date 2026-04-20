@@ -168,4 +168,76 @@ class RefoundModel extends Model
 
         return $builder->get()->getRow();
     }
+
+    /**
+     * Mesmos filtros do relatório, com uma linha por ingresso do pedido vinculado à solicitação.
+     *
+     * @return array<int, object>
+     */
+    public function listarParaRelatorioDetalheIngressos(array $filtros): array
+    {
+        $db = \Config\Database::connect();
+        $b = $db->table('refounds');
+        $b->select(
+            'refounds.id AS refound_id, refounds.pedido_id, refounds.cliente_nome, refounds.cliente_email, '
+            . 'refounds.pedido_codigo, refounds.evento_nome, refounds.tipo_solicitacao, refounds.status, '
+            . 'refounds.created_at AS refound_created_at, refounds.processado_em, '
+            . 'ingressos.id AS ingresso_id, ingressos.nome AS ingresso_nome, ingressos.codigo AS ingresso_codigo, '
+            . 'ingressos.valor AS ingresso_valor, ingressos.tipo AS ingresso_tipo, ingressos.participante AS ingresso_participante',
+            false
+        );
+        $b->join('ingressos', 'ingressos.pedido_id = refounds.pedido_id', 'inner');
+        $b->where('refounds.deleted_at', null);
+        $b->where('ingressos.deleted_at', null);
+        $b->where('DATE(refounds.created_at) >=', $filtros['data_inicio']);
+        $b->where('DATE(refounds.created_at) <=', $filtros['data_fim']);
+
+        if (! empty($filtros['evento_id'])) {
+            $b->where('refounds.evento_id', (int) $filtros['evento_id']);
+        }
+
+        if (! empty($filtros['tipo_solicitacao'])) {
+            $b->where('refounds.tipo_solicitacao', $filtros['tipo_solicitacao']);
+        }
+
+        if (! empty($filtros['status'])) {
+            $b->where('refounds.status', $filtros['status']);
+        }
+
+        $b->orderBy('refounds.created_at', 'DESC');
+        $b->orderBy('ingressos.id', 'ASC');
+
+        return $b->get()->getResult();
+    }
+
+    /**
+     * Totais na granularidade ingresso (quantidade de linhas e soma dos valores dos ingressos).
+     *
+     * @return object{total_linhas: int|string, valor_ingressos: float|string}|null
+     */
+    public function totaisParaRelatorioDetalheIngressos(array $filtros)
+    {
+        $db = \Config\Database::connect();
+        $b = $db->table('refounds');
+        $b->select('COUNT(ingressos.id) AS total_linhas, COALESCE(SUM(ingressos.valor), 0) AS valor_ingressos', false);
+        $b->join('ingressos', 'ingressos.pedido_id = refounds.pedido_id', 'inner');
+        $b->where('refounds.deleted_at', null);
+        $b->where('ingressos.deleted_at', null);
+        $b->where('DATE(refounds.created_at) >=', $filtros['data_inicio']);
+        $b->where('DATE(refounds.created_at) <=', $filtros['data_fim']);
+
+        if (! empty($filtros['evento_id'])) {
+            $b->where('refounds.evento_id', (int) $filtros['evento_id']);
+        }
+
+        if (! empty($filtros['tipo_solicitacao'])) {
+            $b->where('refounds.tipo_solicitacao', $filtros['tipo_solicitacao']);
+        }
+
+        if (! empty($filtros['status'])) {
+            $b->where('refounds.status', $filtros['status']);
+        }
+
+        return $b->get()->getRow();
+    }
 }
