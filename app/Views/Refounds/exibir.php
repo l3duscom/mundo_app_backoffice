@@ -270,44 +270,52 @@ function formatarOfertaDetalhes($jsonString) {
 </div>
 <!--end breadcrumb-->
 
-<!-- Status em Destaque -->
+<!-- Situação e Pagamento em Destaque -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-body text-center py-4">
-                <h5 class="text-muted mb-3">Status da Solicitação</h5>
-                <?php 
-                $statusLower = strtolower(trim($refound->status ?? ''));
-                $statusTexto = $refound->status ?? '';
-                
-                // Tratamento para status vazio
-                if (empty($statusLower)) {
-                    $statusClass = 'bg-secondary';
-                    $statusDisplay = 'SEM STATUS';
-                } else {
-                    $statusClass = match($statusLower) {
-                        'pendente' => 'bg-warning text-dark',
-                        'processando' => 'bg-info',
-                        'concluido' => 'bg-success',
-                        'cancelado' => 'bg-danger',
-                        'erro' => 'bg-dark',
-                        default => 'bg-secondary'
-                    };
-                    
-                    // Se o status está mapeado, usar texto formatado
-                    $statusDisplay = match($statusLower) {
-                        'pendente' => 'PENDENTE',
-                        'processando' => 'PROCESSANDO',
-                        'concluido' => 'CONCLUÍDO',
-                        'cancelado' => 'CANCELADO',
-                        'erro' => 'ERRO',
-                        default => strtoupper($statusTexto)
-                    };
-                }
-                ?>
-                <span class="badge <?php echo $statusClass; ?> status-badge-lg">
-                    <?php echo esc($statusDisplay); ?>
-                </span>
+                <div class="row justify-content-center g-4">
+                    <div class="col-md-5">
+                        <h5 class="text-muted mb-3">Situação</h5>
+                        <span class="badge bg-success status-badge-lg">
+                            <i class="bx bx-check me-1"></i>Aprovado
+                        </span>
+                    </div>
+                    <div class="col-md-5">
+                        <h5 class="text-muted mb-3">Pagamento</h5>
+                        <?php 
+                        $statusLower = strtolower(trim($refound->status ?? ''));
+                        $statusTexto = $refound->status ?? '';
+                        
+                        if (empty($statusLower)) {
+                            $pagClass = 'bg-secondary';
+                            $pagDisplay = 'SEM STATUS';
+                        } else {
+                            $pagClass = match($statusLower) {
+                                'pendente' => 'bg-warning text-dark',
+                                'processando' => 'bg-info',
+                                'concluido' => 'bg-success',
+                                'cancelado' => 'bg-danger',
+                                'erro' => 'bg-dark',
+                                default => 'bg-secondary'
+                            };
+                            
+                            $pagDisplay = match($statusLower) {
+                                'pendente' => 'Pendente de pagamento',
+                                'processando' => 'Processando',
+                                'concluido' => 'Concluído',
+                                'cancelado' => 'Cancelado',
+                                'erro' => 'Erro',
+                                default => $statusTexto !== '' ? $statusTexto : 'N/A'
+                            };
+                        }
+                        ?>
+                        <span class="badge <?php echo $pagClass; ?> status-badge-lg">
+                            <?php echo esc($pagDisplay); ?>
+                        </span>
+                    </div>
+                </div>
                 
                 <?php if ($refound->processado_em): ?>
                 <p class="mt-3 mb-0 text-muted">

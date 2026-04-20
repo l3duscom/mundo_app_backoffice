@@ -114,8 +114,8 @@
             <?php foreach ($refounds as $refound): ?>
             <?php 
             $statusLower = strtolower($refound->status ?? 'pendente');
-            $statusBadge = match($statusLower) {
-                'pendente' => ['bg-warning text-dark', 'Pendente', 'bx-time'],
+            $pagamentoBadge = match($statusLower) {
+                'pendente' => ['bg-warning text-dark', 'Pendente de pagamento', 'bx-time'],
                 'processando' => ['bg-info', 'Processando', 'bx-loader-alt'],
                 'concluido' => ['bg-success', 'Concluído', 'bx-check'],
                 'cancelado' => ['bg-danger', 'Cancelado', 'bx-x'],
@@ -130,7 +130,7 @@
                             <!-- Ícone de Status -->
                             <div class="col-auto">
                                 <div class="timeline-icon <?= $statusLower ?>">
-                                    <i class="bx <?= $statusBadge[2] ?>"></i>
+                                    <i class="bx <?= $pagamentoBadge[2] ?>"></i>
                                 </div>
                             </div>
                             
@@ -138,8 +138,11 @@
                             <div class="col">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                     <h5 class="mb-0 fw-semibold"><?= esc($refound->evento_nome ?? 'Evento') ?></h5>
-                                    <span class="badge <?= $statusBadge[0] ?> status-badge">
-                                        <i class="bx <?= $statusBadge[2] ?> me-1"></i><?= $statusBadge[1] ?>
+                                    <span class="badge bg-success status-badge">
+                                        <i class="bx bx-check me-1"></i>Situação: Aprovado
+                                    </span>
+                                    <span class="badge <?= $pagamentoBadge[0] ?> status-badge">
+                                        <i class="bx <?= $pagamentoBadge[2] ?> me-1"></i>Pagamento: <?= $pagamentoBadge[1] ?>
                                     </span>
                                     <?php if ($refound->tipo_solicitacao): ?>
                                     <span class="badge <?= strtolower($refound->tipo_solicitacao) === 'upgrade' ? 'bg-purple' : 'bg-orange' ?>">

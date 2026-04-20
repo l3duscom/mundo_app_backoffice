@@ -282,15 +282,13 @@ function formatarBeneficiosCliente($jsonString) {
         </div>
         <!--end breadcrumb-->
 
-        <!-- Status em Destaque com Timeline -->
+        <!-- Situação, Pagamento e Timeline -->
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body py-4">
-                <h5 class="text-center text-muted mb-4">Status da Solicitação</h5>
-                
                 <?php 
                 $statusLower = strtolower(trim($refound->status ?? ''));
                 
-                $statusClass = match($statusLower) {
+                $pagamentoClass = match($statusLower) {
                     'pendente' => 'bg-warning text-dark',
                     'processando' => 'bg-info',
                     'concluido' => 'bg-success',
@@ -299,20 +297,29 @@ function formatarBeneficiosCliente($jsonString) {
                     default => 'bg-secondary'
                 };
                 
-                $statusDisplay = match($statusLower) {
-                    'pendente' => 'PENDENTE',
-                    'processando' => 'PROCESSANDO',
-                    'concluido' => 'CONCLUÍDO',
-                    'cancelado' => 'CANCELADO',
-                    'erro' => 'ERRO',
-                    default => strtoupper($refound->status ?? 'N/A')
+                $pagamentoDisplay = match($statusLower) {
+                    'pendente' => 'Pendente de pagamento',
+                    'processando' => 'Processando',
+                    'concluido' => 'Concluído',
+                    'cancelado' => 'Cancelado',
+                    'erro' => 'Erro',
+                    default => $refound->status !== null && $refound->status !== '' ? $refound->status : 'N/A'
                 };
                 ?>
                 
-                <div class="text-center mb-4">
-                    <span class="badge <?php echo $statusClass; ?> status-badge-lg">
-                        <?php echo esc($statusDisplay); ?>
-                    </span>
+                <div class="row justify-content-center text-center mb-4 g-3">
+                    <div class="col-md-5">
+                        <h5 class="text-muted mb-3">Situação</h5>
+                        <span class="badge bg-success status-badge-lg">
+                            <i class="bx bx-check me-1"></i>Aprovado
+                        </span>
+                    </div>
+                    <div class="col-md-5">
+                        <h5 class="text-muted mb-3">Pagamento</h5>
+                        <span class="badge <?php echo $pagamentoClass; ?> status-badge-lg">
+                            <?php echo esc($pagamentoDisplay); ?>
+                        </span>
+                    </div>
                 </div>
                 
                 <!-- Timeline de Progresso -->

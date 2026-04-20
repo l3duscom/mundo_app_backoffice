@@ -129,7 +129,7 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-bold"><i class="bx bx-check-circle me-1"></i>Status</label>
+                        <label class="form-label fw-bold"><i class="bx bx-check-circle me-1"></i>Pagamento</label>
                         <select id="filtroStatus" class="form-select">
                             <option value="">Todos</option>
                             <option value="pendente">Pendente</option>
@@ -166,7 +166,8 @@
                                 <th>Valor</th>
                                 <th>Evento</th>
                                 <th>Tipo</th>
-                                <th>Status</th>
+                                <th>Situação</th>
+                                <th>Pagamento</th>
                                 <th>Data Solicitação</th>
                                 <th>Processado Em</th>
                                 <th>Ações</th>
@@ -299,12 +300,13 @@ $(document).ready(function() {
             { "data": "valor" },
             { "data": "evento_nome" },
             { "data": "tipo_solicitacao" },
-            { "data": "status" },
+            { "data": "situacao" },
+            { "data": "pagamento" },
             { "data": "data" },
             { "data": "processado_em" },
             { "data": "acoes", "orderable": false },
         ],
-        "order": [[7, 'desc']],
+        "order": [[8, 'desc']],
         "deferRender": true,
         "processing": true,
         "language": {
@@ -324,10 +326,10 @@ $(document).ready(function() {
         carregarEstatisticas();
     });
 
-    // Filtro por Status
+    // Filtro por Pagamento (valor armazenado no banco: pendente, concluido, etc.)
     $('#filtroStatus').on('change', function() {
         var valor = $(this).val();
-        table.column(6).search(valor).draw();
+        table.column(7).search(valor).draw();
     });
 
     // Filtro por Tipo

@@ -49,9 +49,6 @@ class Refounds extends BaseController
         $data = [];
 
         foreach ($refounds as $refound) {
-            // Badge de status
-            $statusBadge = $this->getStatusBadge($refound->status);
-            
             // Badge de tipo
             $tipoBadge = $this->getTipoBadge($refound->tipo_solicitacao);
             
@@ -72,7 +69,8 @@ class Refounds extends BaseController
                 'valor' => $valorFormatado,
                 'evento_nome' => esc($refound->evento_nome ?? '-'),
                 'tipo_solicitacao' => $tipoBadge,
-                'status' => $statusBadge,
+                'situacao' => $this->getSituacaoBadge(),
+                'pagamento' => $this->getPagamentoBadge($refound->status),
                 'data' => $dataFormatada,
                 'processado_em' => $processadoEm,
                 'aceito' => $refound->aceito ? '<span class="badge bg-success">Sim</span>' : '<span class="badge bg-secondary">Não</span>',
@@ -171,19 +169,28 @@ class Refounds extends BaseController
     }
 
     /**
-     * Retorna badge HTML para o status
+     * Situação da solicitação (sempre aprovado na listagem administrativa).
      */
-    private function getStatusBadge($status)
+    private function getSituacaoBadge()
     {
+        return '<span class="badge bg-success fs-6"><i class="bx bx-check me-1"></i>Aprovado</span>';
+    }
+
+    /**
+     * Status de pagamento / processamento (exibe como coluna Pagamento).
+     */
+    private function getPagamentoBadge($status)
+    {
+        $s = strtolower(trim($status ?? ''));
         $badges = [
-            'pendente' => '<span class="badge bg-warning text-dark fs-6"><i class="bx bx-time me-1"></i>Pendente</span>',
+            'pendente' => '<span class="badge bg-warning text-dark fs-6"><i class="bx bx-time me-1"></i>Pendente de pagamento</span>',
             'processando' => '<span class="badge bg-info fs-6"><i class="bx bx-loader-alt me-1"></i>Processando</span>',
             'concluido' => '<span class="badge bg-success fs-6"><i class="bx bx-check me-1"></i>Concluído</span>',
             'cancelado' => '<span class="badge bg-danger fs-6"><i class="bx bx-x me-1"></i>Cancelado</span>',
             'erro' => '<span class="badge bg-dark fs-6"><i class="bx bx-error me-1"></i>Erro</span>',
         ];
 
-        return $badges[strtolower($status ?? '')] ?? '<span class="badge bg-secondary fs-6">' . esc($status ?? 'N/A') . '</span>';
+        return $badges[$s] ?? '<span class="badge bg-secondary fs-6">' . esc($status ?? 'N/A') . '</span>';
     }
 
     /**
