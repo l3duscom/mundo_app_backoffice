@@ -208,7 +208,7 @@ class Checkout extends BaseController
 		}
 
 		$data = [
-			'evento_id' => 17,
+			'evento_id' => 20,
 			'user_id' => $user_id,
 			'codigo' => $this->pedidoModel->geraCodigoPedido(),
 			'total' => $post['valor_total'],
@@ -313,7 +313,7 @@ class Checkout extends BaseController
 		$telefone = preg_replace('/[^0-9]/', '', $_POST['telefone']);
 		preg_match('/^(\d{2})(\d{8,9})$/', $telefone, $matches);
 
-		$evento = $this->eventoModel->select()->where('id', 17)->first();
+		$evento = $this->eventoModel->select()->where('id', 20)->first();
 		$integerValuePartial = preg_replace('/\D/', '', $installmentValue);
 		$integerValue = (int)$integerValuePartial;
 		$pay = [
@@ -577,7 +577,7 @@ class Checkout extends BaseController
 
 	public function obrigado()
 	{
-		$event_id = 17;
+		$event_id = 20;
 
 		// Buscar dados do evento para o pixel
 		$evento = $this->eventoModel->find($event_id);
@@ -1008,7 +1008,7 @@ class Checkout extends BaseController
 		}
 
 		$data = [
-			'evento_id' => 17,
+			'evento_id' => 20,
 			'user_id' => $user_id,
 			'codigo' => $this->pedidoModel->geraCodigoPedido(),
 			'total' =>  $post['valor_total'],
@@ -1346,7 +1346,7 @@ class Checkout extends BaseController
 
 
 		$data = [
-			'evento_id' => 17,
+			'evento_id' => 20,
 			'user_id' => $user_id,
 			'codigo' => $this->pedidoModel->geraCodigoPedido(),
 			'total' =>  $post['valor_total'] / 100,
@@ -1959,7 +1959,7 @@ class Checkout extends BaseController
 
 	public function finalizaradm()
 	{
-		$event_id = 17;
+		$event_id = 20;
 
 		$post = $this->request->getPost();
 
@@ -2154,7 +2154,7 @@ class Checkout extends BaseController
 		$pedido_id = $this->pedidoModel->getInsertID();
 
 
-		if ($event_id == 17) {
+		if ($event_id == 20) {
 			$nome_evento = 'Checkin - Acesso via Dreamclub';
 		} else if ($event_id == 10) {
 			$nome_evento = 'Sensei Party de Carnaval - Acesso via Dreamclub';
