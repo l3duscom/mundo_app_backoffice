@@ -76,7 +76,7 @@
             </div>
 
 
-            <div style="font-size: 10px;padding-top: 10px" class="no-wrap"><strong>Ingresso válido para dia 6 ou 7 de dezembro de 2025 </strong><br>Abertura dos portões: 11h<br>Centro de Eventos da FENAC - Novo Hamburgo RS<br></div>
+            <div style="font-size: 10px;padding-top: 10px" class="no-wrap"><strong>Ingresso válido para dia 11 ou 12 de julho de 2026 </strong><br>Abertura dos portões: 11h<br>Parque da Expointer - Esteio - RS<br></div>
             <div style="font-size: 16px;margin-top: 10px;padding-top: 10px; padding-bottom: 10px;">
                 <strong>VENDA PROIBIDA</strong>
             </div>
