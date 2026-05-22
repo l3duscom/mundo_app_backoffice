@@ -219,7 +219,11 @@ function alerta(msg, tipo = 'success') {
 
 function postAjax(url, formData) {
     formData.append(csrfName, csrfToken);
-    return fetch(url, { method: 'POST', body: formData })
+    return fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
         .then(r => r.json())
         .then(data => {
             if (data.token) csrfToken = data.token;
@@ -278,7 +282,10 @@ function excluirCronograma(id) {
 
 // ============ ITENS ============
 function carregarItens(cronogramaId) {
-    fetch(URL_ITENS + '/' + cronogramaId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    fetch(URL_ITENS + '/' + cronogramaId, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+    })
         .then(r => r.json())
         .then(resp => {
             const tbody = document.querySelector('#tabela-itens-' + cronogramaId + ' tbody');
