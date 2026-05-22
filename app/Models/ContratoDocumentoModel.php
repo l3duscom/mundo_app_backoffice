@@ -90,6 +90,18 @@ class ContratoDocumentoModel extends Model
     }
 
     /**
+     * Cancela todos os documentos ativos de um contrato.
+     * Usado quando o contrato é cancelado, banido ou excluído.
+     */
+    public function cancelaPorContrato(int $contratoId): int
+    {
+        return $this->where('contrato_id', $contratoId)
+            ->where('status !=', 'cancelado')
+            ->set(['status' => 'cancelado', 'updated_at' => date('Y-m-d H:i:s')])
+            ->update();
+    }
+
+    /**
      * Verifica se contrato tem documento pendente de assinatura
      */
     public function temDocumentoPendente(int $contratoId): bool

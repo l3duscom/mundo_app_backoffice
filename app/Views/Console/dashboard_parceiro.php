@@ -155,26 +155,29 @@
             $documentos = $contratoData['documentos'] ?? [];
             $valorRestante = $contratoData['valor_restante'] ?? 0;
             $pagamentoCompleto = $contratoData['pagamento_completo'] ?? false;
-            
+            $contratoBloqueado = $contrato->isBloqueado();
+
             // Verificar parcelas em atraso ou próximas
             $parcelasVencidas = [];
             $parcelasProximas = [];
             $hoje = time();
             $em7dias = strtotime('+7 days');
-            
-            foreach ($parcelas as $parcela) {
-                if ($parcela->status_local !== 'pago') {
-                    $vencimento = strtotime($parcela->data_vencimento);
-                    if ($vencimento < $hoje) {
-                        $parcelasVencidas[] = $parcela;
-                    } elseif ($vencimento <= $em7dias) {
-                        $parcelasProximas[] = $parcela;
+
+            if (!$contratoBloqueado) {
+                foreach ($parcelas as $parcela) {
+                    if ($parcela->status_local !== 'pago') {
+                        $vencimento = strtotime($parcela->data_vencimento);
+                        if ($vencimento < $hoje) {
+                            $parcelasVencidas[] = $parcela;
+                        } elseif ($vencimento <= $em7dias) {
+                            $parcelasProximas[] = $parcela;
+                        }
                     }
                 }
             }
             ?>
-            
-            <div class="contrato-card">
+
+            <div class="contrato-card <?= $contratoBloqueado ? 'contrato-bloqueado' : '' ?>">
                 <!-- Header do Contrato -->
                 <div class="contrato-header d-flex justify-content-between align-items-center">
                     <div>
@@ -207,6 +210,10 @@
                 </div>
                 
                 <div class="p-3">
+                    <?php if ($contratoBloqueado) : ?>
+                    <?= $contrato->getAlertaBloqueio() ?>
+                    <?php endif; ?>
+
                     <!-- ALERTAS DE PARCELAS -->
                     <?php if (!empty($parcelasVencidas)) : ?>
                     <div class="alert-parcela vencida">
@@ -333,13 +340,13 @@
                                     <span class="badge bg-success">Pago</span>
                                     <?php elseif ($isVencida) : ?>
                                     <span class="badge bg-danger">Vencida</span>
-                                    <?php if ($parcela->asaas_payment_id) : ?>
+                                    <?php if ($parcela->asaas_payment_id && !$contratoBloqueado) : ?>
                                     <?php $payId = str_replace('pay_', '', $parcela->asaas_payment_id); ?>
                                     <a href="https://www.asaas.com/i/<?= $payId ?>" target="_blank" class="btn-pagar btn-sm">Pagar</a>
                                     <?php endif; ?>
                                     <?php elseif ($isProxima) : ?>
                                     <span class="badge bg-warning text-dark">A vencer</span>
-                                    <?php if ($parcela->asaas_payment_id) : ?>
+                                    <?php if ($parcela->asaas_payment_id && !$contratoBloqueado) : ?>
                                     <?php $payId = str_replace('pay_', '', $parcela->asaas_payment_id); ?>
                                     <a href="https://www.asaas.com/i/<?= $payId ?>" target="_blank" class="btn-pagar btn-sm">Pagar</a>
                                     <?php endif; ?>
@@ -354,10 +361,16 @@
                     <?php endif; ?>
 
                     <!-- DOCUMENTOS DO CONTRATO -->
+                    <?php $docsLiberados = $pagamentoCompleto && !$contratoBloqueado; ?>
                     <div class="mt-4">
                         <h6 class="mb-3"><i class="bi bi-file-earmark-text text-primary me-2"></i>Documentos do Contrato</h6>
-                        
-                        <?php if (!$pagamentoCompleto) : ?>
+
+                        <?php if ($contratoBloqueado) : ?>
+                        <div class="alert alert-danger py-2 small">
+                            <i class="bi bi-lock-fill me-2"></i>
+                            Documentos indisponíveis: contrato <?= strtolower($contrato->getMotivoBloqueio()) ?>.
+                        </div>
+                        <?php elseif (!$pagamentoCompleto) : ?>
                         <div class="alert alert-secondary py-2 small">
                             <i class="bi bi-lock-fill me-2"></i>
                             Os documentos estarão disponíveis após a confirmação do pagamento completo.
@@ -365,11 +378,11 @@
                         <?php endif; ?>
                         
                         <?php if (empty($documentos)) : ?>
-                        <div class="text-muted small <?= !$pagamentoCompleto ? 'opacity-50' : '' ?>">
+                        <div class="text-muted small <?= !$docsLiberados ? 'opacity-50' : '' ?>">
                             <i class="bi bi-file-earmark me-1"></i> Nenhum documento gerado ainda.
                         </div>
                         <?php else : ?>
-                        <div class="<?= !$pagamentoCompleto ? 'opacity-50' : '' ?>" style="<?= !$pagamentoCompleto ? 'pointer-events: none;' : '' ?>">
+                        <div class="<?= !$docsLiberados ? 'opacity-50' : '' ?>" style="<?= !$docsLiberados ? 'pointer-events: none;' : '' ?>">
                             <?php foreach ($documentos as $doc) : ?>
                             <?php
                             $statusClass = match($doc->status) {
@@ -399,15 +412,15 @@
                                     <?php endif; ?>
                                 </div>
                                 <div>
-                                    <?php if ($doc->arquivo_url && $pagamentoCompleto) : ?>
+                                    <?php if ($doc->arquivo_url && $docsLiberados) : ?>
                                     <a href="<?= $doc->arquivo_url ?>" target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-download me-1"></i>Baixar
                                     </a>
-                                    <?php elseif (in_array($doc->status, ['confirmado', 'assinado'])) : ?>
+                                    <?php elseif (in_array($doc->status, ['confirmado', 'assinado']) && !$contratoBloqueado) : ?>
                                     <a href="<?= site_url('contratodocumentos/visualizar/' . $doc->id) ?>" target="_blank" class="btn btn-sm btn-outline-success">
                                         <i class="bi bi-eye me-1"></i>Visualizar
                                     </a>
-                                    <?php elseif (in_array($doc->status, ['pendente', 'pendente_assinatura']) && $pagamentoCompleto && $doc->hash_assinatura) : ?>
+                                    <?php elseif (in_array($doc->status, ['pendente', 'pendente_assinatura']) && $docsLiberados && $doc->hash_assinatura) : ?>
                                     <a href="<?= site_url('contratodocumentos/assinar/' . $doc->hash_assinatura) ?>" class="btn btn-sm btn-primary">
                                         <i class="bi bi-pen me-1"></i>Assinar
                                     </a>
@@ -431,11 +444,27 @@
                             break;
                         }
                     }
+                    $credenciamentoLiberado = $contratoAssinado && !$contratoBloqueado;
                     ?>
                     <div class="mt-4">
                         <h6 class="mb-3"><i class="bi bi-person-badge text-primary me-2"></i>Credenciamento</h6>
-                        
-                        <?php if (!$contratoAssinado) : ?>
+
+                        <?php if ($contratoBloqueado) : ?>
+                        <div class="alert alert-danger py-2 small">
+                            <i class="bi bi-lock-fill me-2"></i>
+                            Credenciamento indisponível: contrato <?= strtolower($contrato->getMotivoBloqueio()) ?>.
+                        </div>
+                        <div class="item-card d-flex justify-content-between align-items-center opacity-50" style="pointer-events: none;">
+                            <div>
+                                <i class="bi bi-person-badge text-secondary me-2"></i>
+                                <span>Credenciamento de funcionários e veículos</span>
+                                <span class="badge bg-danger ms-2">Bloqueado</span>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                <i class="bi bi-arrow-right me-1"></i>Acessar
+                            </button>
+                        </div>
+                        <?php elseif (!$contratoAssinado) : ?>
                         <div class="alert alert-secondary py-2 small">
                             <i class="bi bi-lock-fill me-2"></i>
                             O credenciamento será liberado após a assinatura do contrato.
@@ -465,7 +494,7 @@
                     </div>
 
                     <!-- ESCOLHA DE ESPAÇO -->
-                    <?php if ($contratoAssinado && !empty($itens)) : ?>
+                    <?php if ($credenciamentoLiberado && !empty($itens)) : ?>
                     <div class="mt-4">
                         <h6 class="mb-3"><i class="bi bi-geo-alt text-primary me-2"></i>Escolha de Espaço</h6>
                         

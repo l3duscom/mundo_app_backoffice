@@ -221,6 +221,58 @@ class Contrato extends Entity
     }
 
     /**
+     * Verifica se o contrato está bloqueado (cancelado, banido ou excluído).
+     * Quando bloqueado, todas as ações operacionais devem ser desabilitadas.
+     */
+    public function isBloqueado(): bool
+    {
+        return !$this->isAtivo();
+    }
+
+    /**
+     * Retorna o motivo do bloqueio em texto curto (para badges/títulos).
+     */
+    public function getMotivoBloqueio(): string
+    {
+        if ($this->deleted_at !== null) {
+            return 'Excluído';
+        }
+        if ($this->situacao === 'cancelado') {
+            return 'Cancelado';
+        }
+        if ($this->situacao === 'banido') {
+            return 'Banido';
+        }
+        return '';
+    }
+
+    /**
+     * Retorna HTML do alerta de bloqueio para exibir no topo do contrato.
+     * Retorna string vazia quando o contrato está ativo.
+     */
+    public function getAlertaBloqueio(): string
+    {
+        if ($this->isAtivo()) {
+            return '';
+        }
+
+        $motivo = $this->getMotivoBloqueio();
+        $cor    = $this->deleted_at !== null ? 'secondary' : ($this->situacao === 'banido' ? 'dark' : 'danger');
+        $icone  = $this->deleted_at !== null ? 'bx-trash' : ($this->situacao === 'banido' ? 'bx-block' : 'bx-x-circle');
+
+        $mensagem = match (true) {
+            $this->deleted_at !== null  => 'Este contrato foi <strong>excluído</strong>. Todas as ações estão bloqueadas.',
+            $this->situacao === 'banido' => 'Este contrato foi <strong>banido</strong>. Todas as ações estão bloqueadas.',
+            default                      => 'Este contrato foi <strong>cancelado</strong>. Todas as ações estão bloqueadas.',
+        };
+
+        return '<div class="alert alert-' . $cor . ' d-flex align-items-center mb-3" role="alert">'
+            . '<i class="bx ' . $icone . ' me-2 fs-4"></i>'
+            . '<div><strong>' . esc($motivo) . '</strong> &mdash; ' . $mensagem . '</div>'
+            . '</div>';
+    }
+
+    /**
      * Calcula os valores automaticamente
      *
      * @return void

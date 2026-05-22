@@ -103,16 +103,31 @@
         </nav>
     </div>
     <div class="ms-auto">
+        <?php $contratoInativo = $contrato->isBloqueado(); ?>
         <div class="btn-group">
-            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                Ações
+            <button type="button" class="btn <?= $contratoInativo ? 'btn-danger' : 'btn-primary' ?> dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <?php if ($contratoInativo): ?><i class="bx bx-lock-alt me-1"></i><?php endif; ?>Ações
             </button>
             <ul class="dropdown-menu">
+                <?php if ($contratoInativo): ?>
+                    <li><h6 class="dropdown-header text-danger"><i class="bx bx-lock-alt me-1"></i>Contrato <?= esc($contrato->getMotivoBloqueio()) ?></h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <?php if ($contrato->deleted_at != null) : ?>
+                        <li><a class="dropdown-item text-success" href="<?php echo site_url("contratos/desfazerexclusao/$contrato->id"); ?>">
+                            <i class="bx bx-undo me-2"></i>Restaurar contrato</a></li>
+                    <?php else: ?>
+                        <li class="dropdown-header">Reativar Situação</li>
+                        <?php foreach (['proposta' => 'Proposta', 'proposta_aceita' => 'Proposta Aceita', 'aguardando_contrato' => 'Aguardando Contrato'] as $key => $label): ?>
+                        <li><a class="dropdown-item btn-alterar-situacao" href="#" data-situacao="<?= $key ?>">
+                            <i class="bx bx-revision me-2"></i>Reverter para <?= $label ?></a></li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                <?php else: ?>
                 <li><a class="dropdown-item" href="<?php echo site_url("contratos/editar/$contrato->id"); ?>">
                     <i class="bx bx-edit-alt me-2"></i>Editar contrato</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li class="dropdown-header">Alterar Situação</li>
-                <?php 
+                <?php
                 $situacoes = [
                     'proposta' => 'Proposta',
                     'proposta_aceita' => 'Proposta Aceita',
@@ -126,19 +141,15 @@
                     'cancelado' => 'Cancelado',
                     'banido' => 'Banido',
                 ];
-                foreach ($situacoes as $key => $label): 
+                foreach ($situacoes as $key => $label):
                     if ($key !== $contrato->situacao):
                 ?>
-                <li><a class="dropdown-item btn-alterar-situacao" href="#" data-situacao="<?= $key ?>">
+                <li><a class="dropdown-item btn-alterar-situacao <?= in_array($key, ['cancelado', 'banido']) ? 'text-danger' : '' ?>" href="#" data-situacao="<?= $key ?>">
                     <i class="bx bx-right-arrow-alt me-2"></i><?= $label ?></a></li>
                 <?php endif; endforeach; ?>
                 <li><hr class="dropdown-divider"></li>
-                <?php if ($contrato->deleted_at == null) : ?>
-                    <li><a class="dropdown-item text-danger" href="<?php echo site_url("contratos/excluir/$contrato->id"); ?>">
-                        <i class="bx bx-trash me-2"></i>Excluir contrato</a></li>
-                <?php else : ?>
-                    <li><a class="dropdown-item text-success" href="<?php echo site_url("contratos/desfazerexclusao/$contrato->id"); ?>">
-                        <i class="bx bx-undo me-2"></i>Restaurar contrato</a></li>
+                <li><a class="dropdown-item text-danger" href="<?php echo site_url("contratos/excluir/$contrato->id"); ?>">
+                    <i class="bx bx-trash me-2"></i>Excluir contrato</a></li>
                 <?php endif; ?>
             </ul>
         </div>
@@ -148,6 +159,10 @@
     </div>
 </div>
 <!--end breadcrumb-->
+
+<?php if ($contratoInativo): ?>
+<?= $contrato->getAlertaBloqueio() ?>
+<?php endif; ?>
 
 <?php 
 // Calcula desconto PIX (10%) apenas se forma de pagamento for PIX à vista (1 parcela)
@@ -375,9 +390,15 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                 <?php endif; ?>
                 
                 <div class="d-grid gap-2">
+                    <?php if ($contratoInativo): ?>
+                    <button type="button" class="btn btn-secondary" disabled>
+                        <i class="bx bx-lock-alt me-1"></i>Gerenciamento bloqueado
+                    </button>
+                    <?php else: ?>
                     <a href="<?php echo site_url("contratodocumentos/gerenciar/{$contrato->id}"); ?>" class="btn btn-purple">
                         <i class="bx bx-file-find me-1"></i>Gerenciar Documento
                     </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -492,7 +513,7 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
         <div class="card shadow radius-10 mt-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0"><i class="bx bx-credit-card me-2"></i>Parcelas do Contrato</h6>
-                <?php if (!empty($contrato->asaas_payment_id)): ?>
+                <?php if (!empty($contrato->asaas_payment_id) && !$contratoInativo): ?>
                 <button type="button" class="btn btn-outline-primary btn-sm" id="btnSincronizarAsaas">
                     <i class="bx bx-refresh me-1"></i>Sincronizar Asaas
                 </button>
@@ -664,7 +685,9 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                 $contratoBloqueado = in_array($contrato->situacao, ['contrato_assinado', 'aguardando_contrato', 'pagamento_confirmado', 'aguardando_credenciamento', 'finalizado', 'cancelado', 'banido']);
                 ?>
 
-                <?php if ($propostaAguardando): ?>
+                <?php if ($contratoInativo): ?>
+                    <span class="badge bg-danger"><i class="bx bx-lock-alt me-1"></i>Ações bloqueadas (<?= esc($contrato->getMotivoBloqueio()) ?>)</span>
+                <?php elseif ($propostaAguardando): ?>
                     <button type="button" class="btn btn-success btn-sm btn-aceitar-proposta">
                         <i class="bx bx-check me-1"></i>Aceitar Proposta
                     </button>

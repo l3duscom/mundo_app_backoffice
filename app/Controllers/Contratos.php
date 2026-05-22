@@ -297,8 +297,18 @@ class Contratos extends BaseController
                 }
             }
 
-            $data[] = [
-                'codigo' => anchor("contratos/exibir/$contrato->id", esc($contrato->codigo ?? '#' . $contrato->id), 'title="Exibir contrato"'),
+            // Indicador de contrato bloqueado (cancelado, banido ou excluído)
+            $bloqueado = $contrato->isBloqueado();
+            $motivoBloqueio = $bloqueado ? $contrato->getMotivoBloqueio() : '';
+
+            $codigoTexto = esc($contrato->codigo ?? '#' . $contrato->id);
+            if ($bloqueado) {
+                $iconeBloqueio = $contrato->deleted_at !== null ? 'bx-trash' : ($contrato->situacao === 'banido' ? 'bx-block' : 'bx-x-circle');
+                $codigoTexto = '<i class="bx ' . $iconeBloqueio . ' me-1" title="' . esc($motivoBloqueio) . '"></i>' . $codigoTexto;
+            }
+
+            $linha = [
+                'codigo' => anchor("contratos/exibir/$contrato->id", $codigoTexto, 'title="Exibir contrato"'),
                 'expositor' => esc($nomeExpositor ?? 'N/A'),
                 'evento' => esc($contrato->evento_nome ?? 'N/A'),
                 'tipo' => $tiposFormatados,
@@ -310,6 +320,12 @@ class Contratos extends BaseController
                 'credenciamento' => $credBadge,
                 'parcela' => $vencidoBadge ?: '<span class="badge bg-light text-muted">-</span>',
             ];
+
+            if ($bloqueado) {
+                $linha['DT_RowClass'] = 'contrato-bloqueado';
+            }
+
+            $data[] = $linha;
         }
 
         $retorno = [
@@ -634,6 +650,13 @@ class Contratos extends BaseController
         }
 
         if ($this->contratoModel->save($contrato)) {
+            // Se contrato foi cancelado ou banido, cancela documentos vinculados
+            if (in_array($post['situacao'], ['cancelado', 'banido'])
+                && !in_array($situacaoAnterior, ['cancelado', 'banido'])) {
+                $documentoModel = new \App\Models\ContratoDocumentoModel();
+                $documentoModel->cancelaPorContrato((int) $contrato->id);
+            }
+
             $retorno['sucesso'] = 'Situação alterada com sucesso!';
             $retorno['situacao_anterior'] = $situacaoAnterior;
             $retorno['situacao_nova'] = $post['situacao'];
@@ -1060,6 +1083,10 @@ class Contratos extends BaseController
 
         if ($this->request->getMethod() === 'post') {
             $this->contratoModel->delete($id);
+
+            // Cancela documentos vinculados ao contrato excluído
+            $documentoModel = new \App\Models\ContratoDocumentoModel();
+            $documentoModel->cancelaPorContrato((int) $id);
 
             return redirect()->to(site_url("contratos"))->with('sucesso', "Contrato excluído com sucesso!");
         }

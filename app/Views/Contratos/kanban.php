@@ -229,6 +229,23 @@
 .kanban-card[data-situacao="cancelado"] { border-left-color: #dc3545; }
 .kanban-card[data-situacao="banido"] { border-left-color: #212529; }
 
+/* Cards bloqueados (cancelado/banido) — destaque visual */
+.kanban-card[data-situacao="cancelado"],
+.kanban-card[data-situacao="banido"] {
+    background: #fff5f5;
+    opacity: 0.85;
+}
+.kanban-card[data-situacao="cancelado"] .card-expositor a,
+.kanban-card[data-situacao="banido"] .card-expositor a {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+.kanban-card[data-situacao="cancelado"] .card-valor,
+.kanban-card[data-situacao="banido"] .card-valor {
+    color: #6c757d;
+    text-decoration: line-through;
+}
+
 /* Drag & Drop States */
 .sortable-ghost {
     opacity: 0.4;

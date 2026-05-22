@@ -25,6 +25,22 @@
     font-size: 0.8rem;
     margin: 2px;
 }
+
+/* Contratos bloqueados (cancelado, banido ou excluído) */
+tr.contrato-bloqueado td {
+    background-color: #fff5f5 !important;
+    color: #6c757d !important;
+}
+tr.contrato-bloqueado td a {
+    color: #6c757d !important;
+    text-decoration: line-through;
+}
+tr.contrato-bloqueado td a:hover {
+    color: #495057 !important;
+}
+tr.contrato-bloqueado td .badge {
+    opacity: 0.65;
+}
 </style>
 
 <?php echo $this->endSection() ?>
