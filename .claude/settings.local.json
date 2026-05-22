@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -l app/Controllers/Cronograma.php)",
+      "Bash(php -l app/Views/Cronograma/index.php)"
+    ]
+  }
+}
