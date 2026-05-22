@@ -65,61 +65,69 @@ class Lineup extends BaseController
             return redirect()->back();
         }
 
-        $retorno['token'] = csrf_hash();
+        $retorno = ['token' => csrf_hash()];
 
-        $post = $this->request->getPost();
+        try {
+            $post = $this->request->getPost();
 
-        $dados = [
-            'event_id'  => $post['event_id'] ?? null,
-            'nome'      => trim($post['nome'] ?? ''),
-            'dia'       => !empty($post['dia']) ? $post['dia'] : null,
-            'tipo'      => trim($post['tipo'] ?? ''),
-            'descricao' => $post['descricao'] ?? null,
-            'ordem'     => (int) ($post['ordem'] ?? 0),
-            'ativo'     => isset($post['ativo']) ? 1 : 0,
-        ];
+            $dados = [
+                'event_id'  => $post['event_id'] ?? null,
+                'nome'      => trim($post['nome'] ?? ''),
+                'dia'       => !empty($post['dia']) ? $post['dia'] : null,
+                'tipo'      => trim($post['tipo'] ?? ''),
+                'descricao' => $post['descricao'] ?? null,
+                'ordem'     => (int) ($post['ordem'] ?? 0),
+                'ativo'     => isset($post['ativo']) ? 1 : 0,
+            ];
 
-        // Mantém imagem atual em edição (a menos que envie nova)
-        $imagemAtual = null;
-        if (!empty($post['id'])) {
-            $atual = $this->lineupModel->find($post['id']);
-            if ($atual) {
-                $imagemAtual = $atual->imagem;
+            $imagemAtual = null;
+            if (!empty($post['id'])) {
+                $atual = $this->lineupModel->find($post['id']);
+                if ($atual) {
+                    $imagemAtual = $atual->imagem;
+                }
+                $dados['id'] = $post['id'];
             }
-            $dados['id'] = $post['id'];
-        }
 
-        // Processa upload
-        $arquivo = $this->request->getFile('imagem');
-        if ($arquivo && $arquivo->isValid() && !$arquivo->hasMoved()) {
-            $validos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-            if (!in_array($arquivo->getMimeType(), $validos)) {
-                $retorno['erro'] = 'Formato de imagem inválido. Use JPG, PNG ou WEBP.';
+            $arquivo = $this->request->getFile('imagem');
+            if ($arquivo && $arquivo->isValid() && !$arquivo->hasMoved()) {
+                $validos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                if (!in_array($arquivo->getMimeType(), $validos)) {
+                    $retorno['erro'] = 'Formato de imagem inválido. Use JPG, PNG ou WEBP.';
+                    return $this->response->setJSON($retorno);
+                }
+                if ($arquivo->getSizeByUnit('mb') > 5) {
+                    $retorno['erro'] = 'Imagem muito grande. Máximo 5MB.';
+                    return $this->response->setJSON($retorno);
+                }
+
+                $arquivo->store('lineup');
+                $dados['imagem'] = $arquivo->getName();
+
+                if ($imagemAtual && file_exists(WRITEPATH . 'uploads/lineup/' . $imagemAtual)) {
+                    @unlink(WRITEPATH . 'uploads/lineup/' . $imagemAtual);
+                }
+            }
+
+            if ($this->lineupModel->save($dados)) {
+                $retorno['sucesso'] = !empty($post['id']) ? 'Line-up atualizado!' : 'Line-up criado!';
+                $retorno['id']      = $post['id'] ?? $this->lineupModel->getInsertID();
                 return $this->response->setJSON($retorno);
             }
-            if ($arquivo->getSizeByUnit('mb') > 5) {
-                $retorno['erro'] = 'Imagem muito grande. Máximo 5MB.';
-                return $this->response->setJSON($retorno);
-            }
 
-            $arquivo->store('lineup');
-            $dados['imagem'] = $arquivo->getName();
-
-            // Apaga imagem antiga se houver
-            if ($imagemAtual && file_exists(WRITEPATH . 'uploads/lineup/' . $imagemAtual)) {
-                @unlink(WRITEPATH . 'uploads/lineup/' . $imagemAtual);
-            }
-        }
-
-        if ($this->lineupModel->save($dados)) {
-            $retorno['sucesso'] = !empty($post['id']) ? 'Line-up atualizado!' : 'Line-up criado!';
-            $retorno['id']      = $post['id'] ?? $this->lineupModel->getInsertID();
+            $retorno['erro']        = 'Erro ao salvar.';
+            $retorno['erros_model'] = $this->lineupModel->errors();
             return $this->response->setJSON($retorno);
-        }
 
-        $retorno['erro']        = 'Erro ao salvar.';
-        $retorno['erros_model'] = $this->lineupModel->errors();
-        return $this->response->setJSON($retorno);
+        } catch (\Throwable $e) {
+            log_message('error', '[LINEUP/SALVAR] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $retorno['erro']  = 'Exceção: ' . $e->getMessage();
+            $retorno['debug'] = [
+                'tipo'    => get_class($e),
+                'arquivo' => basename($e->getFile()) . ':' . $e->getLine(),
+            ];
+            return $this->response->setStatusCode(200)->setJSON($retorno);
+        }
     }
 
     /**

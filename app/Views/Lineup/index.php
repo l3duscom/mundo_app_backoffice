@@ -353,6 +353,10 @@ document.getElementById('formLineup').addEventListener('submit', function(e) {
             if (data.erros_model) {
                 msg += '<br>' + Object.values(data.erros_model).join('<br>');
             }
+            if (data.debug) {
+                console.error('Debug lineup/salvar:', data.debug);
+                msg += '<br><small class="text-muted">' + data.debug.arquivo + '</small>';
+            }
             alerta(msg, 'danger');
         }
     }).catch(err => alerta(err.message || 'Erro de comunicação com o servidor.', 'danger'));
