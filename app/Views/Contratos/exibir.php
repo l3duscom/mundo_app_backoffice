@@ -391,9 +391,15 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                 
                 <div class="d-grid gap-2">
                     <?php if ($contratoInativo): ?>
-                    <button type="button" class="btn btn-secondary" disabled>
-                        <i class="bx bx-lock-alt me-1"></i>Gerenciamento bloqueado
-                    </button>
+                        <?php if ($documento): ?>
+                        <a href="<?php echo site_url("contratodocumentos/visualizar/{$documento->id}"); ?>" class="btn btn-outline-secondary" target="_blank">
+                            <i class="bx bx-show me-1"></i>Visualizar Documento
+                        </a>
+                        <?php else: ?>
+                        <button type="button" class="btn btn-secondary" disabled>
+                            <i class="bx bx-lock-alt me-1"></i>Sem documento para visualizar
+                        </button>
+                        <?php endif; ?>
                     <?php else: ?>
                     <a href="<?php echo site_url("contratodocumentos/gerenciar/{$contrato->id}"); ?>" class="btn btn-purple">
                         <i class="bx bx-file-find me-1"></i>Gerenciar Documento
