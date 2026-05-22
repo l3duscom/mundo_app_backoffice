@@ -194,7 +194,7 @@
                         <div class="col-md-4">
                             <label class="form-label">Imagem</label>
                             <input type="file" class="form-control mb-2" name="imagem" id="lu_imagem" accept="image/jpeg,image/png,image/webp">
-                            <small class="text-muted d-block mb-2">JPG, PNG ou WEBP — máx 5MB.</small>
+                            <small class="text-muted d-block mb-2">JPG, PNG ou WEBP — máx 2MB.</small>
                             <div class="text-center">
                                 <img id="lu_preview" src="" alt="" class="preview-img" style="display:none;">
                                 <div id="lu_sem_imagem" class="text-muted small fst-italic">Sem imagem</div>
@@ -282,12 +282,22 @@ function editarLineup(item) {
     new bootstrap.Modal(document.getElementById('modalLineup')).show();
 }
 
+// Limite do arquivo (deve casar com php.ini do servidor — geralmente 2MB)
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+
 // Preview ao escolher imagem
 document.getElementById('lu_imagem').addEventListener('change', function() {
     const file = this.files[0];
     const preview = document.getElementById('lu_preview');
     const semImg  = document.getElementById('lu_sem_imagem');
     if (!file) return;
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+        alerta('Imagem muito grande (' + (file.size / 1024 / 1024).toFixed(2) + 'MB). Máximo 2MB. Compresse a imagem antes de enviar.', 'danger');
+        this.value = '';
+        return;
+    }
+
     const reader = new FileReader();
     reader.onload = e => {
         preview.src = e.target.result;
@@ -299,8 +309,33 @@ document.getElementById('lu_imagem').addEventListener('change', function() {
 
 document.getElementById('formLineup').addEventListener('submit', function(e) {
     e.preventDefault();
+
+    // Confere tamanho do arquivo antes de subir
+    const fileInput = document.getElementById('lu_imagem');
+    if (fileInput.files[0] && fileInput.files[0].size > MAX_UPLOAD_BYTES) {
+        alerta('Imagem maior que 2MB. Compresse a imagem antes de enviar.', 'danger');
+        return;
+    }
+
     const fd = new FormData(this);
-    postAjax(URL_SALVAR, fd).then(data => {
+    fd.append(csrfName, csrfToken);
+
+    fetch(URL_SALVAR, {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+    }).then(async r => {
+        if (r.status === 403) {
+            throw new Error('CSRF/upload bloqueado. A imagem pode estar excedendo o limite do servidor.');
+        }
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            throw new Error('Resposta inesperada do servidor.');
+        }
+        return r.json();
+    }).then(data => {
+        if (data.token) csrfToken = data.token;
         if (data.sucesso) {
             alerta(data.sucesso);
             bootstrap.Modal.getInstance(document.getElementById('modalLineup')).hide();
@@ -312,7 +347,7 @@ document.getElementById('formLineup').addEventListener('submit', function(e) {
             }
             alerta(msg, 'danger');
         }
-    }).catch(() => alerta('Erro de comunicação com o servidor.', 'danger'));
+    }).catch(err => alerta(err.message || 'Erro de comunicação com o servidor.', 'danger'));
 });
 
 function excluirLineup(id) {
