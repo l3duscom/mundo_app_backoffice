@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(php -l app/Controllers/Cronograma.php)",
-      "Bash(php -l app/Views/Cronograma/index.php)"
+      "Bash(php -l app/Views/Cronograma/index.php)",
+      "Bash(grep -i \"CREATE TABLE.*eventos\\\\|CREATE TABLE \\\\`eventos\\\\`\" \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/bkp_banco.sql\")",
+      "Bash(grep -n \"CREATE TABLE \\\\`eventos\\\\`\" \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/bkp_banco.sql\")",
+      "Bash(php -l app/Controllers/Lineup.php)",
+      "Bash(php -l app/Models/LineupModel.php)",
+      "Bash(php -l app/Entities/LineupEntity.php)",
+      "Bash(php -l app/Views/Lineup/index.php)"
     ]
   }
 }

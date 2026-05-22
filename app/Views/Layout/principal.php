@@ -415,6 +415,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo site_url('/lineup?evento_id=' . evento_selecionado()); ?>">
+                                <div class="parent-icon"><i class="bx bx-music"></i>
+                                </div>
+                                <div class="menu-title">Line-up</div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo site_url('/espacos?event_id=' . evento_selecionado()); ?>">
                                 <div class="parent-icon"><i class="bx bx-map-pin"></i>
                                 </div>
