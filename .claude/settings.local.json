@@ -9,7 +9,9 @@
       "Bash(php -l app/Models/LineupModel.php)",
       "Bash(php -l app/Entities/LineupEntity.php)",
       "Bash(php -l app/Views/Lineup/index.php)",
-      "Bash(php -r \"echo 'post_max_size=' . ini_get\\('post_max_size'\\) . PHP_EOL; echo 'upload_max_filesize=' . ini_get\\('upload_max_filesize'\\) . PHP_EOL; echo 'memory_limit=' . ini_get\\('memory_limit'\\) . PHP_EOL;\")"
+      "Bash(php -r \"echo 'post_max_size=' . ini_get\\('post_max_size'\\) . PHP_EOL; echo 'upload_max_filesize=' . ini_get\\('upload_max_filesize'\\) . PHP_EOL; echo 'memory_limit=' . ini_get\\('memory_limit'\\) . PHP_EOL;\")",
+      "Bash(php -r \"echo PHP_VERSION;\")",
+      "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $m = new App\\\\Models\\\\LineupModel\\(\\); echo '\\\\''Model OK'\\\\'' . PHP_EOL; $c = new App\\\\Controllers\\\\Lineup\\(\\); echo '\\\\''Controller OK'\\\\'' . PHP_EOL;')"
     ]
   }
 }

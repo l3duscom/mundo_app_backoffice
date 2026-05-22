@@ -237,7 +237,10 @@ function postAjax(url, formData) {
     return fetch(url, {
         method: 'POST',
         body: formData,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
+        },
         credentials: 'same-origin'
     }).then(r => r.json()).then(data => {
         if (data.token) csrfToken = data.token;
@@ -323,15 +326,20 @@ document.getElementById('formLineup').addEventListener('submit', function(e) {
     fetch(URL_SALVAR, {
         method: 'POST',
         body: fd,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
+        },
         credentials: 'same-origin'
     }).then(async r => {
         if (r.status === 403) {
-            throw new Error('CSRF/upload bloqueado. A imagem pode estar excedendo o limite do servidor.');
+            throw new Error('CSRF/upload bloqueado (403). Recarregue a página (F5) e tente novamente.');
         }
         const ct = r.headers.get('content-type') || '';
         if (!ct.includes('application/json')) {
-            throw new Error('Resposta inesperada do servidor.');
+            const txt = await r.text();
+            console.error('Resposta não-JSON:', txt.substring(0, 300));
+            throw new Error('Resposta inesperada do servidor. Veja o console.');
         }
         return r.json();
     }).then(data => {
