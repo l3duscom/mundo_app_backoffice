@@ -114,13 +114,17 @@ class ContratoDocumentos extends BaseController
      */
     public function visualizar(int $id = null)
     {
-        $documento = $this->documentoModel->find($id);
-        
+        $documento = $this->documentoModel->withDeleted(true)->find($id);
+
         if (!$documento) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Documento não encontrado");
         }
 
-        $contrato = $this->contratoModel->find($documento->contrato_id);
+        $contrato = $this->contratoModel->withDeleted(true)->find($documento->contrato_id);
+
+        if (!$contrato) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Contrato não encontrado");
+        }
 
         $data = [
             'titulo' => 'Visualizar Documento',
