@@ -29,7 +29,7 @@ class LineupModel extends Model
     protected $validationRules = [
         'event_id' => 'required|integer',
         'nome'     => 'required|min_length[2]|max_length[255]',
-        'dia'      => 'permit_empty|valid_date[Y-m-d]',
+        'dia'      => 'permit_empty',
         'tipo'     => 'permit_empty|max_length[60]',
         'ativo'    => 'in_list[0,1]',
     ];

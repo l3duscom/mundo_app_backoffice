@@ -73,12 +73,14 @@ class Lineup extends BaseController
             $dados = [
                 'event_id'  => $post['event_id'] ?? null,
                 'nome'      => trim($post['nome'] ?? ''),
-                'dia'       => !empty($post['dia']) ? $post['dia'] : null,
                 'tipo'      => trim($post['tipo'] ?? ''),
                 'descricao' => $post['descricao'] ?? null,
                 'ordem'     => (int) ($post['ordem'] ?? 0),
                 'ativo'     => isset($post['ativo']) ? 1 : 0,
             ];
+            if (!empty($post['dia'])) {
+                $dados['dia'] = $post['dia'];
+            }
 
             $imagemAtual = null;
             if (!empty($post['id'])) {
