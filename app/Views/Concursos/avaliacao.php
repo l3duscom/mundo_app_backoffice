@@ -47,12 +47,12 @@
                                 <div class="col-lg-4">
                                     <?php if ($inscricao->apoio != null) : ?>
                                         <audio controls class="w-100">
-                                            <source src="<?php echo site_url("concursos/imagem/$inscricao->apoio"); ?>" type="audio/mpeg">
+                                            <source src="https://mundodream.com.br/concursos/imagem/<?= $inscricao->apoio ?>" type="audio/mpeg">
                                             Your browser does not support the audio element.
                                         </audio>
                                     <?php else : ?>
                                         <audio controls class="w-100">
-                                            <source src="<?php echo site_url("concursos/imagem/free.mp3"); ?>" type="audio/mpeg">
+                                            <source src="https://mundodream.com.br/concursos/imagem/free.mp3" type="audio/mpeg">
                                             Your browser does not support the audio element.
                                         </audio>
                                     <?php endif; ?>
@@ -69,7 +69,7 @@
                                     <a href="#" data-bs-toggle="modal" data-bs-target="#comumModal"><strong class="mt-5 btn w-100 btn-primary">Imagem de referência</strong></a>
                                     <hr class="mt-2">
 
-                                    <a href="<?php echo site_url("concursos/imagem/$inscricao->apoio"); ?>">Baixar material de apoio</a>
+                                    <a href="https://mundodream.com.br/concursos/imagem/<?= $inscricao->apoio ?>">Baixar material de apoio</a>
                                 </div>
                                 <div class="col-lg-8">
                                     <?php echo form_open('/', ['id' => 'form']) ?>
@@ -126,7 +126,7 @@
 
                 <div class="card">
                     <div class="card-body">
-                        <img src="<?php echo site_url("concursos/imagem/$inscricao->referencia"); ?>" width="100%" class="mb-2">
+                        <img src="https://mundodream.com.br/concursos/imagem/<?= $inscricao->referencia ?>" width="100%" class="mb-2">
 
                     </div>
                 </div>
