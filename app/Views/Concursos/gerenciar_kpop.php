@@ -205,7 +205,7 @@
                                     <div class="col-lg-3">
                                         <p class="mb-0 text-muted" style="font-size: 10px;">Imagem de Referência</p>
                                         <?php if (!empty($inscricao->referencia)) : ?>
-                                            <a href="<?= site_url("concursos/imagem/$inscricao->referencia"); ?>" target="_blank" class="btn btn-sm btn-outline-info">
+                                            <a href="https://mundodream.com.br/concursos/imagem/<?= $inscricao->referencia ?>" target="_blank" class="btn btn-sm btn-outline-info">
                                                 <i class="bx bx-image"></i> Ver Imagem
                                             </a>
                                         <?php else : ?>
@@ -215,7 +215,7 @@
                                     <div class="col-lg-3">
                                         <p class="mb-0 text-muted" style="font-size: 10px;">Música</p>
                                         <?php if (!empty($inscricao->musica)) : ?>
-                                            <a href="<?= site_url("concursos/imagem/$inscricao->musica"); ?>" target="_blank" class="btn btn-sm btn-outline-success">
+                                            <a href="https://mundodream.com.br/concursos/imagem/<?= $inscricao->musica ?>" target="_blank" class="btn btn-sm btn-outline-success">
                                                 <i class="bx bx-music"></i> Baixar Música
                                             </a>
                                         <?php else : ?>
@@ -225,7 +225,7 @@
                                     <div class="col-lg-3">
                                         <p class="mb-0 text-muted" style="font-size: 10px;">Vídeo LED</p>
                                         <?php if (!empty($inscricao->video_led)) : ?>
-                                            <a href="<?= site_url("concursos/imagem/$inscricao->video_led"); ?>" target="_blank" class="btn btn-sm btn-outline-warning">
+                                            <a href="https://mundodream.com.br/concursos/imagem/<?= $inscricao->video_led ?>" target="_blank" class="btn btn-sm btn-outline-warning">
                                                 <i class="bx bx-video"></i> Baixar Vídeo
                                             </a>
                                         <?php else : ?>
