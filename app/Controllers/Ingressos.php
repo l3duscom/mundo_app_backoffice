@@ -712,21 +712,19 @@ class Ingressos extends BaseController
 			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
 		}
 
-		// Verificar se há evento selecionado no contexto usando helper
-		//$evento_selecionado = evento_selecionado_com_validacao();
-		//$event_id = $evento_selecionado ? $evento_selecionado->id : null;
+		$evento = evento_selecionado_com_validacao();
 
-		// Se não há evento selecionado válido, redirecionar para seleção
-		//if (!$evento_selecionado) {
-			//return redirect()->to(site_url('/'))->with('atencao', 'Selecione um evento primeiro para adicionar ingressos.');
-		//}
+		if (!$evento) {
+			return redirect()->to(site_url('/'))->with('atencao', 'Selecione um evento primeiro para adicionar ingressos.');
+		}
 
-		$event_id = 20;
+		$ticketModel = new \App\Models\TicketModel();
+		$ingressos = $ticketModel->recuperaIngressosPorEvento((int) $evento->id);
+
 		$data = [
-			//'titulo' => 'Add Ingressos ADMIN - ' . esc($evento_selecionado->nome),
-			'event_id' => $event_id,
-			'titulo' => 'Add Ingressos ADMIN' ,
-
+			'titulo'    => 'Add Ingressos ADMIN - ' . esc($evento->nome),
+			'evento'    => $evento,
+			'ingressos' => $ingressos,
 		];
 
 		return view('Carrinho/admin', $data);
