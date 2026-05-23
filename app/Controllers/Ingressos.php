@@ -537,6 +537,7 @@ class Ingressos extends BaseController
 			'pedido' => $pedido,
 			'cliente' => $cliente,
 			'evento' => $evento,
+			'site' => $this->siteDoEvento($evento->nome ?? ''),
 			'ingressos' => [],
 		];
 
@@ -579,6 +580,25 @@ class Ingressos extends BaseController
 		$mpdf->Output($nomeArquivo, 'I');
 
 		exit();
+	}
+
+	/**
+	 * Resolve o site público do evento com base no nome.
+	 * Eventos sem mapeamento explícito caem para o portal principal.
+	 */
+	private function siteDoEvento(string $nomeEvento): string
+	{
+		$nome = mb_strtolower($nomeEvento);
+
+		if (strpos($nome, 'dreamfest') !== false) {
+			return 'www.dreamfest.com.br';
+		}
+
+		if (strpos($nome, 'anime expo') !== false || strpos($nome, 'animexp') !== false) {
+			return 'www.animexp.com.br';
+		}
+
+		return 'www.mundodream.com.br';
 	}
 
 
