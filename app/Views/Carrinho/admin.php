@@ -24,29 +24,49 @@
 <?php echo $this->section('conteudo') ?>
 
 <?php
+$items = [
+    ['tipo' => 'individual', 'nome' => 'CORTESIA - CRIANÇA GRÁTIS',                'preco' => 0],
+    ['tipo' => 'acesso',     'nome' => 'IMPRENSA',                                 'preco' => 0],
+    ['tipo' => 'acesso',     'nome' => 'EMBAIXADOR',                               'preco' => 0],
+    ['tipo' => 'acesso',     'nome' => 'EMBAIXADOR - ACOMPANHANTE',                'preco' => 0],
+    ['tipo' => 'produto',    'nome' => 'FAST PASS SÁBADO',                         'preco' => 0],
+    ['tipo' => 'produto',    'nome' => 'FAST PASS DOMINGO',                        'preco' => 0],
+    ['tipo' => 'social',     'nome' => 'PROJETO SOCIAL CORTESIA',                  'preco' => 0],
+    ['tipo' => 'cinemark',   'nome' => 'Ingresso CINEMARK by Dreamfest 23',        'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'CONVIDADO CORTESIA',                       'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'ACOMPANHANTE CORTESIA',                    'preco' => 0],
+    ['tipo' => 'combo',      'nome' => 'EXPOSITOR CORTESIA',                       'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Ingresso Comum SÁBADO - CORTESIA',         'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Ingresso Comum DOMINGO - CORTESIA',        'preco' => 0],
+    ['tipo' => 'combo',      'nome' => 'Passaporte - CORTESIA',                    'preco' => 0],
+    ['tipo' => 'combo',      'nome' => 'Ingresso VIP FULL CORTESIA',               'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Ingresso VIP FULL Sábado CORTESIA',        'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Ingresso VIP FULL Domingo CORTESIA',       'preco' => 0],
+    ['tipo' => 'combo',      'nome' => 'Ingresso EPIC CORTESIA',                   'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Ingresso EPIC Sábado CORTESIA',            'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Ingresso EPIC Domingo CORTESIA',           'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Cosplayer Paga Meia - SÁBADO CORTESIA',    'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Cosplayer Paga Meia - DOMINGO CORTESIA',   'preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'Cosplayer Paga Meia - PASSAPORTE CORTESIA','preco' => 0],
+    ['tipo' => 'individual', 'nome' => 'AFTER - CORTESIA',                         'preco' => 0],
+];
+
 if (!isset($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
     $_SESSION['carrinho'] = [];
 }
 
 if (isset($_GET['adicionar'])) {
-    $idIngresso = (int) $_GET['adicionar'];
-    $ingressoSelecionado = null;
-    foreach ($ingressos as $ing) {
-        if ((int) $ing->id === $idIngresso) {
-            $ingressoSelecionado = $ing;
-            break;
-        }
-    }
-    if ($ingressoSelecionado) {
-        if (isset($_SESSION['carrinho'][$idIngresso])) {
-            $_SESSION['carrinho'][$idIngresso]['quantidade']++;
+    $idProduto = (int) $_GET['adicionar'];
+    if (isset($items[$idProduto])) {
+        if (isset($_SESSION['carrinho'][$idProduto])) {
+            $_SESSION['carrinho'][$idProduto]['quantidade']++;
         } else {
-            $preco = (float) $ingressoSelecionado->preco;
-            $_SESSION['carrinho'][$idIngresso] = [
+            $preco = (float) $items[$idProduto]['preco'];
+            $_SESSION['carrinho'][$idProduto] = [
                 'quantidade' => 1,
-                'nome'       => $ingressoSelecionado->nome,
+                'nome'       => $items[$idProduto]['nome'],
                 'preco'      => $preco,
-                'tipo'       => $ingressoSelecionado->tipo ?? 'individual',
+                'tipo'       => $items[$idProduto]['tipo'],
                 'taxa'       => 0,
                 'unitario'   => $preco,
             ];
@@ -55,12 +75,12 @@ if (isset($_GET['adicionar'])) {
 }
 
 if (isset($_GET['excluir'])) {
-    $idIngresso = (int) $_GET['excluir'];
-    if (isset($_SESSION['carrinho'][$idIngresso])) {
-        if ($_SESSION['carrinho'][$idIngresso]['quantidade'] > 1) {
-            $_SESSION['carrinho'][$idIngresso]['quantidade']--;
+    $idProduto = (int) $_GET['excluir'];
+    if (isset($_SESSION['carrinho'][$idProduto])) {
+        if ($_SESSION['carrinho'][$idProduto]['quantidade'] > 1) {
+            $_SESSION['carrinho'][$idProduto]['quantidade']--;
         } else {
-            unset($_SESSION['carrinho'][$idIngresso]);
+            unset($_SESSION['carrinho'][$idProduto]);
         }
     }
 }
@@ -95,36 +115,30 @@ $_SESSION['total'] = $total_carrinho;
                     Ingressos disponíveis &mdash; <?= esc($evento->nome) ?>
                 </div>
 
-                <?php if (empty($ingressos)) : ?>
-                    <div class="alert alert-warning">
-                        Nenhum ingresso disponível para este evento.
-                    </div>
-                <?php else : ?>
-                    <?php foreach ($ingressos as $ingresso) : ?>
-                        <?php $qtd = $_SESSION['carrinho'][$ingresso->id]['quantidade'] ?? 0; ?>
-                        <div class="card border border-muted ingresso-card">
-                            <div class="row align-items-center" style="padding: 15px;">
-                                <div class="col-7">
-                                    <span class="font-22" style="color: #6C038F;">
-                                        <strong><?= esc($ingresso->nome) ?></strong>
-                                    </span><br>
-                                    <span class="text-muted"><?= esc($evento->nome) ?></span>
-                                </div>
-                                <div class="col-5 d-flex flex-row-reverse align-items-center ingresso-qtd">
-                                    <strong style="font-size: 26px;">
-                                        <a href="?excluir=<?= (int) $ingresso->id ?>">
-                                            <i class="bx bx-minus-circle" style="padding-right: 10px;"></i>
-                                        </a>
-                                        <?= $qtd ?>
-                                        <a href="?adicionar=<?= (int) $ingresso->id ?>">
-                                            <i class="bx bx-plus-circle" style="padding-left: 10px;"></i>
-                                        </a>
-                                    </strong>
-                                </div>
+                <?php foreach ($items as $key => $value) : ?>
+                    <?php $qtd = $_SESSION['carrinho'][$key]['quantidade'] ?? 0; ?>
+                    <div class="card border border-muted ingresso-card">
+                        <div class="row align-items-center" style="padding: 15px;">
+                            <div class="col-7">
+                                <span class="font-22" style="color: #6C038F;">
+                                    <strong><?= esc($value['nome']) ?></strong>
+                                </span><br>
+                                <span class="text-muted"><?= esc($evento->nome) ?></span>
+                            </div>
+                            <div class="col-5 d-flex flex-row-reverse align-items-center ingresso-qtd">
+                                <strong style="font-size: 26px;">
+                                    <a href="?excluir=<?= $key ?>">
+                                        <i class="bx bx-minus-circle" style="padding-right: 10px;"></i>
+                                    </a>
+                                    <?= $qtd ?>
+                                    <a href="?adicionar=<?= $key ?>">
+                                        <i class="bx bx-plus-circle" style="padding-left: 10px;"></i>
+                                    </a>
+                                </strong>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
 
                 <div class="mt-4" style="padding: 5px;">
                     <?php if (!empty($_SESSION['carrinho'])) : ?>

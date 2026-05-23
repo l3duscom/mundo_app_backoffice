@@ -718,13 +718,9 @@ class Ingressos extends BaseController
 			return redirect()->to(site_url('/'))->with('atencao', 'Selecione um evento primeiro para adicionar ingressos.');
 		}
 
-		$ticketModel = new \App\Models\TicketModel();
-		$ingressos = $ticketModel->recuperaIngressosPorEvento((int) $evento->id);
-
 		$data = [
-			'titulo'    => 'Add Ingressos ADMIN - ' . esc($evento->nome),
-			'evento'    => $evento,
-			'ingressos' => $ingressos,
+			'titulo' => 'Add Ingressos ADMIN - ' . esc($evento->nome),
+			'evento' => $evento,
 		];
 
 		return view('Carrinho/admin', $data);
