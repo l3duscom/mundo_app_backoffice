@@ -32,7 +32,18 @@
 
     <!--breadcrumb-->
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
-        <div class="breadcrumb-title pe-3">Ingressos do Pedido <strong><?= $pedido->cod_pedido ?></strong></div>
+        <div class="breadcrumb-title pe-3">
+            Ingressos do Pedido <strong><?= $pedido->cod_pedido ?></strong>
+            <?php if (!empty($pedido->cupom_codigo)) : ?>
+                <span class="badge bg-success ms-2" title="<?= esc($pedido->cupom_nome ?? '') ?>">
+                    <i class="bx bx-purchase-tag"></i>
+                    Cupom: <?= esc($pedido->cupom_codigo) ?>
+                    <?php if (!empty($pedido->valor_desconto) && (float) $pedido->valor_desconto > 0) : ?>
+                        &mdash; R$ <?= number_format((float) $pedido->valor_desconto, 2, ',', '.') ?>
+                    <?php endif; ?>
+                </span>
+            <?php endif; ?>
+        </div>
         <div class="ms-auto">
             <div class="btn-group" style="padding-right: 30px;">
                 <?php if ($pedido->frete == 1) : ?>

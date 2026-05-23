@@ -374,6 +374,12 @@ class Pedidos extends BaseController
 		$data = [];
 
 		foreach ($pedidos as $pedido) {
+			$cupomBadge = '<span class="text-muted">&mdash;</span>';
+			if (!empty($pedido->cupom_codigo)) {
+				$cupomBadge = '<span class="badge bg-success" title="' . esc($pedido->cupom_nome ?? '') . '">'
+					. esc($pedido->cupom_codigo) . '</span>';
+			}
+
 			$data[] = [
 
 				'cod_pedido' => anchor("pedidos/ingressos/" . $pedido->id, esc($pedido->cod_pedido), 'title="Exibir usuário ' . esc($pedido->cod_pedido) . ' "'),
@@ -385,6 +391,7 @@ class Pedidos extends BaseController
 				'frete' => $pedido->frete,
 				'status_entrega' => esc($pedido->status_entrega),
 				'rastreio' => esc($pedido->rastreio),
+				'cupom' => $cupomBadge,
 			];
 		}
 

@@ -310,10 +310,14 @@ ORDER BY p11.updated_at DESC;
             'pedidos.frete',
             'pedidos.total',
             'pedidos.evento_id',
+            'pedidos.cupom_id',
+            'pedidos.valor_desconto',
             'clientes.email',
             'clientes.telefone',
             'clientes.nome',
-            'clientes.cpf'
+            'clientes.cpf',
+            'cupons.codigo as cupom_codigo',
+            'cupons.nome as cupom_nome',
 
         ];
 
@@ -322,6 +326,7 @@ ORDER BY p11.updated_at DESC;
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
             ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('cupons', 'cupons.id = pedidos.cupom_id', 'left')
             ->where('pedidos.evento_id', $event_id)
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
             ->orderBy('pedidos.created_at', 'DESC')
@@ -472,13 +477,18 @@ ORDER BY p11.updated_at DESC;
             'pedidos.frete',
             'pedidos.total',
             'pedidos.evento_id',
-            'pedidos.user_id'
+            'pedidos.user_id',
+            'pedidos.cupom_id',
+            'pedidos.valor_desconto',
+            'cupons.codigo as cupom_codigo',
+            'cupons.nome as cupom_nome',
 
         ];
 
 
 
         return $this->select($atributos)
+            ->join('cupons', 'cupons.id = pedidos.cupom_id', 'left')
             ->find($id);
     }
 

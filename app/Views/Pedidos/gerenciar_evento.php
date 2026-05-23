@@ -118,6 +118,7 @@
                                 <th>CPF</th>
                                 <th>Frete</th>
                                 <th>Rastreio</th>
+                                <th>Cupom</th>
                             </tr>
                         </thead>
                     </table>
@@ -211,6 +212,9 @@
 
                 {
                     "data": "rastreio"
+                },
+                {
+                    "data": "cupom"
                 },
             ],
             "order": [],
