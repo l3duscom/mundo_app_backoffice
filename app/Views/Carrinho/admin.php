@@ -55,32 +55,22 @@ if (!isset($_SESSION['carrinho']) || !is_array($_SESSION['carrinho'])) {
     $_SESSION['carrinho'] = [];
 }
 
-if (isset($_GET['adicionar'])) {
-    $idProduto = (int) $_GET['adicionar'];
+if (isset($_GET['setar']) && isset($_GET['qtd'])) {
+    $idProduto = (int) $_GET['setar'];
+    $qtdDesejada = max(0, (int) $_GET['qtd']);
     if (isset($items[$idProduto])) {
-        if (isset($_SESSION['carrinho'][$idProduto])) {
-            $_SESSION['carrinho'][$idProduto]['quantidade']++;
+        if ($qtdDesejada <= 0) {
+            unset($_SESSION['carrinho'][$idProduto]);
         } else {
             $preco = (float) $items[$idProduto]['preco'];
             $_SESSION['carrinho'][$idProduto] = [
-                'quantidade' => 1,
+                'quantidade' => $qtdDesejada,
                 'nome'       => $items[$idProduto]['nome'],
                 'preco'      => $preco,
                 'tipo'       => $items[$idProduto]['tipo'],
                 'taxa'       => 0,
                 'unitario'   => $preco,
             ];
-        }
-    }
-}
-
-if (isset($_GET['excluir'])) {
-    $idProduto = (int) $_GET['excluir'];
-    if (isset($_SESSION['carrinho'][$idProduto])) {
-        if ($_SESSION['carrinho'][$idProduto]['quantidade'] > 1) {
-            $_SESSION['carrinho'][$idProduto]['quantidade']--;
-        } else {
-            unset($_SESSION['carrinho'][$idProduto]);
         }
     }
 }
@@ -119,22 +109,21 @@ $_SESSION['total'] = $total_carrinho;
                     <?php $qtd = $_SESSION['carrinho'][$key]['quantidade'] ?? 0; ?>
                     <div class="card border border-muted ingresso-card">
                         <div class="row align-items-center" style="padding: 15px;">
-                            <div class="col-7">
+                            <div class="col-md-7 col-12 mb-2 mb-md-0">
                                 <span class="font-22" style="color: #6C038F;">
                                     <strong><?= esc($value['nome']) ?></strong>
                                 </span><br>
                                 <span class="text-muted"><?= esc($evento->nome) ?></span>
                             </div>
-                            <div class="col-5 d-flex flex-row-reverse align-items-center ingresso-qtd">
-                                <strong style="font-size: 26px;">
-                                    <a href="?excluir=<?= $key ?>">
-                                        <i class="bx bx-minus-circle" style="padding-right: 10px;"></i>
-                                    </a>
-                                    <?= $qtd ?>
-                                    <a href="?adicionar=<?= $key ?>">
-                                        <i class="bx bx-plus-circle" style="padding-left: 10px;"></i>
-                                    </a>
-                                </strong>
+                            <div class="col-md-5 col-12">
+                                <form method="get" class="d-flex justify-content-md-end align-items-center gap-2">
+                                    <input type="hidden" name="setar" value="<?= $key ?>">
+                                    <input type="number" name="qtd" min="0" value="<?= (int) $qtd ?>"
+                                           class="form-control form-control-sm" style="max-width: 90px;">
+                                    <button type="submit" class="btn btn-purple btn-sm" style="background-color: #6C038F; color: #fff;">
+                                        Confirmar
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
