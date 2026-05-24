@@ -145,6 +145,7 @@
                     <table id="tabelaLeads" class="table table-striped table-bordered" style="width:100%">
                         <thead>
                             <tr>
+                                <th class="text-center" style="width: 50px;">#</th>
                                 <th>Cliente</th>
                                 <th class="text-center" style="width: 90px;">Contato</th>
                                 <th class="text-center">Ingressos</th>
@@ -155,6 +156,7 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <?php $posicao = 1; ?>
                             <?php foreach ($leads as $lead) : ?>
                                 <?php
                                 $telefone = preg_replace('/[^0-9]/', '', $lead['telefone'] ?? '');
@@ -169,6 +171,7 @@
                                 if ($status === 'revertido')     { $badgeClass = 'bg-success'; $badgeLabel = 'Revertido'; }
                                 ?>
                                 <tr>
+                                    <td class="text-center fw-bold"><?= $posicao ?>º</td>
                                     <td>
                                         <strong><?= esc($lead['nome']) ?></strong><br>
                                         <small class="text-muted"><?= esc($lead['email']) ?></small>
@@ -206,6 +209,7 @@
                                         </button>
                                     </td>
                                 </tr>
+                                <?php $posicao++; ?>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -298,7 +302,7 @@ $(document).ready(function() {
                 url: '<?php echo site_url("recursos/theme/plugins/datatable/js/pt-BR.json"); ?>'
             },
             pageLength: 25,
-            order: [[3, 'desc']]
+            order: [[4, 'desc']]
         });
     }
 });
