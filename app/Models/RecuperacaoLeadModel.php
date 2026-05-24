@@ -54,6 +54,7 @@ class RecuperacaoLeadModel extends Model
                   AND p.deleted_at IS NULL
                   AND i.deleted_at IS NULL
                   AND i.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
+                  AND i.nome NOT LIKE '%cortesia%'
                 GROUP BY i.user_id
             ) o
             INNER JOIN usuarios u ON u.id = o.user_id
@@ -67,6 +68,7 @@ class RecuperacaoLeadModel extends Model
                   AND p2.deleted_at IS NULL
                   AND i2.deleted_at IS NULL
                   AND i2.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
+                  AND i2.nome NOT LIKE '%cortesia%'
             ) destino ON destino.user_id = o.user_id
             WHERE destino.user_id IS NULL
             ORDER BY o.valor_total_origem DESC
