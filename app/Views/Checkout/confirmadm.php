@@ -79,7 +79,7 @@ $total = $total_parcial - ($total_parcial / 100 * $desconto);
                         <form method="POST" action="<?= site_url('Checkout/finalizaradm') ?>">
                             <?= csrf_field() ?>
                             <input type="hidden" name="valor_total" id="valor_total" value="<?= $total * 100 ?>" required>
-                            <input type="hidden" name="convite" value="<?= $_SESSION['convite'] ?>">
+                            <input type="hidden" name="convite" value="<?= $_SESSION['convite'] ?? '' ?>">
 
 
                             <div class="d-flex align-items-center mt-0">

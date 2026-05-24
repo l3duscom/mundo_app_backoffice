@@ -13,7 +13,8 @@
       "Bash(php -r \"echo PHP_VERSION;\")",
       "Bash(php -r 'require '\\\\''vendor/autoload.php'\\\\''; $m = new App\\\\Models\\\\LineupModel\\(\\); echo '\\\\''Model OK'\\\\'' . PHP_EOL; $c = new App\\\\Controllers\\\\Lineup\\(\\); echo '\\\\''Controller OK'\\\\'' . PHP_EOL;')",
       "Bash(grep -n 'recuperacao\\\\|recuperacao-leads\\\\|recuperacaoLeads\\\\|^$routes->add' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Routes.php)",
-      "Bash(grep -n '^$routes->' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Routes.php)"
+      "Bash(grep -n '^$routes->' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Routes.php)",
+      "Bash(grep -n 'convite\\\\|$_SESSION' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Checkout/confirmadm.php)"
     ]
   }
 }
