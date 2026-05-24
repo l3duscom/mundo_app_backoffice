@@ -2,15 +2,21 @@
 
 namespace App\Controllers;
 
+use App\Services\ResendService;
+
 class RecuperacaoLeads extends BaseController
 {
     private $recuperacaoLeadModel;
     private $eventoModel;
+    private $usuarioModel;
+    private $resendService;
 
     public function __construct()
     {
         $this->recuperacaoLeadModel = new \App\Models\RecuperacaoLeadModel();
         $this->eventoModel = new \App\Models\EventoModel();
+        $this->usuarioModel = new \App\Models\UsuarioModel();
+        $this->resendService = new ResendService();
     }
 
     public function index()
@@ -117,6 +123,56 @@ class RecuperacaoLeads extends BaseController
 
         return $this->response->setJSON([
             'sucesso' => 'Status atualizado.',
+            'token'   => csrf_hash(),
+        ]);
+    }
+
+    public function enviarEmail()
+    {
+        if (! $this->usuarioLogado()->is_admin) {
+            return $this->response->setJSON(['erro' => 'Sem permissão.', 'token' => csrf_hash()]);
+        }
+
+        $eventoDestino = evento_selecionado_com_validacao();
+        if (! $eventoDestino) {
+            return $this->response->setJSON(['erro' => 'Selecione um evento primeiro.', 'token' => csrf_hash()]);
+        }
+
+        $userId         = (int) $this->request->getPost('user_id');
+        $eventoOrigemId = (int) $this->request->getPost('evento_origem_id');
+        $assunto        = trim((string) $this->request->getPost('assunto'));
+        $mensagem       = trim((string) $this->request->getPost('mensagem'));
+
+        if (! $userId || ! $eventoOrigemId || $assunto === '' || $mensagem === '') {
+            return $this->response->setJSON(['erro' => 'Preencha assunto e mensagem.', 'token' => csrf_hash()]);
+        }
+
+        $usuario = $this->usuarioModel->find($userId);
+        if (! $usuario || empty($usuario->email)) {
+            return $this->response->setJSON(['erro' => 'Usuário sem e-mail cadastrado.', 'token' => csrf_hash()]);
+        }
+
+        $html = '<div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333;">'
+              . nl2br(esc($mensagem))
+              . '</div>';
+
+        try {
+            $this->resendService->enviarEmail($usuario->email, $assunto, $html);
+        } catch (\Throwable $e) {
+            log_message('error', 'Falha ao enviar email de recuperação: ' . $e->getMessage());
+            return $this->response->setJSON(['erro' => 'Falha ao enviar e-mail. Tente novamente.', 'token' => csrf_hash()]);
+        }
+
+        $this->recuperacaoLeadModel->definirStatus(
+            $userId,
+            $eventoOrigemId,
+            (int) $eventoDestino->id,
+            'contato_feito',
+            'E-mail enviado em ' . date('d/m/Y H:i') . ': ' . $assunto
+        );
+
+        return $this->response->setJSON([
+            'sucesso' => 'E-mail enviado para ' . $usuario->email . '.',
             'token'   => csrf_hash(),
         ]);
     }

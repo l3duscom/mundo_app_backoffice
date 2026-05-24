@@ -31,6 +31,20 @@
         text-decoration: none;
     }
     .whatsapp-btn:hover { background: #128C7E; color: white; }
+    .email-btn {
+        background: #6C038F;
+        color: white;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border: 0;
+        margin-left: 4px;
+    }
+    .email-btn:hover { background: #4a0263; color: white; }
 </style>
 <?php echo $this->endSection() ?>
 
@@ -132,7 +146,7 @@
                         <thead>
                             <tr>
                                 <th>Cliente</th>
-                                <th class="text-center" style="width: 50px;">WA</th>
+                                <th class="text-center" style="width: 90px;">Contato</th>
                                 <th class="text-center">Ingressos</th>
                                 <th class="text-end">Valor origem</th>
                                 <th class="text-center">Última compra</th>
@@ -164,7 +178,14 @@
                                             <a href="https://wa.me/<?= $telefone ?>" target="_blank" class="whatsapp-btn" title="<?= esc($lead['telefone']) ?>">
                                                 <i class="bx bxl-whatsapp"></i>
                                             </a>
-                                        <?php else : ?>
+                                        <?php endif; ?>
+                                        <?php if (! empty($lead['email'])) : ?>
+                                            <button type="button" class="email-btn" title="Enviar e-mail"
+                                                    onclick="abrirModalEmail(<?= (int) $lead['user_id'] ?>, '<?= esc(addslashes($lead['nome'])) ?>', '<?= esc(addslashes($lead['email'])) ?>')">
+                                                <i class="bx bx-envelope"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                        <?php if (empty($telefone) && empty($lead['email'])) : ?>
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>
                                     </td>
@@ -193,6 +214,38 @@
         </div>
     </div>
 <?php endif; ?>
+
+<div class="modal fade" id="modalEmail" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#6C038F; color:#fff;">
+                <h5 class="modal-title"><i class="bx bx-envelope me-2"></i>Enviar e-mail</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="email_user_id">
+                <p class="mb-3">Para: <strong id="email_destinatario"></strong></p>
+
+                <div class="mb-3">
+                    <label class="form-label">Assunto</label>
+                    <input type="text" class="form-control" id="email_assunto" maxlength="200" placeholder="Ex.: Você não pode perder o <?= esc($eventoDestino->nome) ?>!">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mensagem</label>
+                    <textarea class="form-control" id="email_mensagem" rows="10" placeholder="Escreva a mensagem que será enviada por e-mail..."></textarea>
+                    <div class="form-text">Quebras de linha são preservadas. HTML é escapado.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn" style="background:#6C038F; color:#fff;" id="btn_enviar_email" onclick="enviarEmail()">
+                    <i class="bx bx-send me-1"></i>Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="modalStatus" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -261,6 +314,61 @@ function abrirModalStatus(userId, nome, status, observacao) {
 
     var modal = new bootstrap.Modal(document.getElementById('modalStatus'));
     modal.show();
+}
+
+function abrirModalEmail(userId, nome, email) {
+    $('#email_user_id').val(userId);
+    $('#email_destinatario').text(nome + ' <' + email + '>');
+    $('#email_assunto').val('');
+    $('#email_mensagem').val('');
+    var modal = new bootstrap.Modal(document.getElementById('modalEmail'));
+    modal.show();
+}
+
+function enviarEmail() {
+    var assunto = $('#email_assunto').val().trim();
+    var mensagem = $('#email_mensagem').val().trim();
+
+    if (!assunto || !mensagem) {
+        alert('Preencha assunto e mensagem.');
+        return;
+    }
+
+    var $btn = $('#btn_enviar_email');
+    $btn.prop('disabled', true).html('<i class="bx bx-loader bx-spin me-1"></i>Enviando...');
+
+    var postData = {
+        user_id: $('#email_user_id').val(),
+        evento_origem_id: eventoOrigemIdAtual,
+        assunto: assunto,
+        mensagem: mensagem
+    };
+    postData['<?php echo csrf_token(); ?>'] = csrfToken;
+
+    $.ajax({
+        url: '<?php echo site_url("recuperacao-leads/enviar-email"); ?>',
+        type: 'POST',
+        data: postData,
+        dataType: 'json',
+        success: function(response) {
+            if (response.token) {
+                csrfToken = response.token;
+            }
+            if (response.sucesso) {
+                alert(response.sucesso);
+                bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();
+                location.reload();
+            } else if (response.erro) {
+                alert('Erro: ' + response.erro);
+            }
+        },
+        error: function() {
+            alert('Erro ao enviar e-mail.');
+        },
+        complete: function() {
+            $btn.prop('disabled', false).html('<i class="bx bx-send me-1"></i>Enviar');
+        }
+    });
 }
 
 function salvarStatus() {

@@ -610,6 +610,7 @@ $routes->group('logs', function ($routes) {
 $routes->group('recuperacao-leads', function ($routes) {
     $routes->get('/', 'RecuperacaoLeads::index');
     $routes->post('salvar', 'RecuperacaoLeads::salvar');
+    $routes->post('enviar-email', 'RecuperacaoLeads::enviarEmail');
 });
 
 
