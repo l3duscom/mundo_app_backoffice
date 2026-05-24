@@ -146,12 +146,45 @@ class RecuperacaoLeads extends BaseController
         $this->recuperacaoLeadModel->marcaRevertidos($eventoDestino->id);
         $leads = $this->recuperacaoLeadModel->listaLeads($eventoOrigemId, (int) $eventoDestino->id);
 
-        $nomeArquivo = 'recuperacao-leads-' . date('Y-m-d-His') . '.csv';
+        $limitePorArquivo = 1950;
+        $chunks = array_chunk($leads, $limitePorArquivo);
+        $timestamp = date('Y-m-d-His');
 
-        $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $nomeArquivo . '"');
+        if (count($chunks) <= 1) {
+            $nomeArquivo = 'recuperacao-leads-' . $timestamp . '.csv';
+
+            $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+            $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $nomeArquivo . '"');
+            $this->response->setHeader('Cache-Control', 'no-store, no-cache');
+
+            return $this->response->setBody($this->gerarCsvLeads($chunks[0] ?? []));
+        }
+
+        $tempZip = tempnam(sys_get_temp_dir(), 'leads_') . '.zip';
+        $zip = new \ZipArchive();
+        if ($zip->open($tempZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return redirect()->back()->with('atencao', 'Falha ao gerar o ZIP. Tente novamente.');
+        }
+
+        foreach ($chunks as $i => $chunk) {
+            $parte = str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT);
+            $zip->addFromString("recuperacao-leads-{$timestamp}-parte-{$parte}.csv", $this->gerarCsvLeads($chunk));
+        }
+        $zip->close();
+
+        $nomeArquivoZip = 'recuperacao-leads-' . $timestamp . '.zip';
+        $conteudo = file_get_contents($tempZip);
+        @unlink($tempZip);
+
+        $this->response->setHeader('Content-Type', 'application/zip');
+        $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $nomeArquivoZip . '"');
         $this->response->setHeader('Cache-Control', 'no-store, no-cache');
 
+        return $this->response->setBody($conteudo);
+    }
+
+    private function gerarCsvLeads(array $leads): string
+    {
         $output = fopen('php://temp', 'r+');
         fwrite($output, "\xEF\xBB\xBF");
         fputcsv($output, ['Nome completo', 'Telefone'], ',');
@@ -167,7 +200,7 @@ class RecuperacaoLeads extends BaseController
         $csv = stream_get_contents($output);
         fclose($output);
 
-        return $this->response->setBody($csv);
+        return $csv;
     }
 
     public function enviarEmail()
