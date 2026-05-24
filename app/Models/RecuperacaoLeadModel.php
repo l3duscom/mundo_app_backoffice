@@ -34,50 +34,81 @@ class RecuperacaoLeadModel extends Model
                 u.nome,
                 u.email,
                 c.telefone,
-                COUNT(DISTINCT p.id) AS total_pedidos_origem,
-                SUM(i.quantidade) AS total_ingressos_origem,
-                SUM(i.valor) AS valor_total_origem,
-                MIN(p.created_at) AS primeira_compra_origem,
-                MAX(p.created_at) AS ultima_compra_origem,
-                rl.id AS recuperacao_id,
-                rl.status AS recuperacao_status,
-                rl.observacao AS recuperacao_observacao,
-                rl.updated_at AS recuperacao_atualizado_em
-            FROM ingressos i
-            INNER JOIN pedidos p ON p.id = i.pedido_id
-            INNER JOIN usuarios u ON u.id = i.user_id
-            LEFT JOIN clientes c ON c.usuario_id = u.id
-            LEFT JOIN recuperacao_leads rl
-                   ON rl.user_id = u.id
-                  AND rl.evento_origem_id = ?
-                  AND rl.evento_destino_id = ?
-                  AND rl.deleted_at IS NULL
-            WHERE p.evento_id = ?
-              AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
-              AND i.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
-              AND i.deleted_at IS NULL
-              AND p.deleted_at IS NULL
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM ingressos i2
-                  INNER JOIN pedidos p2 ON p2.id = i2.pedido_id
-                  WHERE i2.user_id = u.id
-                    AND p2.evento_id = ?
-                    AND p2.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
-                    AND i2.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
-                    AND i2.deleted_at IS NULL
-                    AND p2.deleted_at IS NULL
-              )
-            GROUP BY u.id, u.nome, u.email, c.telefone, rl.id, rl.status, rl.observacao, rl.updated_at
-            ORDER BY valor_total_origem DESC
+                o.total_pedidos_origem,
+                o.total_ingressos_origem,
+                o.valor_total_origem,
+                o.primeira_compra_origem,
+                o.ultima_compra_origem
+            FROM (
+                SELECT
+                    i.user_id,
+                    COUNT(DISTINCT p.id) AS total_pedidos_origem,
+                    SUM(i.quantidade)    AS total_ingressos_origem,
+                    SUM(i.valor)         AS valor_total_origem,
+                    MIN(p.created_at)    AS primeira_compra_origem,
+                    MAX(p.created_at)    AS ultima_compra_origem
+                FROM pedidos p
+                INNER JOIN ingressos i ON i.pedido_id = p.id
+                WHERE p.evento_id = ?
+                  AND p.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+                  AND p.deleted_at IS NULL
+                  AND i.deleted_at IS NULL
+                  AND i.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
+                GROUP BY i.user_id
+            ) o
+            INNER JOIN usuarios u ON u.id = o.user_id
+            LEFT JOIN clientes  c ON c.usuario_id = u.id
+            LEFT JOIN (
+                SELECT DISTINCT i2.user_id
+                FROM pedidos p2
+                INNER JOIN ingressos i2 ON i2.pedido_id = p2.id
+                WHERE p2.evento_id = ?
+                  AND p2.status IN ('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')
+                  AND p2.deleted_at IS NULL
+                  AND i2.deleted_at IS NULL
+                  AND i2.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
+            ) destino ON destino.user_id = o.user_id
+            WHERE destino.user_id IS NULL
+            ORDER BY o.valor_total_origem DESC
         ";
 
-        return $this->db->query($sql, [
-            $eventoOrigemId,
-            $eventoDestinoId,
-            $eventoOrigemId,
-            $eventoDestinoId,
-        ])->getResultArray();
+        $leads = $this->db->query($sql, [$eventoOrigemId, $eventoDestinoId])->getResultArray();
+
+        if (empty($leads)) {
+            return [];
+        }
+
+        $userIds = array_map(static fn ($l) => (int) $l['user_id'], $leads);
+        $placeholders = implode(',', array_fill(0, count($userIds), '?'));
+
+        $sqlRec = "
+            SELECT user_id, id AS recuperacao_id, status AS recuperacao_status,
+                   observacao AS recuperacao_observacao, updated_at AS recuperacao_atualizado_em
+            FROM recuperacao_leads
+            WHERE evento_origem_id = ?
+              AND evento_destino_id = ?
+              AND deleted_at IS NULL
+              AND user_id IN ($placeholders)
+        ";
+
+        $bindings = array_merge([$eventoOrigemId, $eventoDestinoId], $userIds);
+        $recs = $this->db->query($sqlRec, $bindings)->getResultArray();
+
+        $recByUser = [];
+        foreach ($recs as $r) {
+            $recByUser[(int) $r['user_id']] = $r;
+        }
+
+        foreach ($leads as &$lead) {
+            $rec = $recByUser[(int) $lead['user_id']] ?? null;
+            $lead['recuperacao_id']            = $rec['recuperacao_id'] ?? null;
+            $lead['recuperacao_status']        = $rec['recuperacao_status'] ?? null;
+            $lead['recuperacao_observacao']    = $rec['recuperacao_observacao'] ?? null;
+            $lead['recuperacao_atualizado_em'] = $rec['recuperacao_atualizado_em'] ?? null;
+        }
+        unset($lead);
+
+        return $leads;
     }
 
     /**
