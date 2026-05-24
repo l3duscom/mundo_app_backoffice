@@ -440,6 +440,12 @@
                                 <div class="menu-title">Cupons</div>
                             </a>
                         </li>
+                        <li>
+                            <a href="<?php echo site_url('/recuperacao-leads'); ?>">
+                                <div class="parent-icon"><i class="bx bx-target-lock"></i></div>
+                                <div class="menu-title">Recuperação de Leads</div>
+                            </a>
+                        </li>
                     <?php endif; ?>
                     <hr>
                     <li class="menu-label">RELATÓRIOS</li>

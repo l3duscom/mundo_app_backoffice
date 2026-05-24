@@ -607,6 +607,11 @@ $routes->group('logs', function ($routes) {
     $routes->get('view/(:any)', 'Logs::view/$1');
 });
 
+$routes->group('recuperacao-leads', function ($routes) {
+    $routes->get('/', 'RecuperacaoLeads::index');
+    $routes->post('salvar', 'RecuperacaoLeads::salvar');
+});
+
 
 /*
  * --------------------------------------------------------------------
