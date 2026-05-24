@@ -86,9 +86,17 @@
             </div>
         </form>
 
-        <div class="mt-3 text-muted small">
-            Evento atual (destino): <strong><?= esc($eventoDestino->nome) ?></strong> &mdash;
-            mostraremos quem comprou no evento de origem mas <strong>ainda não comprou</strong> aqui.
+        <div class="mt-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div class="text-muted small">
+                Evento atual (destino): <strong><?= esc($eventoDestino->nome) ?></strong> &mdash;
+                mostraremos quem comprou no evento de origem mas <strong>ainda não comprou</strong> aqui.
+            </div>
+            <?php if ($eventoOrigemId > 0) : ?>
+                <a href="<?= site_url('/recuperacao-leads/exportar-csv?evento_origem_id=' . $eventoOrigemId) ?>"
+                   class="btn btn-success btn-sm">
+                    <i class="bx bx-download"></i> Exportar CSV (nome + telefone)
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 </div>

@@ -127,6 +127,49 @@ class RecuperacaoLeads extends BaseController
         ]);
     }
 
+    public function exportarCsv()
+    {
+        if (! $this->usuarioLogado()->is_admin) {
+            return redirect()->back()->with('atencao', 'Sem permissão.');
+        }
+
+        $eventoDestino = evento_selecionado_com_validacao();
+        if (! $eventoDestino) {
+            return redirect()->to(site_url('/'))->with('atencao', 'Selecione um evento primeiro.');
+        }
+
+        $eventoOrigemId = (int) $this->request->getGet('evento_origem_id');
+        if (! $eventoOrigemId) {
+            return redirect()->to(site_url('/recuperacao-leads'))->with('atencao', 'Escolha um evento de origem.');
+        }
+
+        $this->recuperacaoLeadModel->marcaRevertidos($eventoDestino->id);
+        $leads = $this->recuperacaoLeadModel->listaLeads($eventoOrigemId, (int) $eventoDestino->id);
+
+        $nomeArquivo = 'recuperacao-leads-' . date('Y-m-d-His') . '.csv';
+
+        $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $nomeArquivo . '"');
+        $this->response->setHeader('Cache-Control', 'no-store, no-cache');
+
+        $output = fopen('php://temp', 'r+');
+        fwrite($output, "\xEF\xBB\xBF");
+        fputcsv($output, ['Nome completo', 'Telefone'], ',');
+
+        foreach ($leads as $lead) {
+            fputcsv($output, [
+                $lead['nome'] ?? '',
+                $lead['telefone'] ?? '',
+            ], ',');
+        }
+
+        rewind($output);
+        $csv = stream_get_contents($output);
+        fclose($output);
+
+        return $this->response->setBody($csv);
+    }
+
     public function enviarEmail()
     {
         if (! $this->usuarioLogado()->is_admin) {
