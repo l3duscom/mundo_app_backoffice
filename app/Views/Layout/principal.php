@@ -422,6 +422,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo site_url('/banners?evento_id=' . evento_selecionado()); ?>">
+                                <div class="parent-icon"><i class="bx bx-images"></i>
+                                </div>
+                                <div class="menu-title">Banners</div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo site_url('/espacos?event_id=' . evento_selecionado()); ?>">
                                 <div class="parent-icon"><i class="bx bx-map-pin"></i>
                                 </div>
