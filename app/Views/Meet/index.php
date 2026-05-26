@@ -85,19 +85,26 @@
                                 <div><i class="bx bx-group"></i> Quantidade: <strong><?= (int) $item->quantidade ?></strong></div>
                             </div>
                             <div class="d-flex justify-content-end">
+                                <?php
+                                $payload = json_encode([
+                                    "id"           => $item->id,
+                                    "artista"      => $item->artista,
+                                    "dia"          => $item->dia,
+                                    "tipo"         => $item->tipo,
+                                    "quantidade"   => (int) $item->quantidade,
+                                    "data_meet"    => $item->data_meet ? date("Y-m-d", strtotime((string) $item->data_meet)) : "",
+                                    "hora_inicial" => $item->hora_inicial ? substr((string) $item->hora_inicial, 0, 5) : "",
+                                    "hora_final"   => $item->hora_final ? substr((string) $item->hora_final, 0, 5) : "",
+                                ], JSON_HEX_APOS | JSON_HEX_QUOT);
+                                ?>
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-primary"
-                                        onclick='editarMeet(<?= json_encode([
-                                            "id"           => $item->id,
-                                            "artista"      => $item->artista,
-                                            "dia"          => $item->dia,
-                                            "tipo"         => $item->tipo,
-                                            "quantidade"   => (int) $item->quantidade,
-                                            "data_meet"    => $item->data_meet ? date("Y-m-d", strtotime((string) $item->data_meet)) : "",
-                                            "hora_inicial" => $item->hora_inicial ? substr((string) $item->hora_inicial, 0, 5) : "",
-                                            "hora_final"   => $item->hora_final ? substr((string) $item->hora_final, 0, 5) : "",
-                                        ], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)' title="Editar">
+                                        onclick='editarMeet(<?= $payload ?>)' title="Editar">
                                         <i class="bx bx-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info"
+                                        onclick='duplicarMeet(<?= $payload ?>)' title="Duplicar">
+                                        <i class="bx bx-copy"></i>
                                     </button>
                                     <button type="button" class="btn btn-outline-danger" onclick="excluirMeet(<?= $item->id ?>)" title="Excluir">
                                         <i class="bx bx-trash"></i>
@@ -222,9 +229,8 @@ function novoMeet() {
     new bootstrap.Modal(document.getElementById('modalMeet')).show();
 }
 
-function editarMeet(item) {
+function preencherFormulario(item) {
     document.getElementById('formMeet').reset();
-    document.getElementById('mt_id').value           = item.id;
     document.getElementById('mt_artista').value      = item.artista || '';
     document.getElementById('mt_dia').value          = item.dia || '';
     document.getElementById('mt_tipo').value         = item.tipo || '';
@@ -232,7 +238,19 @@ function editarMeet(item) {
     document.getElementById('mt_data_meet').value    = item.data_meet || '';
     document.getElementById('mt_hora_inicial').value = item.hora_inicial || '';
     document.getElementById('mt_hora_final').value   = item.hora_final || '';
+}
+
+function editarMeet(item) {
+    preencherFormulario(item);
+    document.getElementById('mt_id').value = item.id;
     document.getElementById('modalMeetTitulo').innerHTML = '<i class="bx bx-edit me-2"></i>Editar Meet &amp; Greet';
+    new bootstrap.Modal(document.getElementById('modalMeet')).show();
+}
+
+function duplicarMeet(item) {
+    preencherFormulario(item);
+    document.getElementById('mt_id').value = '';
+    document.getElementById('modalMeetTitulo').innerHTML = '<i class="bx bx-copy me-2"></i>Duplicar Meet &amp; Greet';
     new bootstrap.Modal(document.getElementById('modalMeet')).show();
 }
 
