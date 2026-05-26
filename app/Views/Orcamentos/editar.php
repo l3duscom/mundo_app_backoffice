@@ -52,15 +52,83 @@
 <script src="<?php echo site_url('recursos/theme/'); ?>plugins/input-mask/jquery.mask.min.js"></script>
 
 <script>
+var itemIndex = <?php echo isset($itens) ? count($itens) : 1; ?>;
+
 $(document).ready(function() {
+    function aplicarMascaras() {
+        $('.money').mask('#.##0,00', {reverse: true});
+    }
+
+    function calcularTotal() {
+        var total = 0;
+        $('.item-row').each(function() {
+            var qtd = parseFloat($(this).find('.item-qtd').val()) || 0;
+            var valorStr = $(this).find('.item-valor').val() || '0';
+            var valor = parseFloat(valorStr.replace(/\./g, '').replace(',', '.')) || 0;
+            total += qtd * valor;
+        });
+        $('#valorTotal').text('R$ ' + total.toLocaleString('pt-BR', {minimumFractionDigits: 2}));
+    }
+
+    function calcularTotalItem(row) {
+        var qtd = parseFloat(row.find('.item-qtd').val()) || 0;
+        var valorStr = row.find('.item-valor').val() || '0';
+        var valor = parseFloat(valorStr.replace(/\./g, '').replace(',', '.')) || 0;
+        var total = qtd * valor;
+        row.find('.item-total').val(total.toLocaleString('pt-BR', {minimumFractionDigits: 2}));
+    }
+
+    $('#btnAdicionarItem').click(function() {
+        var html = `
+        <div class="row item-row mb-2" data-index="${itemIndex}">
+            <div class="col-md-5">
+                <input type="text" name="itens[${itemIndex}][descricao]" class="form-control form-control-sm" placeholder="Descrição do item">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="itens[${itemIndex}][quantidade]" class="form-control form-control-sm item-qtd" placeholder="Qtd" step="0.01" value="1">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="itens[${itemIndex}][valor_unitario]" class="form-control form-control-sm money item-valor" placeholder="0,00">
+            </div>
+            <div class="col-md-2">
+                <input type="text" class="form-control form-control-sm item-total" readonly placeholder="0,00">
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-sm btn-danger btn-remover-item"><i class="bx bx-trash"></i></button>
+            </div>
+        </div>`;
+        $('#container-itens').append(html);
+        itemIndex++;
+        aplicarMascaras();
+    });
+
+    $(document).on('click', '.btn-remover-item', function() {
+        if ($('.item-row').length > 1) {
+            $(this).closest('.item-row').remove();
+            calcularTotal();
+        }
+    });
+
+    $(document).on('input', '.item-qtd', function() {
+        var row = $(this).closest('.item-row');
+        calcularTotalItem(row);
+        calcularTotal();
+    });
+
+    $(document).on('keyup', '.item-valor', function() {
+        var row = $(this).closest('.item-row');
+        calcularTotalItem(row);
+        calcularTotal();
+    });
+
     $('#formOrcamento').on('submit', function(e) {
         e.preventDefault();
-        
+
         var form = $(this);
         var btn = form.find('button[type="submit"]');
-        
+
         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Salvando...');
-        
+
         $.ajax({
             url: '<?php echo site_url("orcamentos/atualizar"); ?>',
             type: 'POST',
@@ -68,13 +136,13 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(response) {
                 $('[name="csrf_test_name"]').val(response.token);
-                
+
                 if (response.erro) {
                     alert(response.erro);
                     btn.prop('disabled', false).html('<i class="bx bx-save me-2"></i>Salvar Alterações');
                     return;
                 }
-                
+
                 if (response.redirect) {
                     window.location.href = response.redirect;
                 }
@@ -85,6 +153,9 @@ $(document).ready(function() {
             }
         });
     });
+
+    aplicarMascaras();
+    calcularTotal();
 });
 </script>
 

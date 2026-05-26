@@ -307,9 +307,9 @@ class Orcamentos extends BaseController
             return $this->response->setJSON($retorno);
         }
 
-        // Validar tamanho (10MB)
-        if ($file->getSize() > 10485760) {
-            $retorno['erro'] = 'Arquivo muito grande. Máximo 10MB.';
+        // Validar tamanho (99MB)
+        if ($file->getSize() > 103809024) {
+            $retorno['erro'] = 'Arquivo muito grande. Máximo 99MB.';
             return $this->response->setJSON($retorno);
         }
 

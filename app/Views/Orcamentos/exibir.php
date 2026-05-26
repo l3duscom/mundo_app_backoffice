@@ -63,6 +63,12 @@
                 <li><a class="dropdown-item btn-alterar-situacao text-danger" href="#" data-situacao="cancelado">
                     <i class="bx bx-x-circle me-2"></i>Cancelar</a></li>
                 <?php endif; ?>
+
+                <?php if ($orcamento->situacao == 'cancelado'): ?>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item btn-alterar-situacao text-warning" href="#" data-situacao="rascunho">
+                    <i class="bx bx-undo me-2"></i>Descancelar (voltar para rascunho)</a></li>
+                <?php endif; ?>
             </ul>
         </div>
         <a href="<?php echo site_url('orcamentos'); ?>" class="btn btn-secondary ms-2">
@@ -343,7 +349,7 @@
                     <div class="mb-3">
                         <label class="form-label">Arquivo (PDF ou Imagem)</label>
                         <input type="file" name="arquivo" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" required>
-                        <small class="text-muted">Máximo: 10MB</small>
+                        <small class="text-muted">Máximo: 99MB</small>
                     </div>
                 </form>
             </div>
