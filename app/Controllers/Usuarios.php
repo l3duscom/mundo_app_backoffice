@@ -734,16 +734,28 @@ class Usuarios extends BaseController
 
 
     /**
-     * Exibe o formulário de edição do perfil do usuário logado
+     * Exibe o formulário de edição do perfil do usuário logado.
+     * Expositores são redirecionados para a tela específica de expositor.
      */
     public function perfil()
     {
         $usuario = usuario_logado();
+
+        $expositorModel = new \App\Models\ExpositorModel();
+        $expositor = $expositorModel->where('usuario_id', $usuario->id)->first();
+        if ($expositor) {
+            return redirect()->to(site_url('expositores/meuPerfil'));
+        }
+
         $clienteModel = new \App\Models\ClienteModel();
         $cliente = $clienteModel->where('usuario_id', $usuario->id)->first();
 
+        if (!$cliente) {
+            return redirect()->to(site_url('/'))->with('atencao', 'Cadastro não encontrado para este usuário.');
+        }
+
         $data = [
-            'titulo' => 'Meu Perfil',
+            'titulo'  => 'Meu Perfil',
             'usuario' => $usuario,
             'cliente' => $cliente,
         ];

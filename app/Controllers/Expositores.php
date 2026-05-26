@@ -271,6 +271,85 @@ class Expositores extends BaseController
         return $this->response->setJSON($retorno);
     }
 
+    /**
+     * Tela para o próprio expositor editar seu cadastro.
+     */
+    public function meuPerfil()
+    {
+        $usuario = $this->usuarioLogado();
+
+        $expositor = $this->expositorModel->where('usuario_id', $usuario->id)->first();
+        if (!$expositor) {
+            return redirect()->to(site_url('/'))->with('atencao', 'Cadastro de expositor não encontrado. Procure o suporte.');
+        }
+
+        $this->removeBlockCepSessao();
+
+        $data = [
+            'titulo'    => 'Meu Perfil',
+            'expositor' => $expositor,
+        ];
+
+        return view('Expositores/meu_perfil', $data);
+    }
+
+    /**
+     * Salva o cadastro do próprio expositor logado (AJAX).
+     * Ignora o id do POST para evitar que um expositor edite outro.
+     */
+    public function atualizarMeuPerfil()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno = ['token' => csrf_hash()];
+
+        if (session()->get('blockCep') === true) {
+            $retorno['erro']        = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['cep' => 'Informe um CEP válido'];
+            return $this->response->setJSON($retorno);
+        }
+
+        $usuario   = $this->usuarioLogado();
+        $expositor = $this->expositorModel->where('usuario_id', $usuario->id)->first();
+
+        if (!$expositor) {
+            $retorno['erro'] = 'Cadastro de expositor não encontrado.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $post = $this->request->getPost();
+
+        $validacaoDocumento = $this->validaDocumento($post['documento'] ?? '', $post['tipo_pessoa'] ?? 'pf');
+        if ($validacaoDocumento !== true) {
+            $retorno['erro']        = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['documento' => $validacaoDocumento];
+            return $this->response->setJSON($retorno);
+        }
+
+        $post['documento'] = preg_replace('/[^0-9]/', '', $post['documento'] ?? '');
+
+        unset($post['id'], $post['usuario_id'], $post['ativo'], $post['asaas_customer_id']);
+
+        $expositor->fill($post);
+
+        if ($expositor->hasChanged() === false) {
+            $retorno['info'] = 'Não há dados para atualizar';
+            return $this->response->setJSON($retorno);
+        }
+
+        if ($this->expositorModel->save($expositor)) {
+            $retorno['sucesso'] = 'Dados salvos com sucesso!';
+            return $this->response->setJSON($retorno);
+        }
+
+        $retorno['erro']        = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model'] = $this->expositorModel->errors();
+
+        return $this->response->setJSON($retorno);
+    }
+
     public function excluir(int $id = null)
     {
         if (!$this->usuarioLogado()->temPermissaoPara('excluir-expositores')) {
