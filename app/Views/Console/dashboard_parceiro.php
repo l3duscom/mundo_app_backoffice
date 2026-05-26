@@ -361,7 +361,7 @@
                     <?php endif; ?>
 
                     <!-- DOCUMENTOS DO CONTRATO -->
-                    <?php $docsLiberados = $pagamentoCompleto && !$contratoBloqueado; ?>
+                    <?php $docsLiberados = !$contratoBloqueado; ?>
                     <div class="mt-4">
                         <h6 class="mb-3"><i class="bi bi-file-earmark-text text-primary me-2"></i>Documentos do Contrato</h6>
 
@@ -369,11 +369,6 @@
                         <div class="alert alert-danger py-2 small">
                             <i class="bi bi-lock-fill me-2"></i>
                             Documentos indisponíveis: contrato <?= strtolower($contrato->getMotivoBloqueio()) ?>.
-                        </div>
-                        <?php elseif (!$pagamentoCompleto) : ?>
-                        <div class="alert alert-secondary py-2 small">
-                            <i class="bi bi-lock-fill me-2"></i>
-                            Os documentos estarão disponíveis após a confirmação do pagamento completo.
                         </div>
                         <?php endif; ?>
                         
