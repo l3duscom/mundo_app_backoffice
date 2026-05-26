@@ -352,10 +352,11 @@ $porcentagemPaga = $valorAPagar > 0 ? round(($contrato->valor_pago / $valorAPaga
                             </thead>
                             <tbody>
                                 <?php foreach ($todosDocumentos as $doc): ?>
-                                <tr class="<?php echo $doc->id === $documento->id ? 'table-primary' : ''; ?>">
+                                <?php $isAtual = $documento && $doc->id === $documento->id; ?>
+                                <tr class="<?php echo $isAtual ? 'table-primary' : ''; ?>">
                                     <td>
                                         <?php echo esc($doc->titulo); ?>
-                                        <?php if ($doc->id === $documento->id): ?>
+                                        <?php if ($isAtual): ?>
                                             <span class="badge bg-primary ms-1">Atual</span>
                                         <?php endif; ?>
                                     </td>
