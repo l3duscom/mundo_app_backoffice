@@ -145,8 +145,8 @@
                         <div class="col-md-7">
                             <div class="mb-3">
                                 <label class="form-label">Link de destino</label>
-                                <input type="url" class="form-control" name="link" id="bn_link" placeholder="https://...">
-                                <small class="text-muted">Opcional — para onde o usuário vai ao clicar.</small>
+                                <input type="text" class="form-control" name="link" id="bn_link" placeholder="https://... ou rota interna do app">
+                                <small class="text-muted">Opcional — URL completa ou identificador de tela do app.</small>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
