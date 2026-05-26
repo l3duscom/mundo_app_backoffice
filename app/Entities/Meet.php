@@ -8,11 +8,30 @@ class Meet extends Entity
 {
 
     protected $dates = [
+        'data_meet',
         'created_at',
         'updated_at',
         'deleted_at',
     ];
 
+    public function getDataMeetFormatada(): string
+    {
+        if (!$this->data_meet) {
+            return '-';
+        }
+        return date('d/m/Y', strtotime((string) $this->data_meet));
+    }
+
+    public function getHorarioFormatado(): string
+    {
+        $ini = $this->hora_inicial ? substr((string) $this->hora_inicial, 0, 5) : null;
+        $fim = $this->hora_final ? substr((string) $this->hora_final, 0, 5) : null;
+
+        if ($ini && $fim) {
+            return $ini . ' às ' . $fim;
+        }
+        return $ini ?? $fim ?? '-';
+    }
 
     public function exibeSituacao()
     {

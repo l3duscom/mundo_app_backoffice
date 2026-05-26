@@ -429,6 +429,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo site_url('/meet'); ?>">
+                                <div class="parent-icon"><i class="bx bx-star"></i>
+                                </div>
+                                <div class="menu-title">Meet &amp; Greet</div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo site_url('/espacos?event_id=' . evento_selecionado()); ?>">
                                 <div class="parent-icon"><i class="bx bx-map-pin"></i>
                                 </div>

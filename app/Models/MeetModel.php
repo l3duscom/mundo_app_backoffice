@@ -18,8 +18,6 @@ class MeetModel extends Model
         'hora_final',
         'quantidade',
         'tipo',
-        'cretade_at',
-
     ];
 
     // Dates
@@ -33,12 +31,31 @@ class MeetModel extends Model
 
     // Validation
     protected $validationRules = [
-        'artista' => 'required',
-
+        'event_id'   => 'required|integer',
+        'artista'    => 'required|min_length[2]|max_length[255]',
+        'dia'        => 'permit_empty|max_length[50]',
+        'tipo'       => 'permit_empty|max_length[50]',
+        'quantidade' => 'permit_empty|integer',
     ];
 
+    protected $validationMessages = [
+        'event_id' => [
+            'required' => 'O evento é obrigatório.',
+        ],
+        'artista' => [
+            'required'   => 'O nome do artista é obrigatório.',
+            'min_length' => 'O nome do artista precisa ter pelo menos 2 caracteres.',
+        ],
+    ];
 
-    protected $validationMessages = [];
+    public function getByEvento(int $eventId): array
+    {
+        return $this->where('event_id', $eventId)
+            ->orderBy('data_meet', 'ASC')
+            ->orderBy('hora_inicial', 'ASC')
+            ->orderBy('artista', 'ASC')
+            ->findAll();
+    }
 
     public function recuperaMeetForDay(int $event_id)
     {
