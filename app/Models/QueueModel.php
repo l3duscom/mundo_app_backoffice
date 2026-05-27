@@ -91,6 +91,38 @@ class QueueModel extends Model
 
     public function recuperaQueueAll(int $user_id) {}
 
+    public function recuperaPorCodigo(string $code)
+    {
+        $atributos = [
+            'queue_meet.id',
+            'queue_meet.user_id',
+            'queue_meet.meet_id',
+            'queue_meet.ingresso_id',
+            'queue_meet.ordem',
+            'queue_meet.code',
+            'queue_meet.status',
+            'queue_meet.created_at',
+            'queue_meet.updated_at',
+            'meet.artista',
+            'meet.dia',
+            'meet.data_meet',
+            'meet.hora_inicial',
+            'meet.tipo',
+            'meet.event_id',
+            'usuarios.nome AS usuario_nome',
+            'usuarios.email AS usuario_email',
+            'ingressos.nome AS ingresso_nome',
+            'ingressos.codigo AS ingresso_codigo',
+        ];
+
+        return $this->select($atributos)
+            ->join('meet', 'meet.id = queue_meet.meet_id')
+            ->join('usuarios', 'usuarios.id = queue_meet.user_id', 'left')
+            ->join('ingressos', 'ingressos.id = queue_meet.ingresso_id', 'left')
+            ->where('queue_meet.code', $code)
+            ->first();
+    }
+
     public function recuperaQueueAllByUser(int $ingresso_id)
     {
 

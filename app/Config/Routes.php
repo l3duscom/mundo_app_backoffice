@@ -47,6 +47,10 @@ $routes->post('import-csv', 'DeclarationsController::importCsv');
 $routes->get('eventos/buscar', 'Eventos::buscarEventos');
 $routes->post('cron', 'Cron::index');
 
+// Validação de Meet & Greet
+$routes->get('meets/validar', 'Meets::validar');
+$routes->post('meets/validar-code', 'Meets::validarCode');
+
 $routes->group(
     'cron',
     function ($routes) {
