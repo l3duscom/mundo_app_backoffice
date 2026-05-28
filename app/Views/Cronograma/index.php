@@ -3,12 +3,15 @@
 <?php echo $this->section('titulo') ?> <?php echo $titulo; ?> <?php echo $this->endSection() ?>
 
 <?php echo $this->section('estilos') ?>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/material_blue.css">
 <style>
     .cronograma-card .card-header { cursor: pointer; }
     .cronograma-card .toggle-icon { transition: transform 0.2s; }
     .cronograma-card.collapsed .toggle-icon { transform: rotate(-90deg); }
     .item-row td { vertical-align: middle; }
     .status-select { min-width: 140px; }
+    .flatpickr-input[readonly] { background-color: #fff; cursor: pointer; }
 </style>
 <?php echo $this->endSection() ?>
 
@@ -159,11 +162,11 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Data/Hora Início</label>
-                            <input type="datetime-local" class="form-control" name="data_hora_inicio" id="item_inicio">
+                            <input type="text" class="form-control flatpickr-datetime" name="data_hora_inicio" id="item_inicio" placeholder="dd/mm/aaaa hh:mm" autocomplete="off">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Data/Hora Fim</label>
-                            <input type="datetime-local" class="form-control" name="data_hora_fim" id="item_fim">
+                            <input type="text" class="form-control flatpickr-datetime" name="data_hora_fim" id="item_fim" placeholder="dd/mm/aaaa hh:mm" autocomplete="off">
                         </div>
                     </div>
                     <div class="mb-3">
@@ -192,9 +195,24 @@
 <?php echo $this->endSection() ?>
 
 <?php echo $this->section('scripts') ?>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/pt.js"></script>
 <script>
 let csrfToken = '<?= csrf_hash() ?>';
 const csrfName = '<?= csrf_token() ?>';
+
+const FLATPICKR_OPTS = {
+    enableTime: true,
+    time_24hr: true,
+    locale: 'pt',
+    dateFormat: 'Y-m-d H:i',
+    altInput: true,
+    altFormat: 'd/m/Y H:i',
+    minuteIncrement: 5,
+    allowInput: true,
+};
+
+let fpInicio, fpFim;
 
 const URL_SALVAR_CRON      = '<?= site_url('cronograma/salvar') ?>';
 const URL_EXCLUIR_CRON     = '<?= site_url('cronograma/excluir') ?>';
@@ -328,6 +346,8 @@ function novoItem(cronogramaId) {
     document.getElementById('item_cronograma_id').value = cronogramaId;
     document.getElementById('item_ativo').checked = true;
     document.getElementById('item_status').value = 'AGUARDANDO';
+    if (fpInicio) fpInicio.clear();
+    if (fpFim) fpFim.clear();
     document.getElementById('modalItemTitulo').innerHTML = '<i class="bx bx-list-ul me-2"></i>Novo Item';
     new bootstrap.Modal(document.getElementById('modalItem')).show();
 }
@@ -336,8 +356,10 @@ function editarItem(item, cronogramaId) {
     document.getElementById('item_id').value = item.id;
     document.getElementById('item_cronograma_id').value = cronogramaId;
     document.getElementById('item_nome').value = item.nome_item;
-    document.getElementById('item_inicio').value = item.inicio_raw || '';
-    document.getElementById('item_fim').value = item.fim_raw || '';
+    const inicio = (item.inicio_raw || '').replace('T', ' ');
+    const fim    = (item.fim_raw || '').replace('T', ' ');
+    if (fpInicio) inicio ? fpInicio.setDate(inicio, true) : fpInicio.clear();
+    if (fpFim)    fim    ? fpFim.setDate(fim, true)       : fpFim.clear();
     document.getElementById('item_status').value = item.status_raw;
     document.getElementById('item_ativo').checked = item.ativo == 1;
     document.getElementById('modalItemTitulo').innerHTML = '<i class="bx bx-edit me-2"></i>Editar Item';
@@ -394,6 +416,9 @@ function alterarStatus(id, status, cronogramaId) {
 
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', () => {
+    fpInicio = flatpickr('#item_inicio', FLATPICKR_OPTS);
+    fpFim    = flatpickr('#item_fim', FLATPICKR_OPTS);
+
     document.querySelectorAll('.cronograma-card').forEach(card => {
         const id = card.dataset.cronogramaId;
         carregarItens(id);
