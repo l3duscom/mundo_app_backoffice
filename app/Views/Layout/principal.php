@@ -415,6 +415,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo site_url('/checklist-modelos?event_id=' . evento_selecionado()); ?>">
+                                <div class="parent-icon"><i class="bx bx-list-check"></i>
+                                </div>
+                                <div class="menu-title">Modelos de Checklist</div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo site_url('/cronograma?evento_id=' . evento_selecionado()); ?>">
                                 <div class="parent-icon"><i class="bx bx-time-five"></i>
                                 </div>
