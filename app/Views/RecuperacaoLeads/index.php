@@ -45,6 +45,24 @@
         margin-left: 4px;
     }
     .email-btn:hover { background: #4a0263; color: white; }
+    .copy-phone {
+        font-size: 0.72rem;
+        font-family: monospace;
+        color: #555;
+        background: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 2px 5px;
+        cursor: pointer;
+        white-space: nowrap;
+        display: inline-block;
+        margin-left: 4px;
+        vertical-align: middle;
+        transition: background 0.2s, color 0.2s;
+        user-select: none;
+    }
+    .copy-phone:hover { background: #25D366; color: white; border-color: #25D366; }
+    .copy-phone.copied { background: #128C7E; color: white; border-color: #128C7E; }
 </style>
 <?php echo $this->endSection() ?>
 
@@ -189,6 +207,7 @@
                                             <a href="https://wa.me/<?= $telefone ?>" target="_blank" class="whatsapp-btn" title="<?= esc($lead['telefone']) ?>">
                                                 <i class="bx bxl-whatsapp"></i>
                                             </a>
+                                            <span class="copy-phone" onclick="copiarTelefone(this, '<?= $telefone ?>')" title="Clique para copiar"><?= $telefone ?></span>
                                         <?php endif; ?>
                                         <?php if (! empty($lead['email'])) : ?>
                                             <button type="button" class="email-btn" title="Enviar e-mail"
@@ -380,6 +399,33 @@ function enviarEmail() {
         complete: function() {
             $btn.prop('disabled', false).html('<i class="bx bx-send me-1"></i>Enviar');
         }
+    });
+}
+
+function copiarTelefone(el, numero) {
+    navigator.clipboard.writeText(numero).then(function() {
+        var original = el.textContent;
+        el.textContent = '✓ Copiado!';
+        el.classList.add('copied');
+        setTimeout(function() {
+            el.textContent = original;
+            el.classList.remove('copied');
+        }, 1800);
+    }).catch(function() {
+        // Fallback para navegadores mais antigos
+        var tmp = document.createElement('input');
+        tmp.value = numero;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        var original = el.textContent;
+        el.textContent = '✓ Copiado!';
+        el.classList.add('copied');
+        setTimeout(function() {
+            el.textContent = original;
+            el.classList.remove('copied');
+        }, 1800);
     });
 }
 
