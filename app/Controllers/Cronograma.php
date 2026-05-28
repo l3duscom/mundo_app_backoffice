@@ -155,47 +155,64 @@ class Cronograma extends BaseController
             return redirect()->back();
         }
 
-        $retorno['token'] = csrf_hash();
+        $retorno = ['token' => csrf_hash()];
 
-        $post = $this->request->getPost();
+        try {
+            $post = $this->request->getPost();
 
-        $inicio = !empty($post['data_hora_inicio']) ? str_replace('T', ' ', $post['data_hora_inicio']) : null;
-        $fim    = !empty($post['data_hora_fim']) ? str_replace('T', ' ', $post['data_hora_fim']) : null;
+            $cronogramaId = (int) ($post['cronograma_id'] ?? 0);
+            if ($cronogramaId <= 0 || !$this->cronogramaModel->find($cronogramaId)) {
+                $retorno['erro'] = 'Cronograma inválido ou inexistente.';
+                return $this->response->setJSON($retorno);
+            }
 
-        if ($inicio && strlen($inicio) === 16) {
-            $inicio .= ':00';
-        }
-        if ($fim && strlen($fim) === 16) {
-            $fim .= ':00';
-        }
+            $inicio = !empty($post['data_hora_inicio']) ? str_replace('T', ' ', $post['data_hora_inicio']) : null;
+            $fim    = !empty($post['data_hora_fim']) ? str_replace('T', ' ', $post['data_hora_fim']) : null;
 
-        if ($inicio && $fim && strtotime($fim) < strtotime($inicio)) {
-            $retorno['erro'] = 'A data/hora de fim não pode ser anterior à de início.';
+            if ($inicio && strlen($inicio) === 16) {
+                $inicio .= ':00';
+            }
+            if ($fim && strlen($fim) === 16) {
+                $fim .= ':00';
+            }
+
+            if ($inicio && $fim && strtotime($fim) < strtotime($inicio)) {
+                $retorno['erro'] = 'A data/hora de fim não pode ser anterior à de início.';
+                return $this->response->setJSON($retorno);
+            }
+
+            $dados = [
+                'cronograma_id'    => $cronogramaId,
+                'nome_item'        => trim($post['nome_item'] ?? ''),
+                'data_hora_inicio' => $inicio,
+                'data_hora_fim'    => $fim,
+                'status'           => $post['status'] ?? 'AGUARDANDO',
+                'ativo'            => isset($post['ativo']) ? 1 : 0,
+            ];
+
+            if (!empty($post['id'])) {
+                $dados['id'] = $post['id'];
+            }
+
+            if ($this->itemModel->save($dados)) {
+                $retorno['sucesso'] = !empty($post['id']) ? 'Item atualizado!' : 'Item adicionado!';
+                $retorno['id']      = $post['id'] ?? $this->itemModel->getInsertID();
+                return $this->response->setJSON($retorno);
+            }
+
+            $retorno['erro']        = 'Erro ao salvar item.';
+            $retorno['erros_model'] = $this->itemModel->errors();
             return $this->response->setJSON($retorno);
+
+        } catch (\Throwable $e) {
+            log_message('error', '[CRONOGRAMA/SALVARITEM] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            $retorno['erro']  = 'Exceção: ' . $e->getMessage();
+            $retorno['debug'] = [
+                'tipo'    => get_class($e),
+                'arquivo' => basename($e->getFile()) . ':' . $e->getLine(),
+            ];
+            return $this->response->setStatusCode(200)->setJSON($retorno);
         }
-
-        $dados = [
-            'cronograma_id'    => $post['cronograma_id'] ?? null,
-            'nome_item'        => trim($post['nome_item'] ?? ''),
-            'data_hora_inicio' => $inicio,
-            'data_hora_fim'    => $fim,
-            'status'           => $post['status'] ?? 'AGUARDANDO',
-            'ativo'            => isset($post['ativo']) ? 1 : 0,
-        ];
-
-        if (!empty($post['id'])) {
-            $dados['id'] = $post['id'];
-        }
-
-        if ($this->itemModel->save($dados)) {
-            $retorno['sucesso'] = !empty($post['id']) ? 'Item atualizado!' : 'Item adicionado!';
-            $retorno['id']      = $post['id'] ?? $this->itemModel->getInsertID();
-            return $this->response->setJSON($retorno);
-        }
-
-        $retorno['erro']        = 'Erro ao salvar item.';
-        $retorno['erros_model'] = $this->itemModel->errors();
-        return $this->response->setJSON($retorno);
     }
 
     /**
