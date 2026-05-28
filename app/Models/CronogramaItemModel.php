@@ -31,8 +31,8 @@ class CronogramaItemModel extends Model
     protected $validationRules      = [
         'cronograma_id'     => 'required|integer',
         'nome_item'         => 'required|min_length[3]|max_length[255]',
-        'data_hora_inicio'  => 'permit_empty|valid_date[Y-m-d H:i:s]',
-        'data_hora_fim'     => 'permit_empty|valid_date[Y-m-d H:i:s]',
+        'data_hora_inicio'  => 'permit_empty|valid_date',
+        'data_hora_fim'     => 'permit_empty|valid_date',
         'ativo'             => 'in_list[0,1]',
         'status'            => 'in_list[AGUARDANDO,EM_ANDAMENTO,CONCLUIDO,CANCELADO]',
     ];

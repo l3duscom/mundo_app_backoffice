@@ -205,11 +205,12 @@ class Cronograma extends BaseController
             return $this->response->setJSON($retorno);
 
         } catch (\Throwable $e) {
-            log_message('error', '[CRONOGRAMA/SALVARITEM] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+            log_message('error', '[CRONOGRAMA/SALVARITEM] ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine() . "\n" . $e->getTraceAsString());
             $retorno['erro']  = 'Exceção: ' . $e->getMessage();
             $retorno['debug'] = [
                 'tipo'    => get_class($e),
                 'arquivo' => basename($e->getFile()) . ':' . $e->getLine(),
+                'trace'   => array_slice(explode("\n", $e->getTraceAsString()), 0, 5),
             ];
             return $this->response->setStatusCode(200)->setJSON($retorno);
         }
