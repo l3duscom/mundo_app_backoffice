@@ -23,6 +23,8 @@ class Pedidos extends BaseController
 	private $dadosEnvioModel;
 	private $bonusModel;
 	private $pedidoOrderBumpModel;
+	private $ticketModel;
+	private $ingressoTrocaModel;
 
 
 
@@ -40,6 +42,8 @@ class Pedidos extends BaseController
 		$this->dadosEnvioModel = new \App\Models\DadosEnvioModel();
 		$this->bonusModel = new \App\Models\BonusModel();
 		$this->pedidoOrderBumpModel = new \App\Models\PedidoOrderBumpModel();
+		$this->ticketModel = new \App\Models\TicketModel();
+		$this->ingressoTrocaModel = new \App\Models\IngressoTrocaModel();
 	}
 
 	public function index()
@@ -749,6 +753,10 @@ class Pedidos extends BaseController
 		// Buscar order bumps do pedido
 		$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
 
+		// Histórico de trocas por ingresso
+		$ingressoIds = array_map(fn($i) => (int) $i->id, $ingressos);
+		$trocasPorIngresso = $this->ingressoTrocaModel->historicoPorIngressos($ingressoIds);
+
 		$data = [
 			'titulo' => 'Ingressos do pedido' . esc($pedido->cod_pedido),
 			'todos' => $todos,
@@ -761,6 +769,7 @@ class Pedidos extends BaseController
 			'ultimoAcessoPorIngresso' => $ultimoAcessoPorIngresso,
 			'bonus_por_ingresso' => $bonus_por_ingresso,
 			'orderBumps' => $orderBumps,
+			'trocasPorIngresso' => $trocasPorIngresso,
 		];
 
 
@@ -1338,6 +1347,149 @@ class Pedidos extends BaseController
 		}
 
 		return $this->response->setJSON(['erro' => true, 'mensagem' => 'Erro ao marcar como usado']);
+	}
+
+	/**
+	 * Lista tickets disponíveis para troca de dia de um ingresso (AJAX).
+	 * Filtra pelo mesmo evento, mesmo tipo e mesma categoria do ticket original.
+	 */
+	public function trocaListar($ingresso_id = null)
+	{
+		if (!$this->request->isAJAX()) {
+			return redirect()->back();
+		}
+
+		$retorno = ['token' => csrf_hash()];
+
+		$ingresso_id = (int) $ingresso_id;
+		$ingresso = $this->ingressoModel->find($ingresso_id);
+		if (!$ingresso) {
+			$retorno['erro'] = 'Ingresso não encontrado.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$ticketAtual = $this->ticketModel->find((int) $ingresso->ticket_id);
+		if (!$ticketAtual) {
+			$retorno['erro'] = 'Ticket original do ingresso não encontrado. Não é possível filtrar por tipo/categoria.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$disponiveis = $this->ticketModel
+			->where('event_id', $ticketAtual->event_id)
+			->where('tipo', $ticketAtual->tipo)
+			->where('categoria', $ticketAtual->categoria)
+			->where('id !=', $ticketAtual->id)
+			->where('ativo', 1)
+			->orderBy('dia', 'ASC')
+			->orderBy('nome', 'ASC')
+			->findAll();
+
+		$data = [];
+		foreach ($disponiveis as $t) {
+			$data[] = [
+				'id'        => (int) $t->id,
+				'nome'      => esc($t->nome),
+				'dia'       => $t->dia,
+				'tipo'      => $t->tipo,
+				'categoria' => $t->categoria,
+				'lote'      => $t->lote,
+			];
+		}
+
+		$retorno['ticket_atual'] = [
+			'id'        => (int) $ticketAtual->id,
+			'nome'      => esc($ticketAtual->nome),
+			'dia'       => $ticketAtual->dia,
+			'tipo'      => $ticketAtual->tipo,
+			'categoria' => $ticketAtual->categoria,
+		];
+		$retorno['ingresso_nome_atual'] = esc($ingresso->nome);
+		$retorno['disponiveis'] = $data;
+
+		return $this->response->setJSON($retorno);
+	}
+
+	/**
+	 * Executa a troca de dia de um ingresso (AJAX).
+	 * Valida que o ticket destino é do mesmo tipo/categoria do ticket original.
+	 * Atualiza ingressos.ticket_id e ingressos.nome e registra no histórico.
+	 */
+	public function trocaExecutar()
+	{
+		if (!$this->request->isAJAX()) {
+			return redirect()->back();
+		}
+
+		$retorno = ['token' => csrf_hash()];
+
+		$ingresso_id    = (int) $this->request->getPost('ingresso_id');
+		$ticket_id_novo = (int) $this->request->getPost('ticket_id_novo');
+		$motivo         = trim((string) $this->request->getPost('motivo'));
+
+		if ($ingresso_id <= 0 || $ticket_id_novo <= 0) {
+			$retorno['erro'] = 'Parâmetros inválidos.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$ingresso = $this->ingressoModel->find($ingresso_id);
+		if (!$ingresso) {
+			$retorno['erro'] = 'Ingresso não encontrado.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$ticketAtual = $this->ticketModel->find((int) $ingresso->ticket_id);
+		if (!$ticketAtual) {
+			$retorno['erro'] = 'Ticket original do ingresso não encontrado.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$ticketNovo = $this->ticketModel->find($ticket_id_novo);
+		if (!$ticketNovo) {
+			$retorno['erro'] = 'Ticket de destino não encontrado.';
+			return $this->response->setJSON($retorno);
+		}
+
+		if ((int) $ticketNovo->id === (int) $ticketAtual->id) {
+			$retorno['erro'] = 'O ticket de destino é igual ao atual.';
+			return $this->response->setJSON($retorno);
+		}
+
+		if ($ticketNovo->event_id != $ticketAtual->event_id
+			|| $ticketNovo->tipo !== $ticketAtual->tipo
+			|| $ticketNovo->categoria !== $ticketAtual->categoria) {
+			$retorno['erro'] = 'A troca só é permitida entre ingressos do mesmo evento, tipo e categoria.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$db = \Config\Database::connect();
+		$db->transStart();
+
+		$this->ingressoModel->update($ingresso_id, [
+			'ticket_id' => (int) $ticketNovo->id,
+			'nome'      => $ticketNovo->nome,
+		]);
+
+		$operadorId = $this->usuarioLogado()->id ?? null;
+
+		$this->ingressoTrocaModel->insert([
+			'ingresso_id'        => $ingresso_id,
+			'ticket_id_anterior' => (int) $ticketAtual->id,
+			'ticket_id_novo'     => (int) $ticketNovo->id,
+			'nome_anterior'      => $ingresso->nome,
+			'nome_novo'          => $ticketNovo->nome,
+			'operador_id'        => $operadorId,
+			'motivo'             => $motivo !== '' ? $motivo : null,
+		]);
+
+		$db->transComplete();
+
+		if ($db->transStatus() === false) {
+			$retorno['erro'] = 'Falha ao registrar a troca.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$retorno['sucesso'] = 'Ingresso trocado com sucesso!';
+		return $this->response->setJSON($retorno);
 	}
 }
 

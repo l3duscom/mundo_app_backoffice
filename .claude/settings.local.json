@@ -16,7 +16,14 @@
       "Bash(grep -n '^$routes->' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Routes.php)",
       "Bash(grep -n 'convite\\\\|$_SESSION' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Checkout/confirmadm.php)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(grep -n \"protected \\\\$\" \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Pedidos.php\")",
+      "Bash(awk 'END { print NR }' \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Pedidos.php\")",
+      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Pedidos.php\")",
+      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Models/IngressoTrocaModel.php\")",
+      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Entities/IngressoTroca.php\")",
+      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Database/Migrations/2026-05-28-100000_CreateIngressoTrocasTable.php\")",
+      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Pedidos/ingressos.php\")"
     ]
   }
 }

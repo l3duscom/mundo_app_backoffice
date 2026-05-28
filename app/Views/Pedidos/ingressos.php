@@ -182,9 +182,46 @@
 
                                         <a href="<?= site_url('/ingressos/vincular/' . $i->id) ?>" class="btn  btn-success mt-0 shadow">Vincular pulsiera RFID</a>
                                         <a href="<?= site_url('/ingressos/cinemark/' . $i->id) ?>" class="btn <?= $bonus_cinemark ? 'btn-warning' : 'btn-primary' ?> mt-0 shadow"><?= $bonus_cinemark ? 'Editar Cinemark' : 'Adicionar Cinemark' ?></a>
+                                        <button type="button" class="btn btn-outline-info mt-0 shadow btn-trocar-dia"
+                                                data-ingresso-id="<?= $i->id ?>"
+                                                data-ingresso-nome="<?= esc($i->nome) ?>">
+                                            <i class="bx bx-transfer-alt"></i> Trocar dia
+                                        </button>
 
 
                                     </div>
+
+                                    <?php $trocasDoIngresso = $trocasPorIngresso[$i->id] ?? []; ?>
+                                    <?php if (!empty($trocasDoIngresso)) : ?>
+                                        <hr class="mt-3">
+                                        <div class="mt-3">
+                                            <h6><i class="bx bx-transfer-alt me-2"></i>Histórico de Trocas de Dia</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Data/Hora</th>
+                                                            <th>De</th>
+                                                            <th>Para</th>
+                                                            <th>Operador</th>
+                                                            <th>Motivo</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($trocasDoIngresso as $tr) : ?>
+                                                            <tr>
+                                                                <td><i class="bx bx-calendar me-1"></i><?= date('d/m/Y H:i', strtotime($tr->created_at)) ?></td>
+                                                                <td><?= esc($tr->nome_anterior ?? '-') ?></td>
+                                                                <td><strong><?= esc($tr->nome_novo) ?></strong></td>
+                                                                <td><?= esc($tr->operador_nome ?? 'Sistema') ?></td>
+                                                                <td><?= esc($tr->motivo ?? '-') ?></td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
 
                                     <!-- Histórico de Acessos -->
                                     <?php if (isset($acessosPorIngresso[$i->id]) && !empty($acessosPorIngresso[$i->id])): ?>
@@ -481,6 +518,51 @@
 </div>
 
 
+<!-- Modal: Trocar dia do ingresso -->
+<div class="modal fade" id="trocaDiaModal" tabindex="-1" role="dialog" aria-labelledby="trocaDiaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="trocaDiaModalLabel">Trocar dia do ingresso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="troca-dia-loading" class="text-center py-4" style="display:none;">
+                    <i class="bx bx-loader-alt bx-spin font-22"></i> Carregando opções...
+                </div>
+                <div id="troca-dia-erro" class="alert alert-danger" style="display:none;"></div>
+                <div id="troca-dia-conteudo" style="display:none;">
+                    <p class="mb-2">
+                        Ingresso atual: <strong id="troca-dia-nome-atual"></strong>
+                        <span class="badge bg-secondary ms-1" id="troca-dia-dia-atual"></span>
+                    </p>
+                    <p class="text-muted small mb-3">
+                        A troca só é permitida entre ingressos do mesmo evento, tipo e categoria.
+                    </p>
+                    <input type="hidden" id="troca-dia-ingresso-id">
+                    <div class="mb-3">
+                        <label class="form-label">Selecione o novo dia</label>
+                        <div id="troca-dia-opcoes" class="list-group"></div>
+                        <div id="troca-dia-vazio" class="alert alert-warning mt-2" style="display:none;">
+                            Nenhum ticket disponível para troca com os mesmos filtros.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo (opcional)</label>
+                        <textarea id="troca-dia-motivo" class="form-control" rows="2" placeholder="Ex: cliente solicitou alteração via WhatsApp"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-troca-dia-confirmar" disabled>
+                    <i class="bx bx-check"></i> Confirmar troca
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php echo $this->endSection() ?>
 
 
@@ -655,6 +737,120 @@
 
             $(this).find(":submit").attr('disabled', 'disabled');
 
+        });
+
+        // ===== Troca de dia do ingresso =====
+        const trocaDiaModalEl = document.getElementById('trocaDiaModal');
+        const trocaDiaModal = trocaDiaModalEl ? new bootstrap.Modal(trocaDiaModalEl) : null;
+        let trocaDiaTicketSelecionado = null;
+
+        function trocaDiaResetModal() {
+            $('#troca-dia-erro').hide().text('');
+            $('#troca-dia-loading').hide();
+            $('#troca-dia-conteudo').hide();
+            $('#troca-dia-vazio').hide();
+            $('#troca-dia-opcoes').empty();
+            $('#troca-dia-motivo').val('');
+            $('#btn-troca-dia-confirmar').prop('disabled', true);
+            trocaDiaTicketSelecionado = null;
+        }
+
+        $('.btn-trocar-dia').on('click', function() {
+            const ingressoId = $(this).data('ingresso-id');
+            const ingressoNome = $(this).data('ingresso-nome');
+
+            trocaDiaResetModal();
+            $('#troca-dia-ingresso-id').val(ingressoId);
+            $('#troca-dia-nome-atual').text(ingressoNome);
+            $('#troca-dia-loading').show();
+            trocaDiaModal.show();
+
+            $.ajax({
+                type: 'GET',
+                url: '<?= site_url('pedidos/trocaListar/') ?>' + ingressoId,
+                dataType: 'json',
+                success: function(response) {
+                    $('#troca-dia-loading').hide();
+
+                    if (response.erro) {
+                        $('#troca-dia-erro').text(response.erro).show();
+                        return;
+                    }
+
+                    if (response.ticket_atual && response.ticket_atual.dia) {
+                        $('#troca-dia-dia-atual').text('Dia atual: ' + response.ticket_atual.dia).show();
+                    } else {
+                        $('#troca-dia-dia-atual').hide();
+                    }
+
+                    const $opcoes = $('#troca-dia-opcoes').empty();
+                    if (!response.disponiveis || response.disponiveis.length === 0) {
+                        $('#troca-dia-vazio').show();
+                    } else {
+                        response.disponiveis.forEach(function(t) {
+                            const diaTxt = t.dia ? ' <span class="badge bg-info ms-2">' + t.dia + '</span>' : '';
+                            const loteTxt = t.lote ? ' <small class="text-muted ms-2">(lote ' + t.lote + ')</small>' : '';
+                            const $btn = $('<button type="button" class="list-group-item list-group-item-action troca-dia-opcao" data-ticket-id="' + t.id + '">'
+                                + '<strong>' + t.nome + '</strong>' + diaTxt + loteTxt
+                                + '</button>');
+                            $opcoes.append($btn);
+                        });
+                    }
+
+                    $('#troca-dia-conteudo').show();
+                },
+                error: function() {
+                    $('#troca-dia-loading').hide();
+                    $('#troca-dia-erro').text('Erro ao carregar tickets disponíveis.').show();
+                }
+            });
+        });
+
+        $('#troca-dia-opcoes').on('click', '.troca-dia-opcao', function() {
+            $('.troca-dia-opcao').removeClass('active');
+            $(this).addClass('active');
+            trocaDiaTicketSelecionado = $(this).data('ticket-id');
+            $('#btn-troca-dia-confirmar').prop('disabled', false);
+        });
+
+        $('#btn-troca-dia-confirmar').on('click', function() {
+            const ingressoId = $('#troca-dia-ingresso-id').val();
+            const motivo = $('#troca-dia-motivo').val();
+            const $btn = $(this);
+
+            if (!trocaDiaTicketSelecionado) {
+                return;
+            }
+
+            if (!confirm('Confirmar a troca do ingresso para o ticket selecionado?')) {
+                return;
+            }
+
+            $btn.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Processando...');
+
+            $.ajax({
+                type: 'POST',
+                url: '<?= site_url('pedidos/trocaExecutar') ?>',
+                data: {
+                    ingresso_id: ingressoId,
+                    ticket_id_novo: trocaDiaTicketSelecionado,
+                    motivo: motivo,
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.erro) {
+                        $('#troca-dia-erro').text(response.erro).show();
+                        $btn.prop('disabled', false).html('<i class="bx bx-check"></i> Confirmar troca');
+                        return;
+                    }
+                    location.reload();
+                },
+                error: function() {
+                    $('#troca-dia-erro').text('Erro ao processar a troca. Tente novamente.').show();
+                    $btn.prop('disabled', false).html('<i class="bx bx-check"></i> Confirmar troca');
+                }
+            });
         });
 
         // Marcar Order Bump como usado
