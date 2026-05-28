@@ -115,20 +115,43 @@
                 </div>
                 <div class="card-body">
                     <!-- Responsável -->
-                    <h6 class="text-muted mb-3">Responsável</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0">Responsável</h6>
+                        <?php if (!$responsavel) : ?>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-novo-pessoa" data-tipo="responsavel">
+                            <i class="bi bi-plus-lg"></i> Adicionar Responsável
+                        </button>
+                        <?php endif; ?>
+                    </div>
                     <?php if ($responsavel) : ?>
                     <div class="pessoa-card responsavel d-flex justify-content-between align-items-center">
                         <div>
                             <?= $responsavel->getBadgeTipo() ?>
                             <strong class="ms-2"><?= esc($responsavel->nome) ?></strong>
                             <small class="text-muted d-block mt-1">
-                                CPF: <?= $responsavel->getCpfFormatado() ?> | 
-                                RG: <?= esc($responsavel->rg) ?> | 
+                                CPF: <?= $responsavel->getCpfFormatado() ?> |
+                                RG: <?= esc($responsavel->rg) ?> |
                                 WhatsApp: <?= $responsavel->getWhatsappFormatado() ?>
                             </small>
                         </div>
-                        <div>
+                        <div class="d-flex align-items-center gap-2">
                             <?= $responsavel->getBadgeStatusAprovacao() ?>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary btn-editar-pessoa"
+                                    data-id="<?= $responsavel->id ?>"
+                                    data-tipo="responsavel"
+                                    data-nome="<?= esc($responsavel->nome) ?>"
+                                    data-rg="<?= esc($responsavel->rg) ?>"
+                                    data-cpf="<?= esc($responsavel->cpf) ?>"
+                                    data-whatsapp="<?= esc($responsavel->whatsapp) ?>">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger btn-excluir-pessoa"
+                                    data-id="<?= $responsavel->id ?>"
+                                    data-nome="<?= esc($responsavel->nome) ?>">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                     <?php else : ?>
@@ -138,7 +161,12 @@
                     <hr>
 
                     <!-- Funcionários -->
-                    <h6 class="text-muted mb-3">Funcionários</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="text-muted mb-0">Funcionários</h6>
+                        <button type="button" class="btn btn-sm btn-outline-success btn-novo-pessoa" data-tipo="funcionario">
+                            <i class="bi bi-plus-lg"></i> Adicionar Funcionário
+                        </button>
+                    </div>
                     <?php if (!empty($funcionarios)) : ?>
                     <?php foreach ($funcionarios as $func) : ?>
                     <div class="pessoa-card funcionario d-flex justify-content-between align-items-center">
@@ -146,13 +174,29 @@
                             <?= $func->getBadgeTipo() ?>
                             <strong class="ms-2"><?= esc($func->nome) ?></strong>
                             <small class="text-muted d-block mt-1">
-                                CPF: <?= $func->getCpfFormatado() ?> | 
-                                RG: <?= esc($func->rg) ?> | 
+                                CPF: <?= $func->getCpfFormatado() ?> |
+                                RG: <?= esc($func->rg) ?> |
                                 WhatsApp: <?= $func->getWhatsappFormatado() ?>
                             </small>
                         </div>
-                        <div>
+                        <div class="d-flex align-items-center gap-2">
                             <?= $func->getBadgeStatusAprovacao() ?>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary btn-editar-pessoa"
+                                    data-id="<?= $func->id ?>"
+                                    data-tipo="funcionario"
+                                    data-nome="<?= esc($func->nome) ?>"
+                                    data-rg="<?= esc($func->rg) ?>"
+                                    data-cpf="<?= esc($func->cpf) ?>"
+                                    data-whatsapp="<?= esc($func->whatsapp) ?>">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger btn-excluir-pessoa"
+                                    data-id="<?= $func->id ?>"
+                                    data-nome="<?= esc($func->nome) ?>">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -165,8 +209,11 @@
             <!-- SUPLENTES -->
             <?php if (!empty($suplentes) || ($limites['suplentes'] ?? 0) > 0) : ?>
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-person-plus text-warning me-2"></i>Suplentes</h5>
+                    <button type="button" class="btn btn-sm btn-outline-warning btn-novo-pessoa" data-tipo="suplente">
+                        <i class="bi bi-plus-lg"></i> Adicionar Suplente
+                    </button>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($suplentes)) : ?>
@@ -176,13 +223,29 @@
                             <?= $sup->getBadgeTipo() ?>
                             <strong class="ms-2"><?= esc($sup->nome) ?></strong>
                             <small class="text-muted d-block mt-1">
-                                CPF: <?= $sup->getCpfFormatado() ?> | 
-                                RG: <?= esc($sup->rg) ?> | 
+                                CPF: <?= $sup->getCpfFormatado() ?> |
+                                RG: <?= esc($sup->rg) ?> |
                                 WhatsApp: <?= $sup->getWhatsappFormatado() ?>
                             </small>
                         </div>
-                        <div>
+                        <div class="d-flex align-items-center gap-2">
                             <?= $sup->getBadgeStatusAprovacao() ?>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary btn-editar-pessoa"
+                                    data-id="<?= $sup->id ?>"
+                                    data-tipo="suplente"
+                                    data-nome="<?= esc($sup->nome) ?>"
+                                    data-rg="<?= esc($sup->rg) ?>"
+                                    data-cpf="<?= esc($sup->cpf) ?>"
+                                    data-whatsapp="<?= esc($sup->whatsapp) ?>">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger btn-excluir-pessoa"
+                                    data-id="<?= $sup->id ?>"
+                                    data-nome="<?= esc($sup->nome) ?>">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -269,4 +332,179 @@
     </div>
 </div>
 
+<!-- Modal Pessoa (Admin) -->
+<div class="modal fade" id="modalPessoaAdmin" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPessoaAdminTitle">Pessoa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formPessoaAdmin">
+                <div class="modal-body">
+                    <div id="pessoaAdminErro" class="alert alert-danger" style="display:none;"></div>
+                    <input type="hidden" name="id" id="pessoaAdminId">
+                    <input type="hidden" name="tipo" id="pessoaAdminTipo">
+                    <input type="hidden" name="credenciamento_id" value="<?= $credenciamento->id ?>">
+                    <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>" id="pessoaAdminCsrf">
+
+                    <div class="mb-3">
+                        <label class="form-label">Nome completo</label>
+                        <input type="text" name="nome" id="pessoaAdminNome" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">RG</label>
+                        <input type="text" name="rg" id="pessoaAdminRg" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">CPF</label>
+                        <input type="text" name="cpf" id="pessoaAdminCpf" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">WhatsApp</label>
+                        <input type="text" name="whatsapp" id="pessoaAdminWhatsapp" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="pessoaAdminSalvar">
+                        <i class="bi bi-check-lg me-1"></i>Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<?php echo $this->endSection() ?>
+
+<?php echo $this->section('scripts') ?>
+<script>
+(function() {
+    const URLS = {
+        salvar: '<?= site_url('credenciamento/salvarPessoaAdmin') ?>',
+        excluir: '<?= site_url('credenciamento/excluirPessoaAdmin') ?>/',
+    };
+    const CSRF_NAME = '<?= csrf_token() ?>';
+
+    const TIPO_LABELS = {
+        responsavel: 'Responsável',
+        funcionario: 'Funcionário',
+        suplente: 'Suplente',
+    };
+
+    const modalEl = document.getElementById('modalPessoaAdmin');
+    const modal = new bootstrap.Modal(modalEl);
+    const form = document.getElementById('formPessoaAdmin');
+    const erroBox = document.getElementById('pessoaAdminErro');
+
+    function maskCpf(v) {
+        v = v.replace(/\D/g, '').slice(0, 11);
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+        v = v.replace(/\.(\d{3})(\d{1,2})$/, '.$1-$2');
+        return v;
+    }
+    function maskWhats(v) {
+        v = v.replace(/\D/g, '').slice(0, 11);
+        if (v.length > 10) {
+            return v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+        }
+        if (v.length > 6) {
+            return v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+        }
+        if (v.length > 2) {
+            return v.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
+        }
+        return v;
+    }
+    document.getElementById('pessoaAdminCpf').addEventListener('input', e => e.target.value = maskCpf(e.target.value));
+    document.getElementById('pessoaAdminWhatsapp').addEventListener('input', e => e.target.value = maskWhats(e.target.value));
+
+    function abrirModalNovo(tipo) {
+        form.reset();
+        erroBox.style.display = 'none';
+        document.getElementById('pessoaAdminId').value = '';
+        document.getElementById('pessoaAdminTipo').value = tipo;
+        document.getElementById('modalPessoaAdminTitle').textContent = 'Adicionar ' + TIPO_LABELS[tipo];
+        modal.show();
+    }
+
+    function abrirModalEdicao(btn) {
+        form.reset();
+        erroBox.style.display = 'none';
+        const tipo = btn.dataset.tipo;
+        document.getElementById('pessoaAdminId').value = btn.dataset.id;
+        document.getElementById('pessoaAdminTipo').value = tipo;
+        document.getElementById('pessoaAdminNome').value = btn.dataset.nome || '';
+        document.getElementById('pessoaAdminRg').value = btn.dataset.rg || '';
+        document.getElementById('pessoaAdminCpf').value = maskCpf(btn.dataset.cpf || '');
+        document.getElementById('pessoaAdminWhatsapp').value = maskWhats(btn.dataset.whatsapp || '');
+        document.getElementById('modalPessoaAdminTitle').textContent = 'Editar ' + TIPO_LABELS[tipo];
+        modal.show();
+    }
+
+    document.querySelectorAll('.btn-novo-pessoa').forEach(btn => {
+        btn.addEventListener('click', () => abrirModalNovo(btn.dataset.tipo));
+    });
+    document.querySelectorAll('.btn-editar-pessoa').forEach(btn => {
+        btn.addEventListener('click', () => abrirModalEdicao(btn));
+    });
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        erroBox.style.display = 'none';
+        const btn = document.getElementById('pessoaAdminSalvar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Salvando...';
+
+        try {
+            const formData = new FormData(form);
+            const response = await fetch(URLS.salvar, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const json = await response.json();
+            if (json.success) {
+                location.reload();
+                return;
+            }
+            erroBox.textContent = json.message || 'Erro ao salvar.';
+            erroBox.style.display = 'block';
+        } catch (err) {
+            erroBox.textContent = 'Erro ao processar a requisição.';
+            erroBox.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Salvar';
+        }
+    });
+
+    document.querySelectorAll('.btn-excluir-pessoa').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const id = this.dataset.id;
+            const nome = this.dataset.nome || 'esta pessoa';
+            if (!confirm('Excluir ' + nome + '?')) return;
+            try {
+                const fd = new FormData();
+                fd.append(CSRF_NAME, '<?= csrf_hash() ?>');
+                const response = await fetch(URLS.excluir + id, {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const json = await response.json();
+                if (json.success) {
+                    location.reload();
+                    return;
+                }
+                alert(json.message || 'Erro ao excluir.');
+            } catch (err) {
+                alert('Erro ao processar a requisição.');
+            }
+        });
+    });
+})();
+</script>
 <?php echo $this->endSection() ?>

@@ -317,6 +317,87 @@ class Credenciamento extends BaseController
     }
 
     // =====================================================
+    // EDIÇÃO ADMIN (sem checagem de prazo)
+    // =====================================================
+
+    /**
+     * Salva pessoa pelo admin (cria ou atualiza) sem checar prazo.
+     */
+    public function salvarPessoaAdmin()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $credenciamentoId = $this->request->getPost('credenciamento_id');
+        $pessoaId = $this->request->getPost('id');
+        $tipo = $this->request->getPost('tipo');
+
+        $credenciamento = $this->credenciamentoModel->find($credenciamentoId);
+        if (!$credenciamento) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Credenciamento não encontrado.']);
+        }
+
+        $tiposPermitidos = ['responsavel', 'funcionario', 'suplente'];
+        if (!in_array($tipo, $tiposPermitidos, true)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tipo inválido.']);
+        }
+
+        // Bloqueia mais de um responsável
+        if (!$pessoaId && $tipo === 'responsavel' && $this->pessoaModel->temResponsavel($credenciamentoId)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Já existe um responsável cadastrado.']);
+        }
+
+        $dados = [
+            'credenciamento_id' => $credenciamentoId,
+            'tipo' => $tipo,
+            'nome' => $this->request->getPost('nome'),
+            'rg' => $this->request->getPost('rg'),
+            'cpf' => preg_replace('/\D/', '', (string) $this->request->getPost('cpf')),
+            'whatsapp' => preg_replace('/\D/', '', (string) $this->request->getPost('whatsapp')),
+        ];
+
+        if ($pessoaId) {
+            $dados['id'] = $pessoaId;
+        } else {
+            $dados['status'] = 'pendente';
+        }
+
+        if ($this->pessoaModel->save($dados)) {
+            $this->credenciamentoModel->atualizaStatus($credenciamentoId);
+            return $this->response->setJSON(['success' => true, 'message' => 'Dados salvos com sucesso!']);
+        }
+
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Erro ao salvar dados.',
+            'errors' => $this->pessoaModel->errors(),
+        ]);
+    }
+
+    /**
+     * Exclui pessoa pelo admin sem checar prazo.
+     */
+    public function excluirPessoaAdmin($id)
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $pessoa = $this->pessoaModel->find($id);
+        if (!$pessoa) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Pessoa não encontrada.']);
+        }
+
+        if ($this->pessoaModel->delete($id)) {
+            $this->credenciamentoModel->atualizaStatus($pessoa->credenciamento_id);
+            return $this->response->setJSON(['success' => true, 'message' => 'Pessoa excluída com sucesso!']);
+        }
+
+        return $this->response->setJSON(['success' => false, 'message' => 'Erro ao excluir pessoa.']);
+    }
+
+    // =====================================================
     // VISUALIZAÇÃO ADMIN
     // =====================================================
 

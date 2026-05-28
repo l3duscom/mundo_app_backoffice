@@ -23,7 +23,9 @@
       "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Models/IngressoTrocaModel.php\")",
       "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Entities/IngressoTroca.php\")",
       "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Database/Migrations/2026-05-28-100000_CreateIngressoTrocasTable.php\")",
-      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Pedidos/ingressos.php\")"
+      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Pedidos/ingressos.php\")",
+      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Credenciamento.php\")",
+      "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Credenciamento/exibir.php\")"
     ]
   }
 }
