@@ -564,6 +564,18 @@ $routes->group('ticket-upsells', function ($routes) {
 });
 
 // ========================================
+// ROTAS DE MODELOS DE CHECKLIST
+// ========================================
+$routes->group('checklist-modelos', function ($routes) {
+    $routes->get('/', 'ChecklistModelos::index');
+    $routes->get('criar', 'ChecklistModelos::criar');
+    $routes->get('editar/(:num)', 'ChecklistModelos::editar/$1');
+    $routes->post('salvar', 'ChecklistModelos::salvar');
+    $routes->post('excluir', 'ChecklistModelos::excluir');
+    $routes->post('copiar', 'ChecklistModelos::copiar');
+});
+
+// ========================================
 // ROTAS DE ORDER BUMPS
 // ========================================
 $routes->group('order-bumps', function ($routes) {

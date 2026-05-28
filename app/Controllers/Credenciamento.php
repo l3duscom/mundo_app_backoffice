@@ -10,6 +10,10 @@ class Credenciamento extends BaseController
     protected $veiculoModel;
     protected $pessoaModel;
     protected $contratoModel;
+    protected $checklistModeloModel;
+    protected $checklistModeloItemModel;
+    protected $checklistModel;
+    protected $checklistItemModel;
 
     public function __construct()
     {
@@ -17,6 +21,10 @@ class Credenciamento extends BaseController
         $this->veiculoModel = new \App\Models\CredenciamentoVeiculoModel();
         $this->pessoaModel = new \App\Models\CredenciamentoPessoaModel();
         $this->contratoModel = new \App\Models\ContratoModel();
+        $this->checklistModeloModel    = new \App\Models\ChecklistModeloModel();
+        $this->checklistModeloItemModel = new \App\Models\ChecklistModeloItemModel();
+        $this->checklistModel          = new \App\Models\CredenciamentoChecklistModel();
+        $this->checklistItemModel      = new \App\Models\CredenciamentoChecklistItemModel();
     }
 
     /**
@@ -435,6 +443,24 @@ class Credenciamento extends BaseController
         // Obtém limites
         $limites = $this->credenciamentoModel->getLimitePessoas($credenciamento->contrato_id);
 
+        // Checklists (entrada e saída)
+        $checklists = [];
+        $checklistItens = [];
+        foreach (['entrada', 'saida'] as $tipoCk) {
+            $ck = $this->checklistModel->buscaPorCredenciamentoTipo($credenciamento->id, $tipoCk);
+            $checklists[$tipoCk] = $ck;
+            $checklistItens[$tipoCk] = $ck ? $this->checklistItemModel->porChecklist($ck->id) : [];
+        }
+
+        // Modelos disponíveis para iniciar checklist (do evento)
+        $modelosDisponiveis = [];
+        if ($evento) {
+            $modelosDisponiveis = $this->checklistModeloModel
+                ->where('event_id', $evento->id)
+                ->where('ativo', 1)
+                ->findAll();
+        }
+
         $data = [
             'titulo' => 'Detalhes do Credenciamento',
             'credenciamento' => $credenciamento,
@@ -446,9 +472,268 @@ class Credenciamento extends BaseController
             'funcionarios' => $funcionarios,
             'suplentes' => $suplentes,
             'limites' => $limites,
+            'checklists' => $checklists,
+            'checklistItens' => $checklistItens,
+            'modelosDisponiveis' => $modelosDisponiveis,
         ];
 
         return view('Credenciamento/exibir', $data);
+    }
+
+    // =====================================================
+    // CHECKLIST (entrada / saída)
+    // =====================================================
+
+    /**
+     * Cria um novo checklist para o credenciamento a partir de um modelo.
+     */
+    public function iniciarChecklist()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno = ['token' => csrf_hash()];
+
+        $credenciamentoId = (int) $this->request->getPost('credenciamento_id');
+        $tipo             = $this->request->getPost('tipo') === 'saida' ? 'saida' : 'entrada';
+        $modeloId         = (int) $this->request->getPost('modelo_id');
+
+        $credenciamento = $this->credenciamentoModel->find($credenciamentoId);
+        if (!$credenciamento) {
+            $retorno['erro'] = 'Credenciamento não encontrado.';
+            return $this->response->setJSON($retorno);
+        }
+
+        // Se já existe checklist desse tipo, bloqueia
+        if ($this->checklistModel->buscaPorCredenciamentoTipo($credenciamentoId, $tipo)) {
+            $retorno['erro'] = 'Já existe um checklist desse tipo para este credenciamento.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $modelo = $this->checklistModeloModel->find($modeloId);
+        if (!$modelo) {
+            $retorno['erro'] = 'Modelo não encontrado.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $itensModelo = $this->checklistModeloItemModel->porModelo($modeloId);
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        $checklistId = $this->checklistModel->insert([
+            'credenciamento_id' => $credenciamentoId,
+            'modelo_id'         => $modeloId,
+            'tipo'              => $tipo,
+            'status'            => 'em_andamento',
+        ]);
+
+        foreach ($itensModelo as $item) {
+            $this->checklistItemModel->insert([
+                'checklist_id' => $checklistId,
+                'titulo'       => $item->titulo,
+                'checked'      => 0,
+                'quantidade'   => $item->quantidade,
+                'tipo'         => $item->tipo,
+                'categoria'    => $item->categoria,
+                'ordem'        => $item->ordem,
+                'observacao'   => null,
+            ]);
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            $retorno['erro'] = 'Falha ao iniciar checklist.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $retorno['sucesso'] = 'Checklist iniciado!';
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Salva o estado dos itens do checklist (checked/quantidade/observacao).
+     */
+    public function salvarItensChecklist()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno = ['token' => csrf_hash()];
+
+        $checklistId = (int) $this->request->getPost('checklist_id');
+        $checklist   = $this->checklistModel->find($checklistId);
+
+        if (!$checklist) {
+            $retorno['erro'] = 'Checklist não encontrado.';
+            return $this->response->setJSON($retorno);
+        }
+
+        if ($checklist->status === 'concluido') {
+            $retorno['erro'] = 'Checklist já concluído. Reabra para editar.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $itens = $this->request->getPost('itens') ?? [];
+
+        foreach ($itens as $itemId => $dados) {
+            $item = $this->checklistItemModel->find((int) $itemId);
+            if (!$item || (int) $item->checklist_id !== $checklistId) {
+                continue;
+            }
+            $this->checklistItemModel->update($item->id, [
+                'checked'    => !empty($dados['checked']) ? 1 : 0,
+                'quantidade' => max(0, (int) ($dados['quantidade'] ?? $item->quantidade)),
+                'observacao' => trim((string) ($dados['observacao'] ?? '')) ?: null,
+            ]);
+        }
+
+        $retorno['sucesso'] = 'Itens salvos.';
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Conclui o checklist (admin/operador).
+     */
+    public function concluirChecklist()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno = ['token' => csrf_hash()];
+
+        $checklistId = (int) $this->request->getPost('checklist_id');
+        $checklist   = $this->checklistModel->find($checklistId);
+
+        if (!$checklist) {
+            $retorno['erro'] = 'Checklist não encontrado.';
+            return $this->response->setJSON($retorno);
+        }
+
+        if ($checklist->status === 'concluido') {
+            $retorno['erro'] = 'Checklist já está concluído.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $usuario = usuario_logado();
+
+        $this->checklistModel->update($checklistId, [
+            'status'        => 'concluido',
+            'conferido_por' => $usuario->id ?? null,
+            'conferido_em'  => date('Y-m-d H:i:s'),
+            'observacoes'   => trim((string) $this->request->getPost('observacoes')) ?: null,
+        ]);
+
+        // Notifica expositor (com cópia para relacionamento)
+        try {
+            $this->notificarChecklistConcluido($checklistId);
+        } catch (\Throwable $e) {
+            log_message('error', 'Falha ao notificar checklist concluído #' . $checklistId . ': ' . $e->getMessage());
+        }
+
+        $retorno['sucesso'] = 'Checklist concluído!';
+        return $this->response->setJSON($retorno);
+    }
+
+    /**
+     * Envia email ao expositor (com cópia para relacionamento) quando um checklist é concluído.
+     */
+    private function notificarChecklistConcluido(int $checklistId): void
+    {
+        $checklist = $this->checklistModel->find($checklistId);
+        if (!$checklist) {
+            return;
+        }
+
+        $credenciamento = $this->credenciamentoModel->find($checklist->credenciamento_id);
+        if (!$credenciamento) {
+            return;
+        }
+
+        $contrato = $this->contratoModel->find($credenciamento->contrato_id);
+        if (!$contrato) {
+            return;
+        }
+
+        $expositorModel = new \App\Models\ExpositorModel();
+        $expositor = $expositorModel->find($contrato->expositor_id);
+
+        $eventoModel = new \App\Models\EventoModel();
+        $evento = $eventoModel->find($contrato->event_id);
+
+        $itens = $this->checklistItemModel->porChecklist($checklistId);
+
+        $conferidoPorNome = null;
+        if (!empty($checklist->conferido_por)) {
+            $usuarioModel = new \App\Models\UsuarioModel();
+            $conferidoPor = $usuarioModel->find($checklist->conferido_por);
+            $conferidoPorNome = $conferidoPor->nome ?? null;
+        }
+
+        $mensagem = view('Credenciamento/email_checklist_concluido', [
+            'checklist'        => $checklist,
+            'credenciamento'   => $credenciamento,
+            'contrato'         => $contrato,
+            'expositor'        => $expositor,
+            'evento'           => $evento,
+            'itens'            => $itens,
+            'conferidoPorNome' => $conferidoPorNome,
+        ]);
+
+        $destinatarios = array_values(array_filter([
+            $expositor->email ?? null,
+            'relacionamento@mundodream.com.br',
+        ]));
+
+        if (empty($destinatarios)) {
+            return;
+        }
+
+        $tipoLabel = $checklist->getTipoLabel();
+        $codigo    = $contrato->codigo ?? ('#' . $contrato->id);
+        $assunto   = '✅ Checklist de ' . $tipoLabel . ' concluído - ' . $codigo;
+
+        $resend = new \App\Services\ResendService();
+        $resend->enviarEmailMultiplos($destinatarios, $assunto, $mensagem);
+    }
+
+    /**
+     * Reabre um checklist concluído (somente admin).
+     */
+    public function reabrirChecklist()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno = ['token' => csrf_hash()];
+
+        $usuario = usuario_logado();
+        if (empty($usuario->is_admin)) {
+            $retorno['erro'] = 'Somente admin pode reabrir o checklist.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $checklistId = (int) $this->request->getPost('checklist_id');
+        $checklist   = $this->checklistModel->find($checklistId);
+
+        if (!$checklist) {
+            $retorno['erro'] = 'Checklist não encontrado.';
+            return $this->response->setJSON($retorno);
+        }
+
+        $this->checklistModel->update($checklistId, [
+            'status'        => 'reaberto',
+            'conferido_por' => null,
+            'conferido_em'  => null,
+        ]);
+
+        $retorno['sucesso'] = 'Checklist reaberto.';
+        return $this->response->setJSON($retorno);
     }
 
     // =====================================================

@@ -255,6 +255,129 @@
                 </div>
             </div>
             <?php endif; ?>
+
+            <!-- CHECKLIST (entrada / saída) -->
+            <?php
+            $usuarioCk = usuario_logado();
+            $ehAdminCk = !empty($usuarioCk->is_admin);
+            $tiposCk = ['entrada' => 'Entrada', 'saida' => 'Saída'];
+            ?>
+            <?php foreach ($tiposCk as $tipoCk => $labelCk) :
+                $ck      = $checklists[$tipoCk] ?? null;
+                $itensCk = $checklistItens[$tipoCk] ?? [];
+                $iconCk  = $tipoCk === 'entrada' ? 'box-arrow-in-down' : 'box-arrow-up';
+            ?>
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-<?= $iconCk ?> text-primary me-2"></i>Checklist de <?= $labelCk ?>
+                    </h5>
+                    <?php if ($ck) : ?>
+                        <?= $ck->getBadgeStatus() ?>
+                    <?php endif; ?>
+                </div>
+                <div class="card-body">
+                    <?php if (!$ck) : ?>
+                        <?php $modelosTipo = array_values(array_filter($modelosDisponiveis, fn($m) => $m->tipo === $tipoCk)); ?>
+                        <?php if (empty($modelosTipo)) : ?>
+                            <div class="alert alert-warning mb-0">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Nenhum modelo de checklist de <?= strtolower($labelCk) ?> cadastrado para este evento.
+                                <a href="<?= site_url('checklist-modelos/criar?event_id=' . ($evento->id ?? 0)) ?>">Criar modelo</a>.
+                            </div>
+                        <?php else : ?>
+                            <form class="row g-2 align-items-end form-iniciar-checklist" data-tipo="<?= $tipoCk ?>">
+                                <div class="col-md-8">
+                                    <label class="form-label mb-1">Modelo</label>
+                                    <select class="form-select select-modelo-checklist" required>
+                                        <option value="">-- Selecione --</option>
+                                        <?php foreach ($modelosTipo as $mod) : ?>
+                                            <option value="<?= $mod->id ?>"><?= esc($mod->nome ?: 'modelo #' . $mod->id) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-play-circle me-1"></i>Iniciar
+                                    </button>
+                                </div>
+                            </form>
+                        <?php endif; ?>
+                    <?php else : ?>
+                        <?php $bloqueado = ($ck->status === 'concluido'); ?>
+                        <form class="form-checklist" data-checklist-id="<?= $ck->id ?>">
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width:50px;" class="text-center">OK</th>
+                                            <th>Item</th>
+                                            <th style="width:90px;">Qtd.</th>
+                                            <th style="width:120px;">Tipo</th>
+                                            <th style="width:120px;">Categoria</th>
+                                            <th>Observação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php foreach ($itensCk as $it) : ?>
+                                        <tr>
+                                            <td class="text-center">
+                                                <input type="checkbox" class="form-check-input" name="itens[<?= $it->id ?>][checked]" value="1" <?= $it->checked ? 'checked' : '' ?> <?= $bloqueado ? 'disabled' : '' ?>>
+                                            </td>
+                                            <td><?= esc($it->titulo) ?></td>
+                                            <td>
+                                                <input type="number" min="0" class="form-control form-control-sm" name="itens[<?= $it->id ?>][quantidade]" value="<?= (int) $it->quantidade ?>" <?= $bloqueado ? 'readonly' : '' ?>>
+                                            </td>
+                                            <td><small class="text-muted"><?= esc($it->tipo ?? '-') ?></small></td>
+                                            <td><small class="text-muted"><?= esc($it->categoria ?? '-') ?></small></td>
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm" name="itens[<?= $it->id ?>][observacao]" value="<?= esc($it->observacao ?? '') ?>" <?= $bloqueado ? 'readonly' : '' ?>>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <?php if (!empty($ck->observacoes)) : ?>
+                                <div class="mb-2">
+                                    <small class="text-muted">Observações da conferência:</small>
+                                    <div class="border rounded p-2 bg-light"><?= nl2br(esc($ck->observacoes)) ?></div>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($bloqueado) : ?>
+                                <div class="alert alert-success mb-2">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Concluído
+                                    <?php if ($ck->conferido_em) : ?>
+                                        em <?= date('d/m/Y H:i', strtotime($ck->conferido_em)) ?>
+                                    <?php endif; ?>
+                                    <?php if ($ck->conferido_por) : ?>
+                                        por usuário #<?= (int) $ck->conferido_por ?>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="d-flex gap-2 justify-content-end">
+                                <?php if (!$bloqueado) : ?>
+                                    <button type="button" class="btn btn-outline-secondary btn-salvar-checklist">
+                                        <i class="bi bi-save me-1"></i>Salvar
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-concluir-checklist">
+                                        <i class="bi bi-check2-circle me-1"></i>Concluir
+                                    </button>
+                                <?php elseif ($ehAdminCk) : ?>
+                                    <button type="button" class="btn btn-warning btn-reabrir-checklist">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reabrir
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
         </div>
 
         <!-- Sidebar -->
@@ -503,6 +626,98 @@
             } catch (err) {
                 alert('Erro ao processar a requisição.');
             }
+        });
+    });
+
+    // ==========================
+    // Checklist (entrada/saída)
+    // ==========================
+    const URLS_CK = {
+        iniciar:  '<?= site_url('credenciamento/iniciarChecklist') ?>',
+        salvar:   '<?= site_url('credenciamento/salvarItensChecklist') ?>',
+        concluir: '<?= site_url('credenciamento/concluirChecklist') ?>',
+        reabrir:  '<?= site_url('credenciamento/reabrirChecklist') ?>',
+    };
+    let CSRF_HASH_CK = '<?= csrf_hash() ?>';
+    const CREDENCIAMENTO_ID = <?= (int) $credenciamento->id ?>;
+
+    async function postChecklist(url, fd) {
+        fd.append(CSRF_NAME, CSRF_HASH_CK);
+        const r = await fetch(url, {
+            method: 'POST',
+            body: fd,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const j = await r.json();
+        if (j.token) CSRF_HASH_CK = j.token;
+        return j;
+    }
+
+    document.querySelectorAll('.form-iniciar-checklist').forEach(form => {
+        form.addEventListener('submit', async function(ev) {
+            ev.preventDefault();
+            const tipo = this.dataset.tipo;
+            const modeloId = this.querySelector('.select-modelo-checklist').value;
+            if (!modeloId) { alert('Selecione um modelo.'); return; }
+            const fd = new FormData();
+            fd.append('credenciamento_id', CREDENCIAMENTO_ID);
+            fd.append('tipo', tipo);
+            fd.append('modelo_id', modeloId);
+            const j = await postChecklist(URLS_CK.iniciar, fd);
+            if (j.erro) { alert(j.erro); return; }
+            location.reload();
+        });
+    });
+
+    document.querySelectorAll('.btn-salvar-checklist').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const form = this.closest('.form-checklist');
+            const fd = new FormData(form);
+            fd.append('checklist_id', form.dataset.checklistId);
+            this.disabled = true;
+            const j = await postChecklist(URLS_CK.salvar, fd);
+            this.disabled = false;
+            if (j.erro) { alert(j.erro); return; }
+            this.innerHTML = '<i class="bi bi-check2 me-1"></i>Salvo';
+            setTimeout(() => { this.innerHTML = '<i class="bi bi-save me-1"></i>Salvar'; }, 1500);
+        });
+    });
+
+    document.querySelectorAll('.btn-concluir-checklist').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const form = this.closest('.form-checklist');
+            if (!confirm('Concluir este checklist? Após concluído, somente o admin pode reabrir.')) return;
+            const observacoes = prompt('Observações (opcional):') || '';
+            this.disabled = true;
+
+            // 1) Salva itens primeiro
+            const fdSalvar = new FormData(form);
+            fdSalvar.append('checklist_id', form.dataset.checklistId);
+            const jSalvar = await postChecklist(URLS_CK.salvar, fdSalvar);
+            if (jSalvar.erro) { this.disabled = false; alert(jSalvar.erro); return; }
+
+            // 2) Conclui
+            const fdConcluir = new FormData();
+            fdConcluir.append('checklist_id', form.dataset.checklistId);
+            fdConcluir.append('observacoes', observacoes);
+            const j = await postChecklist(URLS_CK.concluir, fdConcluir);
+            this.disabled = false;
+            if (j.erro) { alert(j.erro); return; }
+            location.reload();
+        });
+    });
+
+    document.querySelectorAll('.btn-reabrir-checklist').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const form = this.closest('.form-checklist');
+            if (!confirm('Reabrir este checklist?')) return;
+            const fd = new FormData();
+            fd.append('checklist_id', form.dataset.checklistId);
+            this.disabled = true;
+            const j = await postChecklist(URLS_CK.reabrir, fd);
+            this.disabled = false;
+            if (j.erro) { alert(j.erro); return; }
+            location.reload();
         });
     });
 })();
