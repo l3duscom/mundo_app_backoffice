@@ -586,6 +586,7 @@ $routes->group('metas-vendas', function ($routes) {
     $routes->post('excluir', 'MetasVendas::excluir');
     $routes->get('acompanhar/(:num)', 'MetasVendas::acompanhar/$1');
     $routes->get('dados-acompanhamento/(:num)', 'MetasVendas::dadosAcompanhamento/$1');
+    $routes->get('meta-hoje', 'MetasVendas::metaHoje');
 });
 
 // ========================================

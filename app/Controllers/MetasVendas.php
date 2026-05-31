@@ -393,4 +393,46 @@ class MetasVendas extends BaseController
             ],
         ]);
     }
+
+    /**
+     * Retorna a meta do dia para o evento (usada no card Receita Hoje do dashboard).
+     * GET /metas-vendas/meta-hoje?event_id=X&tipo=ingressos
+     */
+    public function metaHoje()
+    {
+        $eventId = (int) $this->request->getGet('event_id');
+        $tipo    = $this->request->getGet('tipo') ?: 'ingressos';
+        $hoje    = date('Y-m-d');
+
+        $meta = $this->metaModel
+            ->where('event_id', $eventId)
+            ->where('tipo', $tipo)
+            ->where('ativo', 1)
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        if (!$meta) {
+            return $this->response->setJSON(['tem_meta' => false]);
+        }
+
+        $fases = $this->faseModel->porMeta($meta->id);
+        $faseAtual = null;
+        foreach ($fases as $f) {
+            if ($hoje >= $f->data_inicio && $hoje <= $f->data_fim) {
+                $faseAtual = $f;
+                break;
+            }
+        }
+
+        if (!$faseAtual) {
+            return $this->response->setJSON(['tem_meta' => false]);
+        }
+
+        return $this->response->setJSON([
+            'tem_meta'   => true,
+            'meta_dia'   => round($faseAtual->getMediaDia(), 2),
+            'meta_total' => $meta->meta_total,
+            'fase_nome'  => $faseAtual->nome ?: $faseAtual->getLabelPeriodo(),
+        ]);
+    }
 }

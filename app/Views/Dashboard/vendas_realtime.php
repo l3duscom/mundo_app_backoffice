@@ -454,9 +454,22 @@
                 </div>
             </div>
             <div class="col-md-6 col-lg-2">
-                <div class="metric-card metric-card-revenue metric-card-compact mb-3">
+                <div class="metric-card metric-card-revenue metric-card-compact mb-3" id="card-receita-hoje">
                     <div class="metric-label">💰 Receita Hoje</div>
                     <div class="metric-value" id="receitaHoje">-</div>
+                    <div id="meta-dia-tags" style="display:none; margin-top:6px; font-size:11px; line-height:1.6;">
+                        <div>Meta: <strong id="meta-dia-valor">-</strong></div>
+                        <div>
+                            <span id="meta-dia-falta-label">Falta</span>
+                            <strong id="meta-dia-falta">-</strong>
+                            <span class="badge ms-1" id="meta-dia-pct" style="font-size:10px;">-</span>
+                        </div>
+                        <div style="margin-top:3px;">
+                            <div class="progress" style="height:4px;border-radius:2px;">
+                                <div class="progress-bar" id="meta-dia-bar" style="width:0%;transition:width .5s;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="metric-card metric-card-compact">
                     <div class="metric-label">Receita Total</div>
@@ -622,7 +635,9 @@ function updateMetrics(data) {
     document.getElementById('totalCortesias').textContent = formatNumber(metricas.total_cortesias || 0);
     document.getElementById('totalComCortesias').textContent = formatNumber(metricas.total_com_cortesias || 0);
     document.getElementById('ingressosHoje').textContent = formatNumber(metricas.ingressos_hoje || 0);
-    document.getElementById('receitaHoje').textContent = formatCurrency(metricas.receita_hoje || 0);
+    const receitaHoje = metricas.receita_hoje || 0;
+    document.getElementById('receitaHoje').textContent = formatCurrency(receitaHoje);
+    atualizarMetaDia(receitaHoje);
     document.getElementById('pedidosPendentes').textContent = formatNumber(metricas.pedidos_pendentes || 0);
     document.getElementById('receitaTotal').textContent = formatCurrency(metricas.receita_total || 0);
     document.getElementById('ticketMedio').textContent = formatCurrency(metricas.ticket_medio || 0);
@@ -657,6 +672,60 @@ function updateChange(elementId, percent) {
 function calcPercentDiff(current, previous) {
     if (!previous || previous === 0) return 0;
     return ((current - previous) / previous) * 100;
+}
+
+// ---- Meta do dia no card Receita Hoje ----
+let _metaDiaCache = null;
+
+async function carregarMetaDia() {
+    try {
+        const r = await fetch(`<?= site_url('metas-vendas/meta-hoje') ?>?event_id=${EVENTO_ID}&tipo=ingressos`);
+        _metaDiaCache = await r.json();
+    } catch (e) {
+        _metaDiaCache = { tem_meta: false };
+    }
+}
+
+function atualizarMetaDia(receitaHoje) {
+    const tags = document.getElementById('meta-dia-tags');
+    if (!_metaDiaCache || !_metaDiaCache.tem_meta) { tags.style.display = 'none'; return; }
+
+    const metaDia = _metaDiaCache.meta_dia;
+    const pct     = metaDia > 0 ? Math.min(Math.round((receitaHoje / metaDia) * 100), 999) : 0;
+    const falta   = metaDia - receitaHoje;
+
+    // Cor: <50% vermelho, 50-84% amarelo, >=85% verde
+    const cor = pct >= 85 ? '#198754' : (pct >= 50 ? '#ffc107' : '#dc3545');
+    const card = document.getElementById('card-receita-hoje');
+
+    document.getElementById('meta-dia-valor').textContent = formatCurrency(metaDia);
+
+    const faltaEl    = document.getElementById('meta-dia-falta');
+    const faltaLabel = document.getElementById('meta-dia-falta-label');
+    const pctEl      = document.getElementById('meta-dia-pct');
+    const bar        = document.getElementById('meta-dia-bar');
+
+    if (falta <= 0) {
+        faltaLabel.textContent = 'Superou';
+        faltaEl.textContent    = formatCurrency(Math.abs(falta));
+        pctEl.textContent      = pct + '%';
+        pctEl.style.background = '#198754';
+        pctEl.style.color      = '#fff';
+    } else {
+        faltaLabel.textContent = 'Falta';
+        faltaEl.textContent    = formatCurrency(falta);
+        pctEl.textContent      = pct + '%';
+        pctEl.style.background = cor;
+        pctEl.style.color      = pct >= 50 && pct < 85 ? '#000' : '#fff';
+    }
+
+    bar.style.width      = Math.min(pct, 100) + '%';
+    bar.style.background = cor;
+
+    // Borda esquerda colorida no card
+    card.style.borderLeft = '4px solid ' + cor;
+
+    tags.style.display = '';
 }
 
 // Atualizar gráficos
@@ -1068,7 +1137,7 @@ function formatTime(dateTimeStr) {
 }
 
 // Carregar ao iniciar
-loadDashboard();
+carregarMetaDia().then(() => loadDashboard());
 
 // Iniciar auto-refresh automaticamente
 const autoRefreshToggle = document.getElementById('autoRefreshToggle');
