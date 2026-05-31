@@ -42,13 +42,13 @@
 <!-- Tabs Comercial / Ingressos -->
 <ul class="nav nav-tabs mb-3" id="tabsMeta">
     <li class="nav-item">
-        <a class="nav-link active" data-bs-toggle="tab" href="#tabComercial">
+        <a class="nav-link" data-bs-toggle="tab" href="#tabComercial">
             <i class="bx bx-briefcase me-1"></i>Comercial
             <span class="badge bg-primary ms-1"><?= count($metasComercial) ?></span>
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" data-bs-toggle="tab" href="#tabIngressos">
+        <a class="nav-link active" data-bs-toggle="tab" href="#tabIngressos">
             <i class="bx bx-ticket me-1"></i>Ingressos
             <span class="badge bg-success ms-1"><?= count($metasIngressos) ?></span>
         </a>
@@ -57,7 +57,7 @@
 
 <div class="tab-content">
     <?php foreach ([['comercial', $metasComercial], ['ingressos', $metasIngressos]] as [$tipo, $metas]) : ?>
-    <div class="tab-pane fade <?= $tipo === 'comercial' ? 'show active' : '' ?>" id="tab<?= ucfirst($tipo) ?>">
+    <div class="tab-pane fade <?= $tipo === 'ingressos' ? 'show active' : '' ?>" id="tab<?= ucfirst($tipo) ?>">
         <div class="card shadow radius-10">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
