@@ -344,6 +344,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo site_url('/metas-vendas?event_id=' . evento_selecionado()); ?>">
+                                <div class="parent-icon"><i class="bx bx-target-lock"></i>
+                                </div>
+                                <div class="menu-title">Metas de Vendas</div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo site_url('/ingressos/add'); ?>">
                                 <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
                                 </div>

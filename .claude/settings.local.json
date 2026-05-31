@@ -34,7 +34,12 @@
       "Bash(php -l app/Views/Credenciamento/exibir.php)",
       "Bash(grep -n 'email\\\\|getNomeExibicao\\\\|allowedFields\\\\|protected $table' 'c:\\\\Users\\\\Edu\\\\Documents\\\\Projetos\\\\mundo_app_backoffice\\\\app\\\\Models\\\\ExpositorModel.php')",
       "Bash(grep -n '^class\\\\|protected $table\\\\|allowedFields' 'c:\\\\Users\\\\Edu\\\\Documents\\\\Projetos\\\\mundo_app_backoffice\\\\app\\\\Models\\\\UsuarioModel.php')",
-      "Bash(php -l app/Views/Credenciamento/email_checklist_concluido.php)"
+      "Bash(php -l app/Views/Credenciamento/email_checklist_concluido.php)",
+      "Bash(php -l app/Controllers/MetasVendas.php)",
+      "Bash(php -l app/Entities/MetaVenda.php)",
+      "Bash(php -l app/Entities/MetaVendaFase.php)",
+      "Bash(php -l app/Models/MetaVendaModel.php)",
+      "Bash(php -l app/Views/MetasVendas/index.php)"
     ]
   }
 }

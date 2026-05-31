@@ -576,6 +576,19 @@ $routes->group('checklist-modelos', function ($routes) {
 });
 
 // ========================================
+// ROTAS DE METAS DE VENDAS
+// ========================================
+$routes->group('metas-vendas', function ($routes) {
+    $routes->get('/', 'MetasVendas::index');
+    $routes->get('criar', 'MetasVendas::criar');
+    $routes->get('editar/(:num)', 'MetasVendas::editar/$1');
+    $routes->post('salvar', 'MetasVendas::salvar');
+    $routes->post('excluir', 'MetasVendas::excluir');
+    $routes->get('acompanhar/(:num)', 'MetasVendas::acompanhar/$1');
+    $routes->get('dados-acompanhamento/(:num)', 'MetasVendas::dadosAcompanhamento/$1');
+});
+
+// ========================================
 // ROTAS DE ORDER BUMPS
 // ========================================
 $routes->group('order-bumps', function ($routes) {
