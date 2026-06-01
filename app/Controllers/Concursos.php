@@ -454,6 +454,178 @@ class Concursos extends BaseController
 		]);
 	}
 
+	public function exportarCsvCompleto($id)
+	{
+		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
+			return redirect()->back()->with('atencao', 'Sem permissão.');
+		}
+
+		$concurso = $this->concursoModel->withDeleted(true)->where('id', $id)->first();
+		if (!$concurso) {
+			return redirect()->back()->with('erro', 'Concurso não encontrado.');
+		}
+
+		$isCosplay = in_array($concurso->tipo, ['desfile_cosplay', 'apresentacao_cosplay', 'cosplay_kids']);
+		if ($isCosplay) {
+			$inscricoes = $this->inscricaoModel->recuperarecuperaInscricoesCosplayPorConcurso($id);
+		} else {
+			$inscricoes = $this->inscricaoModel->recuperarecuperaInscricoesKpopPorConcurso($id);
+		}
+
+		$limitePorArquivo = 1950;
+		$chunks = array_chunk($inscricoes, $limitePorArquivo);
+		$timestamp = date('Y-m-d-His');
+		$slug = preg_replace('/[^a-z0-9]+/', '-', strtolower($concurso->nome ?? 'concurso'));
+
+		if (count($chunks) <= 1) {
+			$this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+			$this->response->setHeader('Content-Disposition', 'attachment; filename="inscricoes-' . $slug . '-' . $timestamp . '.csv"');
+			$this->response->setHeader('Cache-Control', 'no-store, no-cache');
+			return $this->response->setBody($this->gerarCsvCompleto($chunks[0] ?? [], $isCosplay));
+		}
+
+		$tempZip = tempnam(sys_get_temp_dir(), 'conc_') . '.zip';
+		$zip = new \ZipArchive();
+		if ($zip->open($tempZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+			return redirect()->back()->with('atencao', 'Falha ao gerar ZIP.');
+		}
+		foreach ($chunks as $i => $chunk) {
+			$parte = str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT);
+			$zip->addFromString("inscricoes-{$slug}-{$timestamp}-parte-{$parte}.csv", $this->gerarCsvCompleto($chunk, $isCosplay));
+		}
+		$zip->close();
+		$conteudo = file_get_contents($tempZip);
+		@unlink($tempZip);
+		$this->response->setHeader('Content-Type', 'application/zip');
+		$this->response->setHeader('Content-Disposition', 'attachment; filename="inscricoes-' . $slug . '-' . $timestamp . '.zip"');
+		$this->response->setHeader('Cache-Control', 'no-store, no-cache');
+		return $this->response->setBody($conteudo);
+	}
+
+	public function exportarCsvContatos($id)
+	{
+		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
+			return redirect()->back()->with('atencao', 'Sem permissão.');
+		}
+
+		$concurso = $this->concursoModel->withDeleted(true)->where('id', $id)->first();
+		if (!$concurso) {
+			return redirect()->back()->with('erro', 'Concurso não encontrado.');
+		}
+
+		$isCosplay = in_array($concurso->tipo, ['desfile_cosplay', 'apresentacao_cosplay', 'cosplay_kids']);
+		if ($isCosplay) {
+			$inscricoes = $this->inscricaoModel->recuperarecuperaInscricoesCosplayPorConcurso($id);
+		} else {
+			$inscricoes = $this->inscricaoModel->recuperarecuperaInscricoesKpopPorConcurso($id);
+		}
+
+		$limitePorArquivo = 1950;
+		$chunks = array_chunk($inscricoes, $limitePorArquivo);
+		$timestamp = date('Y-m-d-His');
+		$slug = preg_replace('/[^a-z0-9]+/', '-', strtolower($concurso->nome ?? 'concurso'));
+
+		if (count($chunks) <= 1) {
+			$this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+			$this->response->setHeader('Content-Disposition', 'attachment; filename="contatos-' . $slug . '-' . $timestamp . '.csv"');
+			$this->response->setHeader('Cache-Control', 'no-store, no-cache');
+			return $this->response->setBody($this->gerarCsvContatos($chunks[0] ?? []));
+		}
+
+		$tempZip = tempnam(sys_get_temp_dir(), 'conc_') . '.zip';
+		$zip = new \ZipArchive();
+		if ($zip->open($tempZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+			return redirect()->back()->with('atencao', 'Falha ao gerar ZIP.');
+		}
+		foreach ($chunks as $i => $chunk) {
+			$parte = str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT);
+			$zip->addFromString("contatos-{$slug}-{$timestamp}-parte-{$parte}.csv", $this->gerarCsvContatos($chunk));
+		}
+		$zip->close();
+		$conteudo = file_get_contents($tempZip);
+		@unlink($tempZip);
+		$this->response->setHeader('Content-Type', 'application/zip');
+		$this->response->setHeader('Content-Disposition', 'attachment; filename="contatos-' . $slug . '-' . $timestamp . '.zip"');
+		$this->response->setHeader('Cache-Control', 'no-store, no-cache');
+		return $this->response->setBody($conteudo);
+	}
+
+	private function gerarCsvCompleto(array $inscricoes, bool $isCosplay): string
+	{
+		$output = fopen('php://temp', 'r+');
+		fwrite($output, "\xEF\xBB\xBF");
+
+		if ($isCosplay) {
+			fputcsv($output, ['Código', 'Nome', 'Nome Social', 'E-mail', 'Telefone', 'CPF', 'Personagem', 'Obra', 'Gênero', 'Apoio', 'Ref. Visual', 'Vídeo LED', 'Motivação', 'Tempo', 'Observações', 'Status', 'Criado em'], ',');
+			foreach ($inscricoes as $i) {
+				fputcsv($output, [
+					$i->codigo ?? '',
+					$i->nome ?? '',
+					$i->nome_social ?? '',
+					$i->email ?? '',
+					$i->telefone ?? '',
+					$i->cpf ?? '',
+					$i->personagem ?? '',
+					$i->obra ?? '',
+					$i->genero ?? '',
+					$i->apoio ?? '',
+					$i->referencia ?? '',
+					$i->video_led ?? '',
+					$i->motivacao ?? '',
+					$i->tempo ?? '',
+					$i->observacoes ?? '',
+					$i->status ?? '',
+					$i->created_at ?? '',
+				], ',');
+			}
+		} else {
+			fputcsv($output, ['Código', 'Nome', 'Nome Social', 'E-mail', 'Telefone', 'CPF', 'Música', 'Grupo', 'Categoria', 'Marca', 'Integrantes', 'Ref. Visual', 'Vídeo LED', 'Vídeo Apresentação', 'Motivação', 'Status', 'Criado em'], ',');
+			foreach ($inscricoes as $i) {
+				fputcsv($output, [
+					$i->codigo ?? '',
+					$i->nome ?? '',
+					$i->nome_social ?? '',
+					$i->email ?? '',
+					$i->telefone ?? '',
+					$i->cpf ?? '',
+					$i->musica ?? '',
+					$i->grupo ?? '',
+					$i->categoria ?? '',
+					$i->marca ?? '',
+					$i->integrantes ?? '',
+					$i->referencia ?? '',
+					$i->video_led ?? '',
+					$i->video_apresentacao ?? '',
+					$i->motivacao ?? '',
+					$i->status ?? '',
+					$i->created_at ?? '',
+				], ',');
+			}
+		}
+
+		rewind($output);
+		$csv = stream_get_contents($output);
+		fclose($output);
+		return $csv;
+	}
+
+	private function gerarCsvContatos(array $inscricoes): string
+	{
+		$output = fopen('php://temp', 'r+');
+		fwrite($output, "\xEF\xBB\xBF");
+		fputcsv($output, ['Nome completo', 'Telefone'], ',');
+		foreach ($inscricoes as $i) {
+			fputcsv($output, [
+				$i->nome_social ?: ($i->nome ?? ''),
+				$i->telefone ?? '',
+			], ',');
+		}
+		rewind($output);
+		$csv = stream_get_contents($output);
+		fclose($output);
+		return $csv;
+	}
+
 	public function recuperaconcursoskpop($id)
 	{
 		if (!$this->request->isAJAX()) {

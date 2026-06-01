@@ -42,8 +42,17 @@
                             </button>
                         </div>
                     </div>
-                    <div class="col-md-4 text-end">
+                    <div class="col-md-4 text-end d-flex align-items-center justify-content-end gap-2">
                         <span id="contador-resultados" class="badge bg-primary"><?= count($inscricoes) ?> inscrição(ões)</span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bx bx-download"></i> Exportar
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="<?= site_url('concursos/exportar-completo/' . $concurso->id) ?>"><i class="bx bx-table me-1"></i>CSV Completo</a></li>
+                                <li><a class="dropdown-item" href="<?= site_url('concursos/exportar-contatos/' . $concurso->id) ?>"><i class="bx bx-phone me-1"></i>CSV Nome + Telefone</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
