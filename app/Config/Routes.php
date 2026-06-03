@@ -382,6 +382,13 @@ $routes->get('pedidos/dados-envio/(:num)', 'Pedidos::dadosEnvio/$1');
 $routes->get('pedidos/exportar-envios/(:num)', 'Pedidos::exportarEnvios/$1');
 
 // ========================================
+// ROTAS DE UPGRADE DE INGRESSO
+// ========================================
+$routes->get('pedidos/upgrade-opcoes/(:num)', 'Pedidos::upgradeOpcoes/$1');
+$routes->post('pedidos/upgrade-gerar-link/(:num)', 'Pedidos::upgradeGerarLink/$1');
+$routes->post('pedidos/upgrade-efetivar/(:num)', 'Pedidos::upgradeEfetivar/$1');
+
+// ========================================
 // DASHBOARD DE VENDAS EM TEMPO REAL
 // ========================================
 $routes->group('dashboard-vendas', function ($routes) {

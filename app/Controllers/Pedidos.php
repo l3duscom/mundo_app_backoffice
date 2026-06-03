@@ -25,6 +25,7 @@ class Pedidos extends BaseController
 	private $pedidoOrderBumpModel;
 	private $ticketModel;
 	private $ingressoTrocaModel;
+	private $ingressoUpgradeModel;
 
 
 
@@ -44,6 +45,7 @@ class Pedidos extends BaseController
 		$this->pedidoOrderBumpModel = new \App\Models\PedidoOrderBumpModel();
 		$this->ticketModel = new \App\Models\TicketModel();
 		$this->ingressoTrocaModel = new \App\Models\IngressoTrocaModel();
+		$this->ingressoUpgradeModel = new \App\Models\IngressoUpgradeModel();
 	}
 
 	public function index()
@@ -757,6 +759,12 @@ class Pedidos extends BaseController
 		$ingressoIds = array_map(fn($i) => (int) $i->id, $ingressos);
 		$trocasPorIngresso = $this->ingressoTrocaModel->historicoPorIngressos($ingressoIds);
 
+		// Upgrades por ingresso
+		$upgradesPorIngresso = [];
+		foreach ($ingressos as $ingresso) {
+			$upgradesPorIngresso[$ingresso->id] = $this->ingressoUpgradeModel->porIngresso($ingresso->id);
+		}
+
 		$data = [
 			'titulo' => 'Ingressos do pedido' . esc($pedido->cod_pedido),
 			'todos' => $todos,
@@ -770,6 +778,7 @@ class Pedidos extends BaseController
 			'bonus_por_ingresso' => $bonus_por_ingresso,
 			'orderBumps' => $orderBumps,
 			'trocasPorIngresso' => $trocasPorIngresso,
+			'upgradesPorIngresso' => $upgradesPorIngresso,
 		];
 
 
@@ -1347,6 +1356,223 @@ class Pedidos extends BaseController
 		}
 
 		return $this->response->setJSON(['erro' => true, 'mensagem' => 'Erro ao marcar como usado']);
+	}
+
+	public function upgradeOpcoes($ingressoId)
+	{
+		if (!$this->request->isAJAX()) return redirect()->back();
+
+		// Load ingresso with ticket_id and event_id
+		$ingresso = $this->ingressoModel
+			->select('ingressos.id, ingressos.ticket_id, ingressos.nome, ingressos.valor_unitario, pedidos.evento_id')
+			->join('pedidos', 'pedidos.id = ingressos.pedido_id')
+			->find((int)$ingressoId);
+
+		if (!$ingresso) {
+			return $this->response->setJSON(['erro' => 'Ingresso não encontrado.', 'token' => csrf_hash()]);
+		}
+
+		$ticket = $this->ticketModel->find($ingresso->ticket_id);
+		if (!$ticket) {
+			return $this->response->setJSON(['erro' => 'Tipo de ingresso não identificado.', 'token' => csrf_hash()]);
+		}
+
+		// All tickets from same event+lote with higher price
+		$opcoes = $this->ticketModel
+			->where('event_id', $ingresso->evento_id)
+			->where('lote', $ticket->lote)
+			->where('preco >', $ticket->preco)
+			->where('ativo', 1)
+			->where('deleted_at IS NULL')
+			->orderBy('preco', 'ASC')
+			->findAll();
+
+		$opcoesFormatadas = array_map(function($t) use ($ticket) {
+			return [
+				'id'        => $t->id,
+				'nome'      => $t->nome,
+				'preco'     => (float)$t->preco,
+				'diferenca' => round((float)$t->preco - (float)$ticket->preco, 2),
+				'preco_fmt' => 'R$ ' . number_format($t->preco, 2, ',', '.'),
+				'dif_fmt'   => 'R$ ' . number_format($t->preco - $ticket->preco, 2, ',', '.'),
+			];
+		}, $opcoes);
+
+		return $this->response->setJSON([
+			'ingresso'      => ['id' => $ingresso->id, 'nome' => $ingresso->nome, 'valor' => (float)$ingresso->valor_unitario],
+			'ticket_atual'  => ['id' => $ticket->id, 'nome' => $ticket->nome, 'preco' => (float)$ticket->preco],
+			'opcoes'        => $opcoesFormatadas,
+			'token'         => csrf_hash(),
+		]);
+	}
+
+	public function upgradeGerarLink($ingressoId)
+	{
+		if (!$this->request->isAJAX()) return redirect()->back();
+
+		$post = $this->request->getPost();
+		$ticketDestinoId = (int)($post['ticket_destino_id'] ?? 0);
+		$descontoPct     = max(0, min(100, (float)($post['desconto_pct'] ?? 0)));
+
+		// Load ingresso
+		$ingresso = $this->ingressoModel
+			->select('ingressos.id, ingressos.ticket_id, ingressos.nome, ingressos.valor_unitario, ingressos.user_id, pedidos.evento_id')
+			->join('pedidos', 'pedidos.id = ingressos.pedido_id')
+			->find((int)$ingressoId);
+
+		if (!$ingresso) {
+			return $this->response->setJSON(['erro' => 'Ingresso não encontrado.', 'token' => csrf_hash()]);
+		}
+
+		$ticketAtual = $this->ticketModel->find($ingresso->ticket_id);
+		$ticketDestino = $this->ticketModel->find($ticketDestinoId);
+
+		if (!$ticketAtual || !$ticketDestino) {
+			return $this->response->setJSON(['erro' => 'Ticket inválido.', 'token' => csrf_hash()]);
+		}
+
+		// Validate same event+lote and higher price
+		if ($ticketDestino->event_id != $ingresso->evento_id
+			|| $ticketDestino->lote != $ticketAtual->lote
+			|| $ticketDestino->preco <= $ticketAtual->preco) {
+			return $this->response->setJSON(['erro' => 'Ticket destino inválido para upgrade.', 'token' => csrf_hash()]);
+		}
+
+		$diferenca    = round((float)$ticketDestino->preco - (float)$ticketAtual->preco, 2);
+		$valorCobrado = round($diferenca * (1 - $descontoPct / 100), 2);
+
+		// If free upgrade, apply directly
+		if ($valorCobrado <= 0) {
+			$upgradeId = $this->ingressoUpgradeModel->insert([
+				'ingresso_id'       => $ingresso->id,
+				'ticket_destino_id' => $ticketDestinoId,
+				'valor_original'    => $ticketAtual->preco,
+				'valor_destino'     => $ticketDestino->preco,
+				'desconto_pct'      => $descontoPct,
+				'valor_cobrado'     => 0,
+				'forma_pagamento'   => 'gratuito',
+				'status'            => 'pendente',
+			]);
+			$this->_efetivarUpgrade((int)$upgradeId);
+			return $this->response->setJSON(['gratuito' => true, 'token' => csrf_hash()]);
+		}
+
+		// Get or create Asaas customer
+		$cliente = $this->clienteModel->withDeleted(true)->where('usuario_id', $ingresso->user_id)->first();
+		if (!$cliente) {
+			return $this->response->setJSON(['erro' => 'Cliente não encontrado.', 'token' => csrf_hash()]);
+		}
+
+		$customerId = $cliente->customer_id;
+		if (empty($customerId)) {
+			// Create customer in Asaas
+			$usuario = $this->usuarioModel->find($ingresso->user_id);
+			$asaasService = new \App\Services\AsaasService();
+			$customer = $asaasService->customers([
+				'nome'     => $usuario->nome ?? $cliente->nome,
+				'cpf'      => preg_replace('/[^0-9]/', '', $cliente->cpf ?? ''),
+				'email'    => $usuario->email ?? '',
+				'telefone' => preg_replace('/[^0-9]/', '', $cliente->telefone ?? ''),
+				'cep'      => '',
+				'numero'   => '',
+			]);
+			$customerId = $customer['id'] ?? null;
+			if ($customerId) {
+				$this->clienteModel->protect(false)->where('id', $cliente->id)->set('customer_id', $customerId)->update();
+			}
+		}
+
+		if (!$customerId) {
+			return $this->response->setJSON(['erro' => 'Falha ao identificar cliente no gateway de pagamento.', 'token' => csrf_hash()]);
+		}
+
+		// Insert pending upgrade record first (to get ID for externalReference)
+		$upgradeId = $this->ingressoUpgradeModel->insert([
+			'ingresso_id'       => $ingresso->id,
+			'ticket_destino_id' => $ticketDestinoId,
+			'valor_original'    => $ticketAtual->preco,
+			'valor_destino'     => $ticketDestino->preco,
+			'desconto_pct'      => $descontoPct,
+			'valor_cobrado'     => $valorCobrado,
+			'forma_pagamento'   => 'UNDEFINED',
+			'status'            => 'pendente',
+			'expire_at'         => date('Y-m-d H:i:s', strtotime('+3 days')),
+		]);
+
+		$asaasService = new \App\Services\AsaasService();
+		$cobranca = $asaasService->criarCobranca([
+			'customer_id'        => $customerId,
+			'billing_type'       => 'UNDEFINED',
+			'value'              => $valorCobrado,
+			'due_date'           => date('Y-m-d', strtotime('+3 days')),
+			'description'        => 'Upgrade: ' . $ingresso->nome . ' → ' . $ticketDestino->nome,
+			'external_reference' => 'upgrade:' . $upgradeId,
+		]);
+
+		if (empty($cobranca['id'])) {
+			return $this->response->setJSON(['erro' => 'Falha ao gerar cobrança no gateway. Tente novamente.', 'token' => csrf_hash()]);
+		}
+
+		// Update upgrade with charge info
+		$this->ingressoUpgradeModel->update($upgradeId, [
+			'charge_id'      => $cobranca['id'],
+			'link_pagamento' => $cobranca['invoiceUrl'] ?? null,
+			'status'         => 'pendente',
+		]);
+
+		return $this->response->setJSON([
+			'link_pagamento' => $cobranca['invoiceUrl'] ?? null,
+			'upgrade_id'     => $upgradeId,
+			'valor_cobrado'  => 'R$ ' . number_format($valorCobrado, 2, ',', '.'),
+			'token'          => csrf_hash(),
+		]);
+	}
+
+	public function upgradeEfetivar($upgradeId)
+	{
+		if (!$this->request->isAJAX()) return redirect()->back();
+		if (!$this->usuarioLogado()->is_admin) {
+			return $this->response->setJSON(['erro' => 'Sem permissão.', 'token' => csrf_hash()]);
+		}
+
+		$upgrade = $this->ingressoUpgradeModel->find((int)$upgradeId);
+		if (!$upgrade) {
+			return $this->response->setJSON(['erro' => 'Upgrade não encontrado.', 'token' => csrf_hash()]);
+		}
+		if ($upgrade->status === 'pago') {
+			return $this->response->setJSON(['erro' => 'Upgrade já efetivado.', 'token' => csrf_hash()]);
+		}
+
+		$this->_efetivarUpgrade((int)$upgradeId);
+
+		return $this->response->setJSON(['sucesso' => true, 'token' => csrf_hash()]);
+	}
+
+	private function _efetivarUpgrade(int $upgradeId): bool
+	{
+		$upgrade = $this->ingressoUpgradeModel->find($upgradeId);
+		if (!$upgrade || $upgrade->status === 'pago') return false;
+
+		$ticketDestino = $this->ticketModel->find($upgrade->ticket_destino_id);
+		if (!$ticketDestino) return false;
+
+		// Update the ingresso
+		$this->ingressoModel->skipValidation(true)->protect(false)->update($upgrade->ingresso_id, [
+			'ticket_id'      => $ticketDestino->id,
+			'nome'           => $ticketDestino->nome,
+			'valor_unitario' => $ticketDestino->preco,
+			'updated_at'     => date('Y-m-d H:i:s'),
+		]);
+
+		// Mark upgrade as done
+		$adminId = $this->usuarioLogado() ? $this->usuarioLogado()->id : null;
+		$this->ingressoUpgradeModel->update($upgradeId, [
+			'status'         => 'pago',
+			'efetivado_em'   => date('Y-m-d H:i:s'),
+			'efetivado_por'  => $adminId,
+		]);
+
+		return true;
 	}
 
 	/**

@@ -166,6 +166,36 @@ class Webhook extends BaseController
                 );
             }
 
+            // ========================================
+            // PROCESSAMENTO DE UPGRADES DE INGRESSO
+            // ========================================
+            if ($payment_externalReference && str_starts_with($payment_externalReference, 'upgrade:')) {
+                $upgradeId = (int) explode(':', $payment_externalReference)[1];
+                if (in_array($payment_status, ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH']) && $upgradeId > 0) {
+                    $upgradeModel = new \App\Models\IngressoUpgradeModel();
+                    $upgrade = $upgradeModel->find($upgradeId);
+                    if ($upgrade && $upgrade->status === 'pendente') {
+                        $ingressoModel = new \App\Models\IngressoModel();
+                        $ticketModel   = new \App\Models\TicketModel();
+                        $ticketDestino = $ticketModel->find($upgrade->ticket_destino_id);
+                        if ($ticketDestino) {
+                            $ingressoModel->skipValidation(true)->protect(false)->update($upgrade->ingresso_id, [
+                                'ticket_id'      => $ticketDestino->id,
+                                'nome'           => $ticketDestino->nome,
+                                'valor_unitario' => $ticketDestino->preco,
+                                'updated_at'     => date('Y-m-d H:i:s'),
+                            ]);
+                            $upgradeModel->update($upgradeId, [
+                                'status'        => 'pago',
+                                'charge_id'     => $payment_id,
+                                'efetivado_em'  => date('Y-m-d H:i:s'),
+                            ]);
+                            log_message('info', 'Upgrade de ingresso efetivado: upgrade_id=' . $upgradeId);
+                        }
+                    }
+                }
+            }
+
             return $this->response->setJSON(['status' => 'success', 'message' => 'Webhook processado com sucesso']);
 
         } catch (\Exception $e) {

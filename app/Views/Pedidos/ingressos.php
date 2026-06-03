@@ -187,6 +187,11 @@
                                                 data-ingresso-nome="<?= esc($i->nome) ?>">
                                             <i class="bx bx-transfer-alt"></i> Trocar dia
                                         </button>
+                                        <button type="button" class="btn btn-outline-warning mt-0 shadow btn-upgrade"
+                                                data-id="<?= $i->id ?>"
+                                                data-nome="<?= esc($i->nome) ?>">
+                                            <i class="bx bx-up-arrow-circle"></i> Upgrade
+                                        </button>
 
 
                                     </div>
@@ -245,7 +250,7 @@
                                                             <?= date('d/m/Y H:i:s', strtotime($acesso->created_at)) ?>
                                                         </td>
                                                         <td>
-                                                            <?php 
+                                                            <?php
                                                             $tipoClass = 'bg-info';
                                                             if ($acesso->tipo_acesso == 'ACESSO') $tipoClass = 'bg-success';
                                                             if ($acesso->tipo_acesso == 'SAIDA') $tipoClass = 'bg-warning';
@@ -259,6 +264,54 @@
                                             </table>
                                         </div>
                                     </div>
+                                    <?php endif; ?>
+
+                                    <?php $upgradesDoIngresso = $upgradesPorIngresso[$i->id] ?? []; ?>
+                                    <?php if (!empty($upgradesDoIngresso)) : ?>
+                                        <hr class="mt-3">
+                                        <div class="mt-3">
+                                            <h6><i class="bx bx-up-arrow-circle me-2 text-warning"></i>Histórico de Upgrades</h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-sm table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Data</th>
+                                                            <th>Ticket Destino</th>
+                                                            <th>Valor Cobrado</th>
+                                                            <th>Status</th>
+                                                            <th>Ação</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($upgradesDoIngresso as $upg) : ?>
+                                                            <tr>
+                                                                <td><?= date('d/m/Y H:i', strtotime($upg->created_at)) ?></td>
+                                                                <td>
+                                                                    <?php
+                                                                    $ticketDest = (new \App\Models\TicketModel())->find($upg->ticket_destino_id);
+                                                                    echo esc($ticketDest->nome ?? '#' . $upg->ticket_destino_id);
+                                                                    ?>
+                                                                </td>
+                                                                <td>R$ <?= number_format($upg->valor_cobrado, 2, ',', '.') ?></td>
+                                                                <td><?= $upg->getStatusBadge() ?></td>
+                                                                <td>
+                                                                    <?php if ($upg->status === 'pendente') : ?>
+                                                                        <?php if (!empty($upg->link_pagamento)) : ?>
+                                                                            <a href="<?= esc($upg->link_pagamento) ?>" target="_blank" class="btn btn-xs btn-outline-primary btn-sm">
+                                                                                <i class="bx bx-link-external"></i> Link
+                                                                            </a>
+                                                                        <?php endif; ?>
+                                                                        <button type="button" class="btn btn-xs btn-success btn-sm btn-efetivar-upgrade" data-upgrade-id="<?= $upg->id ?>">
+                                                                            <i class="bx bx-check"></i> Efetivar
+                                                                        </button>
+                                                                    <?php endif; ?>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -517,6 +570,70 @@
     </div>
 </div>
 
+
+<!-- Modal Upgrade -->
+<div class="modal fade" id="modalUpgrade" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning bg-opacity-10">
+                <h5 class="modal-title"><i class="bx bx-up-arrow-circle me-2 text-warning"></i>Upgrade de Ingresso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: choose ticket -->
+                <div id="upg-step1">
+                    <p class="text-muted mb-3">Ingresso atual: <strong id="upg-nome-atual"></strong></p>
+                    <div id="upg-loading" class="text-center py-4"><div class="spinner-border text-warning"></div></div>
+                    <div id="upg-tabela-wrap" style="display:none">
+                        <table class="table table-hover align-middle">
+                            <thead><tr><th>Opção</th><th class="text-end">Preço</th><th class="text-end">Diferença</th><th></th></tr></thead>
+                            <tbody id="upg-opcoes-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="upg-sem-opcoes" class="alert alert-info" style="display:none">
+                        Não há opções de upgrade disponíveis para este ingresso no lote atual.
+                    </div>
+                </div>
+                <!-- Step 2: configure -->
+                <div id="upg-step2" style="display:none">
+                    <div class="alert alert-light border">
+                        <div class="row text-center g-2">
+                            <div class="col-4"><small class="text-muted d-block">Ticket destino</small><strong id="upg-destino-nome">-</strong></div>
+                            <div class="col-4"><small class="text-muted d-block">Preço destino</small><strong id="upg-destino-preco">-</strong></div>
+                            <div class="col-4"><small class="text-muted d-block">Diferença</small><strong id="upg-destino-dif">-</strong></div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Desconto (%)</label>
+                            <input type="number" id="upg-desconto" class="form-control" min="0" max="100" step="0.1" value="0" placeholder="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valor a cobrar</label>
+                            <input type="text" id="upg-valor-final" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary" id="upg-btn-voltar"><i class="bx bx-arrow-back"></i> Voltar</button>
+                        <button type="button" class="btn btn-warning" id="upg-btn-gerar"><i class="bx bx-link"></i> Gerar Link de Pagamento</button>
+                    </div>
+                </div>
+                <!-- Step 3: link generated -->
+                <div id="upg-step3" style="display:none">
+                    <div class="alert alert-success"><i class="bx bx-check-circle me-1"></i>Link de pagamento gerado com sucesso!</div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Link para enviar ao cliente</label>
+                        <div class="input-group">
+                            <input type="text" id="upg-link-final" class="form-control" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('upg-link-final').value); this.textContent='Copiado!'">Copiar</button>
+                        </div>
+                    </div>
+                    <p class="text-muted small">O ingresso será atualizado automaticamente após o pagamento via Pix ou cartão de crédito.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal: Trocar dia do ingresso -->
 <div class="modal fade" id="trocaDiaModal" tabindex="-1" role="dialog" aria-labelledby="trocaDiaModalLabel" aria-hidden="true">
@@ -852,6 +969,105 @@
                 }
             });
         });
+
+        // ---- UPGRADE ----
+        (function() {
+            const CSRF_NAME = '<?= csrf_token() ?>';
+            let CSRF_HASH   = '<?= csrf_hash() ?>';
+            let upgIngressoId = null;
+            let upgTicketDestinoId = null;
+            let upgDiferenca = 0;
+
+            document.querySelectorAll('.btn-upgrade').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    upgIngressoId = this.dataset.id;
+                    document.getElementById('upg-nome-atual').textContent = this.dataset.nome;
+                    document.getElementById('upg-step1').style.display = '';
+                    document.getElementById('upg-step2').style.display = 'none';
+                    document.getElementById('upg-step3').style.display = 'none';
+                    document.getElementById('upg-loading').style.display = '';
+                    document.getElementById('upg-tabela-wrap').style.display = 'none';
+                    document.getElementById('upg-sem-opcoes').style.display = 'none';
+                    document.getElementById('upg-desconto').value = 0;
+                    new bootstrap.Modal(document.getElementById('modalUpgrade')).show();
+                    fetch('<?= site_url('pedidos/upgrade-opcoes/') ?>' + upgIngressoId, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    }).then(r => r.json()).then(j => {
+                        if (j.token) CSRF_HASH = j.token;
+                        document.getElementById('upg-loading').style.display = 'none';
+                        if (j.erro) { document.getElementById('upg-sem-opcoes').textContent = j.erro; document.getElementById('upg-sem-opcoes').style.display = ''; return; }
+                        if (!j.opcoes || j.opcoes.length === 0) { document.getElementById('upg-sem-opcoes').style.display = ''; return; }
+                        const tbody = document.getElementById('upg-opcoes-tbody');
+                        tbody.innerHTML = '';
+                        j.opcoes.forEach(op => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `<td><strong>${op.nome}</strong></td><td class="text-end">${op.preco_fmt}</td><td class="text-end text-success">+${op.dif_fmt}</td><td class="text-end"><button class="btn btn-sm btn-outline-warning btn-upg-select" data-id="${op.id}" data-nome="${op.nome}" data-preco="${op.preco_fmt}" data-dif="${op.diferenca}" data-dif-fmt="${op.dif_fmt}">Selecionar</button></td>`;
+                            tbody.appendChild(tr);
+                        });
+                        document.getElementById('upg-tabela-wrap').style.display = '';
+                        tbody.querySelectorAll('.btn-upg-select').forEach(b => {
+                            b.addEventListener('click', function() {
+                                upgTicketDestinoId = this.dataset.id;
+                                upgDiferenca = parseFloat(this.dataset.dif);
+                                document.getElementById('upg-destino-nome').textContent  = this.dataset.nome;
+                                document.getElementById('upg-destino-preco').textContent = this.dataset.preco;
+                                document.getElementById('upg-destino-dif').textContent   = '+' + this.dataset.difFmt;
+                                atualizarValorFinal();
+                                document.getElementById('upg-step1').style.display = 'none';
+                                document.getElementById('upg-step2').style.display = '';
+                            });
+                        });
+                    }).catch(() => { document.getElementById('upg-loading').style.display = 'none'; document.getElementById('upg-sem-opcoes').style.display = ''; });
+                });
+            });
+
+            function atualizarValorFinal() {
+                const desc = parseFloat(document.getElementById('upg-desconto').value) || 0;
+                const final = upgDiferenca * (1 - desc / 100);
+                document.getElementById('upg-valor-final').value = 'R$ ' + final.toFixed(2).replace('.', ',');
+            }
+            document.getElementById('upg-desconto').addEventListener('input', atualizarValorFinal);
+            document.getElementById('upg-btn-voltar').addEventListener('click', function() {
+                document.getElementById('upg-step2').style.display = 'none';
+                document.getElementById('upg-step1').style.display = '';
+            });
+            document.getElementById('upg-btn-gerar').addEventListener('click', async function() {
+                this.disabled = true; this.textContent = 'Gerando...';
+                const fd = new FormData();
+                fd.append('ticket_destino_id', upgTicketDestinoId);
+                fd.append('desconto_pct', document.getElementById('upg-desconto').value || 0);
+                fd.append(CSRF_NAME, CSRF_HASH);
+                try {
+                    const r = await fetch('<?= site_url('pedidos/upgrade-gerar-link/') ?>' + upgIngressoId, {
+                        method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const j = await r.json();
+                    if (j.token) CSRF_HASH = j.token;
+                    if (j.erro) { alert(j.erro); this.disabled = false; this.innerHTML = '<i class="bx bx-link"></i> Gerar Link de Pagamento'; return; }
+                    if (j.gratuito) { alert('Upgrade gratuito aplicado com sucesso!'); location.reload(); return; }
+                    document.getElementById('upg-link-final').value = j.link_pagamento || '';
+                    document.getElementById('upg-step2').style.display = 'none';
+                    document.getElementById('upg-step3').style.display = '';
+                } catch(e) { alert('Erro ao gerar link.'); this.disabled = false; this.innerHTML = '<i class="bx bx-link"></i> Gerar Link de Pagamento'; }
+            });
+
+            // Efetivar manualmente
+            document.querySelectorAll('.btn-efetivar-upgrade').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    if (!confirm('Efetivar este upgrade manualmente?')) return;
+                    const id = this.dataset.upgradeId;
+                    const fd = new FormData();
+                    fd.append(CSRF_NAME, CSRF_HASH);
+                    const r = await fetch('<?= site_url('pedidos/upgrade-efetivar/') ?>' + id, {
+                        method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const j = await r.json();
+                    if (j.token) CSRF_HASH = j.token;
+                    if (j.erro) { alert(j.erro); return; }
+                    location.reload();
+                });
+            });
+        })();
 
         // Marcar Order Bump como usado
         $(".btn-marcar-usado").on('click', function() {
