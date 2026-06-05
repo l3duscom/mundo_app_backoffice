@@ -26,8 +26,15 @@ class RecuperacaoLeadModel extends Model
      * Lista clientes que compraram no evento de origem e ainda não
      * compraram no evento de destino (com status de recuperação se houver).
      */
-    public function listaLeads(int $eventoOrigemId, int $eventoDestinoId): array
+    public function listaLeads(int $eventoOrigemId, int $eventoDestinoId, ?string $tipo = null): array
     {
+        $filtroTipo  = '';
+        $bindsOrigem = [$eventoOrigemId];
+        if (!empty($tipo)) {
+            $filtroTipo  = " AND UPPER(i.nome) LIKE UPPER(?) ";
+            $bindsOrigem[] = '%' . $tipo . '%';
+        }
+
         $sql = "
             SELECT
                 u.id AS user_id,
@@ -38,7 +45,8 @@ class RecuperacaoLeadModel extends Model
                 o.total_ingressos_origem,
                 o.valor_total_origem,
                 o.primeira_compra_origem,
-                o.ultima_compra_origem
+                o.ultima_compra_origem,
+                o.ingressos_nomes
             FROM (
                 SELECT
                     i.user_id,
@@ -46,7 +54,8 @@ class RecuperacaoLeadModel extends Model
                     SUM(i.quantidade)    AS total_ingressos_origem,
                     SUM(i.valor)         AS valor_total_origem,
                     MIN(p.created_at)    AS primeira_compra_origem,
-                    MAX(p.created_at)    AS ultima_compra_origem
+                    MAX(p.created_at)    AS ultima_compra_origem,
+                    GROUP_CONCAT(DISTINCT i.nome SEPARATOR ' | ') AS ingressos_nomes
                 FROM pedidos p
                 INNER JOIN ingressos i ON i.pedido_id = p.id
                 WHERE p.evento_id = ?
@@ -56,6 +65,7 @@ class RecuperacaoLeadModel extends Model
                   AND i.tipo NOT IN ('cinemark', 'adicional', 'produto', 'acesso')
                   AND i.nome NOT LIKE '%cortesia%'
                   AND i.ticket_id NOT IN (1113, 1114, 1115, 1116, 1117, 1123, 1124)
+                  $filtroTipo
                 GROUP BY i.user_id
             ) o
             INNER JOIN usuarios u ON u.id = o.user_id
@@ -76,7 +86,8 @@ class RecuperacaoLeadModel extends Model
             ORDER BY o.valor_total_origem DESC
         ";
 
-        $leads = $this->db->query($sql, [$eventoOrigemId, $eventoDestinoId])->getResultArray();
+        $bindings = array_merge($bindsOrigem, [$eventoDestinoId]);
+        $leads = $this->db->query($sql, $bindings)->getResultArray();
 
         if (empty($leads)) {
             return [];

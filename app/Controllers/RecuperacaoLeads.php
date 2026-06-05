@@ -37,6 +37,8 @@ class RecuperacaoLeads extends BaseController
             ->findAll();
 
         $eventoOrigemId = (int) ($this->request->getGet('evento_origem_id') ?? 0);
+        $tipoSelecionado = trim((string) ($this->request->getGet('tipo') ?? ''));
+        $tiposDisponiveis = ['VIP', 'Epic', 'Premium', 'Comum'];
 
         $leads = [];
         $eventoOrigem = null;
@@ -55,7 +57,7 @@ class RecuperacaoLeads extends BaseController
             if ($eventoOrigem) {
                 $this->recuperacaoLeadModel->marcaRevertidos($eventoDestino->id);
 
-                $leads = $this->recuperacaoLeadModel->listaLeads($eventoOrigemId, $eventoDestino->id);
+                $leads = $this->recuperacaoLeadModel->listaLeads($eventoOrigemId, $eventoDestino->id, $tipoSelecionado !== '' ? $tipoSelecionado : null);
 
                 foreach ($leads as $lead) {
                     $estatisticas['total']++;
@@ -79,6 +81,8 @@ class RecuperacaoLeads extends BaseController
             'eventos'          => $eventos,
             'leads'            => $leads,
             'estatisticas'     => $estatisticas,
+            'tiposDisponiveis' => $tiposDisponiveis,
+            'tipoSelecionado'  => $tipoSelecionado,
         ];
 
         return view('RecuperacaoLeads/index', $data);
@@ -143,15 +147,19 @@ class RecuperacaoLeads extends BaseController
             return redirect()->to(site_url('/recuperacao-leads'))->with('atencao', 'Escolha um evento de origem.');
         }
 
+        $tipo = trim((string) $this->request->getGet('tipo'));
+        $tipoFilter = $tipo !== '' ? $tipo : null;
+
         $this->recuperacaoLeadModel->marcaRevertidos($eventoDestino->id);
-        $leads = $this->recuperacaoLeadModel->listaLeads($eventoOrigemId, (int) $eventoDestino->id);
+        $leads = $this->recuperacaoLeadModel->listaLeads($eventoOrigemId, (int) $eventoDestino->id, $tipoFilter);
 
         $limitePorArquivo = 1950;
         $chunks = array_chunk($leads, $limitePorArquivo);
         $timestamp = date('Y-m-d-His');
+        $sufixoTipo = $tipoFilter ? '-' . preg_replace('/[^a-z0-9]+/i', '', $tipoFilter) : '';
 
         if (count($chunks) <= 1) {
-            $nomeArquivo = 'recuperacao-leads-' . $timestamp . '.csv';
+            $nomeArquivo = 'recuperacao-leads' . $sufixoTipo . '-' . $timestamp . '.csv';
 
             $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
             $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $nomeArquivo . '"');
@@ -168,11 +176,11 @@ class RecuperacaoLeads extends BaseController
 
         foreach ($chunks as $i => $chunk) {
             $parte = str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT);
-            $zip->addFromString("recuperacao-leads-{$timestamp}-parte-{$parte}.csv", $this->gerarCsvLeads($chunk));
+            $zip->addFromString("recuperacao-leads{$sufixoTipo}-{$timestamp}-parte-{$parte}.csv", $this->gerarCsvLeads($chunk));
         }
         $zip->close();
 
-        $nomeArquivoZip = 'recuperacao-leads-' . $timestamp . '.zip';
+        $nomeArquivoZip = 'recuperacao-leads' . $sufixoTipo . '-' . $timestamp . '.zip';
         $conteudo = file_get_contents($tempZip);
         @unlink($tempZip);
 

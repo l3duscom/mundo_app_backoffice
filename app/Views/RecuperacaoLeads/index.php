@@ -83,7 +83,7 @@
 <div class="card">
     <div class="card-body">
         <form method="get" action="<?= site_url('/recuperacao-leads') ?>" class="row g-3 align-items-end">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <label class="form-label">Evento de origem (clientes que compraram nele)</label>
                 <select name="evento_origem_id" class="form-select" required>
                     <option value="">Selecione um evento...</option>
@@ -97,7 +97,18 @@
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label">Tipo de ingresso</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos os tipos</option>
+                    <?php foreach ($tiposDisponiveis as $tp) : ?>
+                        <option value="<?= esc($tp) ?>" <?= strcasecmp($tipoSelecionado, $tp) === 0 ? 'selected' : '' ?>>
+                            <?= esc($tp) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <button type="submit" class="btn btn-primary w-100">
                     <i class="bx bx-search"></i> Buscar leads
                 </button>
@@ -108,11 +119,14 @@
             <div class="text-muted small">
                 Evento atual (destino): <strong><?= esc($eventoDestino->nome) ?></strong> &mdash;
                 mostraremos quem comprou no evento de origem mas <strong>ainda não comprou</strong> aqui.
+                <?php if ($tipoSelecionado !== '') : ?>
+                    <br>Filtro de tipo: <span class="badge bg-warning text-dark"><?= esc($tipoSelecionado) ?></span>
+                <?php endif; ?>
             </div>
             <?php if ($eventoOrigemId > 0) : ?>
-                <a href="<?= site_url('/recuperacao-leads/exportar-csv?evento_origem_id=' . $eventoOrigemId) ?>"
+                <a href="<?= site_url('/recuperacao-leads/exportar-csv?evento_origem_id=' . $eventoOrigemId . ($tipoSelecionado !== '' ? '&tipo=' . urlencode($tipoSelecionado) : '')) ?>"
                    class="btn btn-success btn-sm">
-                    <i class="bx bx-download"></i> Exportar CSV (nome + telefone)
+                    <i class="bx bx-download"></i> Exportar CSV (nome + telefone)<?= $tipoSelecionado !== '' ? ' — ' . esc($tipoSelecionado) : '' ?>
                 </a>
             <?php endif; ?>
         </div>
