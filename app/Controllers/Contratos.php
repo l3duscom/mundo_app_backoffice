@@ -190,18 +190,19 @@ class Contratos extends BaseController
             return redirect()->back();
         }
 
-        $eventId = $this->request->getGet('event_id');
+        $eventId = evento_selecionado();
         $statusAba = $this->request->getGet('status_aba') ?: 'ativos';
+
+        if (empty($eventId)) {
+            return $this->response->setJSON(['data' => []]);
+        }
 
         $builder = $this->contratoModel
             ->select('contratos.*, expositores.nome as expositor_nome, expositores.nome_fantasia as expositor_fantasia, eventos.nome as evento_nome')
             ->join('expositores', 'expositores.id = contratos.expositor_id', 'left')
             ->join('eventos', 'eventos.id = contratos.event_id', 'left')
-            ->withDeleted(true);
-
-        if (!empty($eventId)) {
-            $builder->where('contratos.event_id', $eventId);
-        }
+            ->withDeleted(true)
+            ->where('contratos.event_id', $eventId);
 
         if ($statusAba === 'excluidos') {
             $builder->where('contratos.deleted_at IS NOT NULL');
@@ -375,16 +376,24 @@ class Contratos extends BaseController
             return redirect()->back();
         }
 
-        $eventId = $this->request->getGet('event_id');
+        $eventId = evento_selecionado();
+
+        if (empty($eventId)) {
+            return $this->response->setJSON([
+                'quantidade_contratos' => 0,
+                'valor_total'          => 0,
+                'valor_pago'           => 0,
+                'valor_em_aberto'      => 0,
+                'por_tipo'             => [],
+                'por_situacao'         => [],
+            ]);
+        }
 
         // Query base para contratos
         $builder = $this->contratoModel
             ->select('contratos.id, contratos.valor_final, contratos.valor_pago, contratos.valor_em_aberto, contratos.situacao')
-            ->where('contratos.deleted_at', null);
-
-        if (!empty($eventId)) {
-            $builder->where('contratos.event_id', $eventId);
-        }
+            ->where('contratos.deleted_at', null)
+            ->where('contratos.event_id', $eventId);
 
         $contratos = $builder->findAll();
 
