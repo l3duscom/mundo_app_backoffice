@@ -208,31 +208,51 @@ class Contratos extends BaseController
 
         // Carregar modelo de itens para contar
         $contratoItemModel = new \App\Models\ContratoItemModel();
-        
+
         // Carregar modelo de documentos
         $documentoModel = new \App\Models\ContratoDocumentoModel();
-        
+
         // Carregar modelo de credenciamento
         $credenciamentoModel = new \App\Models\CredenciamentoModel();
 
+        // Carregar modelo de espaços
+        $espacoModel = new \App\Models\EspacoModel();
+
         foreach ($contratos as $contrato) {
-            $nomeExpositor = !empty($contrato->expositor_fantasia) 
-                ? $contrato->expositor_fantasia 
+            $nomeExpositor = !empty($contrato->expositor_fantasia)
+                ? $contrato->expositor_fantasia
                 : $contrato->expositor_nome;
 
             // Conta itens do contrato e busca tipos
             $itensContrato = $contratoItemModel->where('contrato_id', $contrato->id)->findAll();
             $qtdItens = count($itensContrato);
-            
+
             // Agrupa tipos únicos dos itens
             $tiposUnicos = [];
+            $descricoesItens = [];
+            $nomesEspacos = [];
             foreach ($itensContrato as $item) {
                 if (!empty($item->tipo_item) && !in_array($item->tipo_item, $tiposUnicos)) {
                     $tiposUnicos[] = $item->tipo_item;
                 }
+                if (!empty($item->descricao)) {
+                    $descricoesItens[] = esc($item->descricao);
+                }
+                $espacoItem = $espacoModel->buscaPorContratoItem((int) $item->id);
+                if ($espacoItem && !empty($espacoItem->nome)) {
+                    $nomesEspacos[] = esc($espacoItem->nome);
+                }
             }
-            $tiposFormatados = !empty($tiposUnicos) 
-                ? implode(', ', $tiposUnicos) 
+            $tiposFormatados = !empty($tiposUnicos)
+                ? implode(', ', $tiposUnicos)
+                : '<span class="text-muted">-</span>';
+
+            $descricoesHtml = !empty($descricoesItens)
+                ? '<div class="small text-muted mt-1">' . implode('<br>', $descricoesItens) . '</div>'
+                : '';
+
+            $espacosHtml = !empty($nomesEspacos)
+                ? '<span class="badge bg-info text-dark">' . implode('</span> <span class="badge bg-info text-dark">', $nomesEspacos) . '</span>'
                 : '<span class="text-muted">-</span>';
 
             // Verifica se está pago e situação
@@ -312,7 +332,8 @@ class Contratos extends BaseController
                 'expositor' => esc($nomeExpositor ?? 'N/A'),
                 'evento' => esc($contrato->evento_nome ?? 'N/A'),
                 'tipo' => $tiposFormatados,
-                'qtd_itens' => '<span class="badge bg-secondary">' . $qtdItens . ' ' . ($qtdItens == 1 ? 'item' : 'itens') . '</span>',
+                'qtd_itens' => '<span class="badge bg-secondary">' . $qtdItens . ' ' . ($qtdItens == 1 ? 'item' : 'itens') . '</span>' . $descricoesHtml,
+                'espaco' => $espacosHtml,
                 'valor_final' => $contrato->getValorFinalFormatado(),
                 'valor_pago' => $valorPagoFormatado,
                 'situacao' => $contrato->exibeSituacao() . '<span class="d-none">' . esc($contrato->situacao) . '</span>',

@@ -183,6 +183,7 @@ tr.contrato-bloqueado td .badge {
                                 <th>Evento</th>
                                 <th>Tipo</th>
                                 <th>Itens</th>
+                                <th>Espaço</th>
                                 <th>Valor</th>
                                 <th>Pago</th>
                                 <th>Situação</th>
@@ -304,6 +305,7 @@ $(document).ready(function() {
             { "data": "evento" },
             { "data": "tipo" },
             { "data": "qtd_itens" },
+            { "data": "espaco" },
             { "data": "valor_final" },
             { "data": "valor_pago" },
             { "data": "situacao" },
@@ -334,13 +336,13 @@ $(document).ready(function() {
     // Filtro por Situação
     $('#filtroSituacao').on('change', function() {
         var valor = $(this).val();
-        table.column(7).search(valor).draw();
+        table.column(8).search(valor).draw();
     });
 
     // Filtro por Parcela
     $('#filtroParcela').on('change', function() {
         var valor = $(this).val();
-        table.column(10).search(valor).draw();
+        table.column(11).search(valor).draw();
     });
 
     // Limpar Filtros
