@@ -191,6 +191,7 @@ class Contratos extends BaseController
         }
 
         $eventId = $this->request->getGet('event_id');
+        $statusAba = $this->request->getGet('status_aba') ?: 'ativos';
 
         $builder = $this->contratoModel
             ->select('contratos.*, expositores.nome as expositor_nome, expositores.nome_fantasia as expositor_fantasia, eventos.nome as evento_nome')
@@ -200,6 +201,16 @@ class Contratos extends BaseController
 
         if (!empty($eventId)) {
             $builder->where('contratos.event_id', $eventId);
+        }
+
+        if ($statusAba === 'excluidos') {
+            $builder->where('contratos.deleted_at IS NOT NULL');
+        } elseif ($statusAba === 'cancelados') {
+            $builder->where('contratos.deleted_at IS NULL')
+                    ->whereIn('contratos.situacao', ['cancelado', 'banido']);
+        } else {
+            $builder->where('contratos.deleted_at IS NULL')
+                    ->whereNotIn('contratos.situacao', ['cancelado', 'banido']);
         }
 
         $contratos = $builder->orderBy('contratos.id', 'DESC')->findAll();

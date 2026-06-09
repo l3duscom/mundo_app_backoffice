@@ -138,7 +138,27 @@ tr.contrato-bloqueado td .badge {
                 <!-- Filtros -->
                 <?php $eventoIdUrl = $_GET['evento_id'] ?? ''; ?>
                 <input type="hidden" id="filtroEvento" value="<?php echo esc($eventoIdUrl); ?>">
-                
+                <input type="hidden" id="filtroStatusAba" value="ativos">
+
+                <!-- Abas de status -->
+                <ul class="nav nav-tabs mb-3" id="tabsContratos" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active tab-contratos" data-aba="ativos" href="#" role="tab">
+                            <i class="bx bx-check-circle me-1"></i>Ativos
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link tab-contratos" data-aba="cancelados" href="#" role="tab">
+                            <i class="bx bx-x-circle me-1"></i>Cancelados
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link tab-contratos" data-aba="excluidos" href="#" role="tab">
+                            <i class="bx bx-trash me-1"></i>Excluídos
+                        </a>
+                    </li>
+                </ul>
+
                 <div class="d-flex flex-wrap gap-3 mb-4 align-items-end">
                     <div>
                         <label class="form-label fw-bold small mb-1"><i class="bx bx-check-circle me-1"></i>Situação</label>
@@ -297,6 +317,7 @@ $(document).ready(function() {
             "url": "<?php echo site_url('contratos/recuperacontratos'); ?>",
             "data": function(d) {
                 d.event_id = $('#filtroEvento').val();
+                d.status_aba = $('#filtroStatusAba').val();
             }
         },
         "columns": [
@@ -331,6 +352,15 @@ $(document).ready(function() {
     $('#filtroEvento').on('change', function() {
         table.ajax.reload();
         carregarTotais();
+    });
+
+    // Alternância de aba (Ativos / Cancelados / Excluídos)
+    $('.tab-contratos').on('click', function(e) {
+        e.preventDefault();
+        $('.tab-contratos').removeClass('active');
+        $(this).addClass('active');
+        $('#filtroStatusAba').val($(this).data('aba'));
+        table.ajax.reload();
     });
 
     // Filtro por Situação
