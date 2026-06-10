@@ -204,6 +204,7 @@ tr.contrato-bloqueado td .badge {
                                 <th>Tipo</th>
                                 <th>Itens</th>
                                 <th>Espaço</th>
+                                <th>Instagram</th>
                                 <th>Valor</th>
                                 <th>Pago</th>
                                 <th>Situação</th>
@@ -327,6 +328,7 @@ $(document).ready(function() {
             { "data": "tipo" },
             { "data": "qtd_itens" },
             { "data": "espaco" },
+            { "data": "instagram" },
             { "data": "valor_final" },
             { "data": "valor_pago" },
             { "data": "situacao" },
@@ -366,13 +368,13 @@ $(document).ready(function() {
     // Filtro por Situação
     $('#filtroSituacao').on('change', function() {
         var valor = $(this).val();
-        table.column(8).search(valor).draw();
+        table.column(9).search(valor).draw();
     });
 
     // Filtro por Parcela
     $('#filtroParcela').on('change', function() {
         var valor = $(this).val();
-        table.column(11).search(valor).draw();
+        table.column(12).search(valor).draw();
     });
 
     // Limpar Filtros

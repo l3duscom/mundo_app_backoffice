@@ -198,7 +198,7 @@ class Contratos extends BaseController
         }
 
         $builder = $this->contratoModel
-            ->select('contratos.*, expositores.nome as expositor_nome, expositores.nome_fantasia as expositor_fantasia, eventos.nome as evento_nome')
+            ->select('contratos.*, expositores.nome as expositor_nome, expositores.nome_fantasia as expositor_fantasia, expositores.instagram as expositor_instagram, eventos.nome as evento_nome')
             ->join('expositores', 'expositores.id = contratos.expositor_id', 'left')
             ->join('eventos', 'eventos.id = contratos.event_id', 'left')
             ->withDeleted(true)
@@ -346,6 +346,7 @@ class Contratos extends BaseController
                 'tipo' => $tiposFormatados,
                 'qtd_itens' => '<span class="badge bg-secondary">' . $qtdItens . ' ' . ($qtdItens == 1 ? 'item' : 'itens') . '</span>' . $descricoesHtml,
                 'espaco' => $espacosHtml,
+                'instagram' => $this->formataInstagramExpositor($contrato->expositor_instagram ?? null),
                 'valor_final' => $contrato->getValorFinalFormatado(),
                 'valor_pago' => $valorPagoFormatado,
                 'situacao' => $contrato->exibeSituacao() . '<span class="d-none">' . esc($contrato->situacao) . '</span>',
@@ -367,6 +368,28 @@ class Contratos extends BaseController
 
         return $this->response->setJSON($retorno);
     }
+
+    private function formataInstagramExpositor(?string $instagram): string
+    {
+        $instagram = trim((string) $instagram);
+        if ($instagram === '') {
+            return '<span class="text-muted">-</span>';
+        }
+
+        if (preg_match('#^https?://#i', $instagram)) {
+            $url    = $instagram;
+            $handle = '@' . ltrim(preg_replace('#^https?://(www\.)?instagram\.com/#i', '', $instagram), '@/');
+            $handle = rtrim($handle, '/');
+        } else {
+            $handle = '@' . ltrim($instagram, '@');
+            $url    = 'https://instagram.com/' . ltrim($instagram, '@');
+        }
+
+        return '<a href="' . esc($url) . '" target="_blank" rel="noopener" class="text-decoration-none">'
+             . '<i class="bx bxl-instagram me-1"></i>' . esc($handle)
+             . '</a>';
+    }
+
     /**
      * Recupera totais para o dashboard de contratos (AJAX)
      */
