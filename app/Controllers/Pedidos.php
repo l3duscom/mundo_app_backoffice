@@ -765,6 +765,10 @@ class Pedidos extends BaseController
 			$upgradesPorIngresso[$ingresso->id] = $this->ingressoUpgradeModel->porIngresso($ingresso->id);
 		}
 
+		// Origem da venda (UTM)
+		$pedidoUtmModel = new \App\Models\PedidoUtmModel();
+		$utmPedido = $pedidoUtmModel->buscaPorPedido((int) $pedido_id);
+
 		$data = [
 			'titulo' => 'Ingressos do pedido' . esc($pedido->cod_pedido),
 			'todos' => $todos,
@@ -779,6 +783,7 @@ class Pedidos extends BaseController
 			'orderBumps' => $orderBumps,
 			'trocasPorIngresso' => $trocasPorIngresso,
 			'upgradesPorIngresso' => $upgradesPorIngresso,
+			'utmPedido' => $utmPedido,
 		];
 
 

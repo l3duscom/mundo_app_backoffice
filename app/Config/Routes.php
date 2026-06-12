@@ -653,6 +653,11 @@ $routes->group('recuperacao-leads', function ($routes) {
     $routes->get('exportar-csv', 'RecuperacaoLeads::exportarCsv');
 });
 
+$routes->group('campanhas', function ($routes) {
+    $routes->get('/', 'Campanhas::index');
+    $routes->get('dados', 'Campanhas::dados');
+});
+
 
 /*
  * --------------------------------------------------------------------

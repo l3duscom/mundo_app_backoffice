@@ -365,6 +365,13 @@
                             </a>
                         </li>
                         <li>
+                            <a href="<?php echo site_url('/campanhas'); ?>">
+                                <div class="parent-icon"><i class="bx bx-trending-up"></i>
+                                </div>
+                                <div class="menu-title">Campanhas</div>
+                            </a>
+                        </li>
+                        <li>
                             <a href="<?php echo site_url('/concursos/' . evento_selecionado()); ?>">
                                 <div class="parent-icon"><i class="bx bx-right-arrow-alt"></i>
                                 </div>

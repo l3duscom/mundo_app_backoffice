@@ -327,6 +327,56 @@
 
                 <?php endforeach; ?>
 
+            <!-- Origem da Venda (UTM) -->
+            <div class="col-lg-12 mt-4">
+                <div class="card shadow radius-10 border-start border-3 border-info">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div>
+                                <h5 class="mb-0">
+                                    <i class="bx bx-link-external me-2 text-info"></i>Origem da Venda
+                                </h5>
+                                <small class="text-muted">Parâmetros UTM capturados no momento da compra</small>
+                            </div>
+                        </div>
+
+                        <?php if (empty($utmPedido)) : ?>
+                            <div class="alert alert-light border mb-0 py-2">
+                                <i class="bx bx-info-circle me-1 text-muted"></i>
+                                <span class="text-muted">Venda direta — sem parâmetros UTM registrados.</span>
+                            </div>
+                        <?php else : ?>
+                            <div class="row g-3">
+                                <div class="col-md-4 col-sm-6">
+                                    <small class="text-muted text-uppercase fw-bold">Source</small>
+                                    <div><span class="badge bg-primary"><?= esc($utmPedido->utm_source ?: '-') ?></span></div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <small class="text-muted text-uppercase fw-bold">Medium</small>
+                                    <div><span class="badge bg-secondary"><?= esc($utmPedido->utm_medium ?: '-') ?></span></div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <small class="text-muted text-uppercase fw-bold">Campaign</small>
+                                    <div><span class="badge bg-info text-dark"><?= esc($utmPedido->utm_campaign ?: '-') ?></span></div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <small class="text-muted text-uppercase fw-bold">Content</small>
+                                    <div class="small"><?= esc($utmPedido->utm_content ?: '-') ?></div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <small class="text-muted text-uppercase fw-bold">Term</small>
+                                    <div class="small"><?= esc($utmPedido->utm_term ?: '-') ?></div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <small class="text-muted text-uppercase fw-bold">Capturado em</small>
+                                    <div class="small"><?= !empty($utmPedido->created_at) ? date('d/m/Y H:i', strtotime($utmPedido->created_at)) : '-' ?></div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
             <!-- Seção de Order Bumps -->
             <?php if (!empty($orderBumps)) : ?>
                 <div class="col-lg-12 mt-4">
