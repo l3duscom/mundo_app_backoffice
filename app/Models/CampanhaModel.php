@@ -10,54 +10,72 @@ class CampanhaModel extends Model
     protected $primaryKey = 'id';
     protected $returnType = 'object';
 
-    private const STATUS_PAGOS = ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'];
+    private const STATUS_PAGOS_SQL = "('CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH')";
 
     /**
-     * Métricas totais do evento dentro do período.
-     * Inclui % de pedidos com UTM (cobertura).
+     * Devolve fragmento WHERE de período + binds.
      */
+    private function periodoWhere(?string $dataInicial, ?string $dataFinal, array &$binds): string
+    {
+        $sql = '';
+        if ($dataInicial) { $sql .= ' AND DATE(p.created_at) >= ? '; $binds[] = $dataInicial; }
+        if ($dataFinal)   { $sql .= ' AND DATE(p.created_at) <= ? '; $binds[] = $dataFinal; }
+        return $sql;
+    }
+
+    private function filtrosWhere(array $filtros, array &$binds): string
+    {
+        $sql = '';
+        foreach (['utm_source', 'utm_medium', 'utm_campaign'] as $f) {
+            if (! empty($filtros[$f])) {
+                $sql .= " AND u.{$f} = ? ";
+                $binds[] = $filtros[$f];
+            }
+        }
+        return $sql;
+    }
+
     public function metricasGerais(int $eventId, ?string $dataInicial, ?string $dataFinal): array
     {
-        $base = $this->db->table('pedidos p')
-            ->where('p.evento_id', $eventId)
-            ->where('p.deleted_at', null)
-            ->whereIn('p.status', self::STATUS_PAGOS);
+        $binds = [$eventId];
+        $periodo = $this->periodoWhere($dataInicial, $dataFinal, $binds);
 
-        if ($dataInicial) $base->where('DATE(p.created_at) >=', $dataInicial);
-        if ($dataFinal)   $base->where('DATE(p.created_at) <=', $dataFinal);
+        $sqlTot = "
+            SELECT COUNT(DISTINCT p.id) AS qtd_pedidos, COALESCE(SUM(p.total), 0) AS receita
+            FROM pedidos p
+            WHERE p.evento_id = ?
+              AND p.deleted_at IS NULL
+              AND p.status IN " . self::STATUS_PAGOS_SQL . "
+              $periodo
+        ";
+        $tot = $this->db->query($sqlTot, $binds)->getRow();
 
-        $totais = $base
-            ->select('COUNT(DISTINCT p.id) AS qtd_pedidos, COALESCE(SUM(p.total),0) AS receita')
-            ->get()->getRow();
+        $binds2 = [$eventId];
+        $periodo2 = $this->periodoWhere($dataInicial, $dataFinal, $binds2);
+        $sqlUtm = "
+            SELECT COUNT(DISTINCT p.id) AS qtd
+            FROM pedidos p
+            INNER JOIN pedido_utms u ON u.pedido_id = p.id
+            WHERE p.evento_id = ?
+              AND p.deleted_at IS NULL
+              AND p.status IN " . self::STATUS_PAGOS_SQL . "
+              $periodo2
+        ";
+        $utm = $this->db->query($sqlUtm, $binds2)->getRow();
 
-        $comUtm = $this->db->table('pedidos p')
-            ->join('pedido_utms u', 'u.pedido_id = p.id', 'inner')
-            ->where('p.evento_id', $eventId)
-            ->where('p.deleted_at', null)
-            ->whereIn('p.status', self::STATUS_PAGOS);
-
-        if ($dataInicial) $comUtm->where('DATE(p.created_at) >=', $dataInicial);
-        if ($dataFinal)   $comUtm->where('DATE(p.created_at) <=', $dataFinal);
-
-        $qtdComUtm = (int) $comUtm->countAllResults();
-
-        $qtdPedidos = (int) ($totais->qtd_pedidos ?? 0);
-        $receita    = (float) ($totais->receita ?? 0);
-        $ticket     = $qtdPedidos > 0 ? $receita / $qtdPedidos : 0;
-        $cobertura  = $qtdPedidos > 0 ? ($qtdComUtm / $qtdPedidos) * 100 : 0;
+        $qtd = (int) ($tot->qtd_pedidos ?? 0);
+        $rec = (float) ($tot->receita ?? 0);
+        $qtdUtm = (int) ($utm->qtd ?? 0);
 
         return [
-            'qtd_pedidos'   => $qtdPedidos,
-            'qtd_com_utm'   => $qtdComUtm,
-            'receita'       => $receita,
-            'ticket_medio'  => $ticket,
-            'cobertura_pct' => $cobertura,
+            'qtd_pedidos'   => $qtd,
+            'qtd_com_utm'   => $qtdUtm,
+            'receita'       => $rec,
+            'ticket_medio'  => $qtd > 0 ? $rec / $qtd : 0,
+            'cobertura_pct' => $qtd > 0 ? ($qtdUtm / $qtd) * 100 : 0,
         ];
     }
 
-    /**
-     * Agrega por uma das colunas utm_source|utm_medium|utm_campaign.
-     */
     public function agregarPor(string $coluna, int $eventId, ?string $dataInicial, ?string $dataFinal, array $filtros = []): array
     {
         $colunasValidas = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
@@ -65,121 +83,103 @@ class CampanhaModel extends Model
             return [];
         }
 
-        $builder = $this->db->table('pedidos p')
-            ->select("COALESCE(NULLIF(u.{$coluna}, ''), '(direto)') AS origem,
-                      COUNT(DISTINCT p.id) AS qtd_pedidos,
-                      COALESCE(SUM(p.total), 0) AS receita")
-            ->join('pedido_utms u', 'u.pedido_id = p.id', 'left')
-            ->where('p.evento_id', $eventId)
-            ->where('p.deleted_at', null)
-            ->whereIn('p.status', self::STATUS_PAGOS);
+        $binds = [$eventId];
+        $periodo = $this->periodoWhere($dataInicial, $dataFinal, $binds);
+        $filtroSql = $this->filtrosWhere($filtros, $binds);
 
-        if ($dataInicial) $builder->where('DATE(p.created_at) >=', $dataInicial);
-        if ($dataFinal)   $builder->where('DATE(p.created_at) <=', $dataFinal);
+        $sql = "
+            SELECT COALESCE(NULLIF(u.{$coluna}, ''), '(direto)') AS origem,
+                   COUNT(DISTINCT p.id) AS qtd_pedidos,
+                   COALESCE(SUM(p.total), 0) AS receita
+            FROM pedidos p
+            LEFT JOIN pedido_utms u ON u.pedido_id = p.id
+            WHERE p.evento_id = ?
+              AND p.deleted_at IS NULL
+              AND p.status IN " . self::STATUS_PAGOS_SQL . "
+              $periodo
+              $filtroSql
+            GROUP BY origem
+            ORDER BY receita DESC
+        ";
 
-        if (! empty($filtros['utm_source']))   $builder->where('u.utm_source', $filtros['utm_source']);
-        if (! empty($filtros['utm_medium']))   $builder->where('u.utm_medium', $filtros['utm_medium']);
-        if (! empty($filtros['utm_campaign'])) $builder->where('u.utm_campaign', $filtros['utm_campaign']);
-
-        $rows = $builder->groupBy('origem')
-            ->orderBy('receita', 'DESC')
-            ->get()->getResultArray();
-
+        $rows = $this->db->query($sql, $binds)->getResultArray();
         foreach ($rows as &$r) {
             $r['qtd_pedidos']  = (int) $r['qtd_pedidos'];
             $r['receita']      = (float) $r['receita'];
             $r['ticket_medio'] = $r['qtd_pedidos'] > 0 ? $r['receita'] / $r['qtd_pedidos'] : 0;
         }
-
         return $rows;
     }
 
-    /**
-     * Evolução diária de receita agrupada por utm_source.
-     * Retorna labels (dias) + datasets (uma série por source).
-     */
     public function evolucaoDiariaPorSource(int $eventId, ?string $dataInicial, ?string $dataFinal, array $filtros = []): array
     {
-        $builder = $this->db->table('pedidos p')
-            ->select("DATE(p.created_at) AS dia,
-                      COALESCE(NULLIF(u.utm_source, ''), '(direto)') AS source,
-                      COALESCE(SUM(p.total), 0) AS receita")
-            ->join('pedido_utms u', 'u.pedido_id = p.id', 'left')
-            ->where('p.evento_id', $eventId)
-            ->where('p.deleted_at', null)
-            ->whereIn('p.status', self::STATUS_PAGOS);
+        $binds = [$eventId];
+        $periodo = $this->periodoWhere($dataInicial, $dataFinal, $binds);
+        $filtroSql = $this->filtrosWhere($filtros, $binds);
 
-        if ($dataInicial) $builder->where('DATE(p.created_at) >=', $dataInicial);
-        if ($dataFinal)   $builder->where('DATE(p.created_at) <=', $dataFinal);
+        $sql = "
+            SELECT DATE(p.created_at) AS dia,
+                   COALESCE(NULLIF(u.utm_source, ''), '(direto)') AS source,
+                   COALESCE(SUM(p.total), 0) AS receita
+            FROM pedidos p
+            LEFT JOIN pedido_utms u ON u.pedido_id = p.id
+            WHERE p.evento_id = ?
+              AND p.deleted_at IS NULL
+              AND p.status IN " . self::STATUS_PAGOS_SQL . "
+              $periodo
+              $filtroSql
+            GROUP BY dia, source
+            ORDER BY dia ASC
+        ";
+        $rows = $this->db->query($sql, $binds)->getResultArray();
 
-        if (! empty($filtros['utm_source']))   $builder->where('u.utm_source', $filtros['utm_source']);
-        if (! empty($filtros['utm_medium']))   $builder->where('u.utm_medium', $filtros['utm_medium']);
-        if (! empty($filtros['utm_campaign'])) $builder->where('u.utm_campaign', $filtros['utm_campaign']);
-
-        $rows = $builder->groupBy(['dia', 'source'])
-            ->orderBy('dia', 'ASC')
-            ->get()->getResultArray();
-
-        $dias = [];
-        $sources = [];
-        $matriz  = [];
-
+        $dias = $sources = $matriz = [];
         foreach ($rows as $r) {
-            $dia = $r['dia'];
-            $src = $r['source'];
-            $dias[$dia] = true;
-            $sources[$src] = true;
-            $matriz[$src][$dia] = (float) $r['receita'];
+            $dias[$r['dia']]      = true;
+            $sources[$r['source']] = true;
+            $matriz[$r['source']][$r['dia']] = (float) $r['receita'];
         }
-
         $diasOrdenados = array_keys($dias);
         sort($diasOrdenados);
 
         $datasets = [];
         foreach (array_keys($sources) as $src) {
             $serie = [];
-            foreach ($diasOrdenados as $dia) {
-                $serie[] = $matriz[$src][$dia] ?? 0;
+            foreach ($diasOrdenados as $d) {
+                $serie[] = $matriz[$src][$d] ?? 0;
             }
             $datasets[] = ['source' => $src, 'data' => $serie];
         }
 
-        return [
-            'labels'   => $diasOrdenados,
-            'datasets' => $datasets,
-        ];
+        return ['labels' => $diasOrdenados, 'datasets' => $datasets];
     }
 
-    /**
-     * Lista detalhada de pedidos com UTM, paginada via offset/limit.
-     */
     public function listaPedidos(int $eventId, ?string $dataInicial, ?string $dataFinal, array $filtros = [], int $limit = 500): array
     {
-        $builder = $this->db->table('pedidos p')
-            ->select('p.id, p.codigo AS cod_pedido, p.total AS valor_total, p.created_at, p.status,
-                      usu.nome AS cliente,
-                      u.utm_source, u.utm_medium, u.utm_campaign, u.utm_content, u.utm_term')
-            ->join('pedido_utms u', 'u.pedido_id = p.id', 'left')
-            ->join('usuarios usu', 'usu.id = p.user_id', 'left')
-            ->where('p.evento_id', $eventId)
-            ->where('p.deleted_at', null)
-            ->whereIn('p.status', self::STATUS_PAGOS);
+        $binds = [$eventId];
+        $periodo = $this->periodoWhere($dataInicial, $dataFinal, $binds);
+        $filtroSql = $this->filtrosWhere($filtros, $binds);
+        $binds[] = $limit;
 
-        if ($dataInicial) $builder->where('DATE(p.created_at) >=', $dataInicial);
-        if ($dataFinal)   $builder->where('DATE(p.created_at) <=', $dataFinal);
+        $sql = "
+            SELECT p.id, p.codigo AS cod_pedido, p.total AS valor_total, p.created_at, p.status,
+                   usu.nome AS cliente,
+                   u.utm_source, u.utm_medium, u.utm_campaign, u.utm_content, u.utm_term
+            FROM pedidos p
+            LEFT JOIN pedido_utms u ON u.pedido_id = p.id
+            LEFT JOIN usuarios usu ON usu.id = p.user_id
+            WHERE p.evento_id = ?
+              AND p.deleted_at IS NULL
+              AND p.status IN " . self::STATUS_PAGOS_SQL . "
+              $periodo
+              $filtroSql
+            ORDER BY p.created_at DESC
+            LIMIT ?
+        ";
 
-        if (! empty($filtros['utm_source']))   $builder->where('u.utm_source', $filtros['utm_source']);
-        if (! empty($filtros['utm_medium']))   $builder->where('u.utm_medium', $filtros['utm_medium']);
-        if (! empty($filtros['utm_campaign'])) $builder->where('u.utm_campaign', $filtros['utm_campaign']);
-
-        return $builder->orderBy('p.created_at', 'DESC')
-            ->limit($limit)
-            ->get()->getResultArray();
+        return $this->db->query($sql, $binds)->getResultArray();
     }
 
-    /**
-     * Retorna valores distintos de uma coluna UTM (para popular selects).
-     */
     public function valoresDistintos(string $coluna, int $eventId): array
     {
         $colunasValidas = ['utm_source', 'utm_medium', 'utm_campaign'];
@@ -187,16 +187,17 @@ class CampanhaModel extends Model
             return [];
         }
 
-        $rows = $this->db->table('pedido_utms u')
-            ->select("DISTINCT u.{$coluna} AS valor")
-            ->join('pedidos p', 'p.id = u.pedido_id', 'inner')
-            ->where('p.evento_id', $eventId)
-            ->where('p.deleted_at', null)
-            ->where("u.{$coluna} IS NOT NULL")
-            ->where("u.{$coluna} !=", '')
-            ->orderBy('valor', 'ASC')
-            ->get()->getResultArray();
-
+        $sql = "
+            SELECT DISTINCT u.{$coluna} AS valor
+            FROM pedido_utms u
+            INNER JOIN pedidos p ON p.id = u.pedido_id
+            WHERE p.evento_id = ?
+              AND p.deleted_at IS NULL
+              AND u.{$coluna} IS NOT NULL
+              AND u.{$coluna} != ''
+            ORDER BY valor ASC
+        ";
+        $rows = $this->db->query($sql, [$eventId])->getResultArray();
         return array_column($rows, 'valor');
     }
 }
