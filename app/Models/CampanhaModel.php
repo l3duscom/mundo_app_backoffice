@@ -27,7 +27,7 @@ class CampanhaModel extends Model
         if ($dataFinal)   $base->where('DATE(p.created_at) <=', $dataFinal);
 
         $totais = $base
-            ->select('COUNT(DISTINCT p.id) AS qtd_pedidos, COALESCE(SUM(p.valor_total),0) AS receita')
+            ->select('COUNT(DISTINCT p.id) AS qtd_pedidos, COALESCE(SUM(p.total),0) AS receita')
             ->get()->getRow();
 
         $comUtm = $this->db->table('pedidos p')
@@ -68,7 +68,7 @@ class CampanhaModel extends Model
         $builder = $this->db->table('pedidos p')
             ->select("COALESCE(NULLIF(u.{$coluna}, ''), '(direto)') AS origem,
                       COUNT(DISTINCT p.id) AS qtd_pedidos,
-                      COALESCE(SUM(p.valor_total), 0) AS receita")
+                      COALESCE(SUM(p.total), 0) AS receita")
             ->join('pedido_utms u', 'u.pedido_id = p.id', 'left')
             ->where('p.evento_id', $eventId)
             ->where('p.deleted_at', null)
@@ -103,7 +103,7 @@ class CampanhaModel extends Model
         $builder = $this->db->table('pedidos p')
             ->select("DATE(p.created_at) AS dia,
                       COALESCE(NULLIF(u.utm_source, ''), '(direto)') AS source,
-                      COALESCE(SUM(p.valor_total), 0) AS receita")
+                      COALESCE(SUM(p.total), 0) AS receita")
             ->join('pedido_utms u', 'u.pedido_id = p.id', 'left')
             ->where('p.evento_id', $eventId)
             ->where('p.deleted_at', null)
@@ -156,7 +156,7 @@ class CampanhaModel extends Model
     public function listaPedidos(int $eventId, ?string $dataInicial, ?string $dataFinal, array $filtros = [], int $limit = 500): array
     {
         $builder = $this->db->table('pedidos p')
-            ->select('p.id, p.cod_pedido, p.valor_total, p.created_at, p.status,
+            ->select('p.id, p.codigo AS cod_pedido, p.total AS valor_total, p.created_at, p.status,
                       usu.nome AS cliente,
                       u.utm_source, u.utm_medium, u.utm_campaign, u.utm_content, u.utm_term')
             ->join('pedido_utms u', 'u.pedido_id = p.id', 'left')
