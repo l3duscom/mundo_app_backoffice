@@ -96,6 +96,8 @@
                         <th>Descrição</th>
                         <th>Status</th>
                         <th>Contrato</th>
+                        <th>Expositor</th>
+                        <th>Situação</th>
                         <th class="text-center">Ações</th>
                     </tr>
                 </thead>
@@ -279,6 +281,8 @@ $(document).ready(function() {
             { data: 'descricao' },
             { data: 'status' },
             { data: 'contrato' },
+            { data: 'expositor' },
+            { data: 'situacao' },
             { data: 'acoes', className: 'text-center' }
         ],
         order: [[0, 'asc'], [1, 'asc']],

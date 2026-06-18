@@ -400,27 +400,53 @@ class Espacos extends BaseController
         }
 
         $eventId = $this->request->getGet('event_id');
-        
+
         if (!$eventId) {
             return $this->response->setJSON(['data' => []]);
         }
 
-        $espacos = $this->espacoModel->buscaPorEvento($eventId);
+        $db = \Config\Database::connect();
+        $rows = $db->query(
+            "SELECT e.*,
+                    c.id           AS contrato_id,
+                    c.codigo       AS contrato_codigo,
+                    c.situacao     AS contrato_situacao,
+                    c.expositor_id AS expositor_id,
+                    exp.nome           AS expositor_nome,
+                    exp.nome_fantasia  AS expositor_nome_fantasia
+             FROM espacos e
+             LEFT JOIN contrato_itens ci ON ci.id = e.contrato_item_id
+             LEFT JOIN contratos      c  ON c.id  = ci.contrato_id AND c.deleted_at IS NULL
+             LEFT JOIN expositores    exp ON exp.id = c.expositor_id
+             WHERE e.event_id = ?
+             ORDER BY e.nome ASC",
+            [$eventId]
+        )->getResult();
 
         $data = [];
-        foreach ($espacos as $espaco) {
-            // Busca info do contrato se reservado
-            $contratoInfo = '-';
-            if ($espaco->contrato_item_id) {
-                $itemModel = new ContratoItemModel();
-                $item = $itemModel->find($espaco->contrato_item_id);
-                if ($item) {
-                    $contratoModel = new \App\Models\ContratoModel();
-                    $contrato = $contratoModel->find($item->contrato_id);
-                    if ($contrato) {
-                        $contratoInfo = '<a href="' . site_url('contratos/exibir/' . $contrato->id) . '">' . esc($contrato->codigo) . '</a>';
-                    }
+        foreach ($rows as $row) {
+            // Hidrata entidade de espaço para usar getBadgeStatus()
+            $espaco = (new \App\Entities\Espaco())->fill((array) $row);
+            $espaco->id = $row->id;
+
+            // Contrato + expositor + situação (somente se houver contrato vinculado)
+            $contratoInfo   = '-';
+            $expositorInfo  = '-';
+            $situacaoInfo   = '-';
+            if (!empty($row->contrato_id)) {
+                $contratoInfo = '<a href="' . site_url('contratos/exibir/' . $row->contrato_id) . '">'
+                    . esc($row->contrato_codigo) . '</a>';
+
+                $nomeExp = $row->expositor_nome_fantasia ?: $row->expositor_nome;
+                if ($nomeExp) {
+                    $expositorInfo = !empty($row->expositor_id)
+                        ? '<a href="' . site_url('expositores/exibir/' . $row->expositor_id) . '">' . esc($nomeExp) . '</a>'
+                        : esc($nomeExp);
                 }
+
+                $cEnt = new \App\Entities\Contrato();
+                $cEnt->situacao = $row->contrato_situacao;
+                $situacaoInfo = $cEnt->getBadgeSituacao();
             }
 
             // Formata os tipos (pode ser JSON array ou string simples)
@@ -441,14 +467,16 @@ class Espacos extends BaseController
             }
 
             $data[] = [
-                'id' => $espaco->id,
+                'id'        => $espaco->id,
                 'tipo_item' => $tipoItemDisplay,
-                'nome' => esc($espaco->nome),
-                'imagem' => $imagemDisplay,
+                'nome'      => esc($espaco->nome),
+                'imagem'    => $imagemDisplay,
                 'descricao' => esc($espaco->descricao ?? '-'),
-                'status' => $espaco->getBadgeStatus(),
-                'contrato' => $contratoInfo,
-                'acoes' => $this->getBotoesAcao($espaco),
+                'status'    => $espaco->getBadgeStatus(),
+                'contrato'  => $contratoInfo,
+                'expositor' => $expositorInfo,
+                'situacao'  => $situacaoInfo,
+                'acoes'     => $this->getBotoesAcao($espaco),
             ];
         }
 
