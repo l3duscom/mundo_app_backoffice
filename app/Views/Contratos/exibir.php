@@ -1273,8 +1273,9 @@ $(document).ready(function() {
     var csrfName = '<?php echo csrf_token(); ?>';
     var contratoId = <?php echo $contrato->id; ?>;
     var podeAdicionarItens = <?php echo $podeAdicionarItens ? 'true' : 'false'; ?>;
-    // Pode escolher espaço após contrato assinado e documento confirmado (mesmo critério do credenciamento)
-    var podeEscolherEspaco = <?php echo (isset($credenciamento) && $credenciamento) || in_array($contrato->situacao, ['aguardando_credenciamento', 'finalizado', 'pagamento_confirmado']) ? 'true' : 'false'; ?>;
+    // Admin sempre pode alterar a localização; demais usuários só após contrato assinado / documento confirmado
+    <?php $ehAdminContrato = usuario_logado() && usuario_logado()->is_admin; ?>
+    var podeEscolherEspaco = <?php echo $ehAdminContrato || (isset($credenciamento) && $credenciamento) || in_array($contrato->situacao, ['aguardando_credenciamento', 'finalizado', 'pagamento_confirmado']) ? 'true' : 'false'; ?>;
 
     // Máscara para valores monetários
     $('.money').mask('#.##0,00', {reverse: true});
