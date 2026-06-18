@@ -285,7 +285,7 @@ $(document).ready(function() {
             { data: 'situacao' },
             { data: 'acoes', className: 'text-center' }
         ],
-        order: [[0, 'asc'], [1, 'asc']],
+        order: [],
         language: { url: '<?= site_url('recursos/vendor/datatables/pt-BR.json') ?>' },
         pageLength: 100
     });

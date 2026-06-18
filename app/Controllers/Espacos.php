@@ -419,7 +419,7 @@ class Espacos extends BaseController
              LEFT JOIN contratos      c  ON c.id  = ci.contrato_id AND c.deleted_at IS NULL
              LEFT JOIN expositores    exp ON exp.id = c.expositor_id
              WHERE e.event_id = ?
-             ORDER BY e.nome ASC",
+             ORDER BY LENGTH(e.nome) ASC, e.nome ASC",
             [$eventId]
         )->getResult();
 
