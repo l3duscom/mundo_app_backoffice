@@ -1737,8 +1737,15 @@ $(document).ready(function() {
                 }
                 select.html(options);
             },
-            error: function() {
-                select.html('<option value="">Erro ao carregar</option>');
+            error: function(xhr) {
+                var msg = 'Erro ao carregar (HTTP ' + xhr.status + ')';
+                console.error('[carregarEspacosSelect] ' + msg, {
+                    eventId: eventId,
+                    tipoItem: tipoItem,
+                    itemId: itemId,
+                    responseText: xhr.responseText
+                });
+                select.html('<option value="">' + msg + '</option>');
             }
         });
     }
