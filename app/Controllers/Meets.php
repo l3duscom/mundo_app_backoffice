@@ -17,7 +17,7 @@ class Meets extends BaseController
 
     public function validar()
     {
-        if (!$this->usuarioLogado()->temPermissaoPara('listar-eventos')) {
+        if (!$this->usuarioLogado()->temPermissaoPara('access-controll')) {
             return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
         }
 
@@ -34,7 +34,7 @@ class Meets extends BaseController
             return redirect()->back();
         }
 
-        if (!$this->usuarioLogado()->temPermissaoPara('listar-eventos')) {
+        if (!$this->usuarioLogado()->temPermissaoPara('access-controll')) {
             return $this->response->setStatusCode(403)->setJSON([
                 'success' => false,
                 'message' => 'Sem permissão.',

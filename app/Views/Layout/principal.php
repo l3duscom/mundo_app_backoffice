@@ -611,7 +611,46 @@
                     </a>
                 </li>
                 -->
-                <?php if (!usuario_logado()->is_admin) : ?>
+                <?php if (usuario_logado()->is_staff) : ?>
+                    <li class="menu-label">
+                        <div style="line-height:1.2">
+                            <strong><?= esc(usuario_logado()->nome) ?></strong><br>
+                            <small style="font-size:11px; color:#aaa;"> <?= esc(usuario_logado()->email) ?> </small>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="<?php echo site_url('console/dashboard'); ?>">
+                            <div class="parent-icon"><i class="bi bi-house-fill"></i></div>
+                            <div class="menu-title">Dashboard</div>
+                        </a>
+                    </li>
+                    <?php if (usuario_logado()->temPermissaoPara('access-controll')) : ?>
+                        <li>
+                            <a href="<?php echo site_url('/acessos/bilheteria'); ?>">
+                                <div class="parent-icon"><i class="bx bx-store-alt"></i></div>
+                                <div class="menu-title">Bilheteria</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo site_url('/acessos/salavip'); ?>">
+                                <div class="parent-icon"><i class="bx bx-crown"></i></div>
+                                <div class="menu-title">Sala VIP</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo site_url('/ingressos/add'); ?>">
+                                <div class="parent-icon"><i class="bx bx-plus-circle"></i></div>
+                                <div class="menu-title">Add Ingressos</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo site_url('/meets/validar'); ?>">
+                                <div class="parent-icon"><i class="bx bx-camera"></i></div>
+                                <div class="menu-title">Validar Meet &amp; Greet</div>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+                <?php elseif (!usuario_logado()->is_admin) : ?>
                     <li>
                     <a href="<?php echo site_url('console/dashboard'); ?>">
                         <div class="parent-icon"><i class="bi bi-house-fill"></i>
@@ -627,7 +666,7 @@
                     </a>
                 </li>
 
-                
+
 
                 <li>
                     <a href="<?php echo site_url('console/meets'); ?>">

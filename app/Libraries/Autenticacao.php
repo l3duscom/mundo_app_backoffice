@@ -282,6 +282,21 @@ class Autenticacao
         return true;
     }
 
+    private function isStaff(): bool
+    {
+        // Definimos o ID do grupo Colaborador (Staff).
+        // Não esqueçam que esse ID jamais poderá ser alterado.
+        $grupoStaff = 6;
+
+        $staff = $this->grupoUsuarioModel->usuarioEstaNoGrupo($grupoStaff, session()->get('usuario_id'));
+
+        if ($staff == null) {
+            return false;
+        }
+
+        return true;
+    }
+
     private function isVendas(): bool
     {
         // Definimos o ID do grupo Vendas.
@@ -326,6 +341,7 @@ class Autenticacao
             $usuario->is_influencer = false;
             $usuario->is_pdv = false;
             $usuario->is_vendas = false;
+            $usuario->is_staff = false;
         } else {
 
             // Nesse ponto, podemos verificar se o usuário logado é um cliente, visto que ele não é admin
@@ -335,6 +351,7 @@ class Autenticacao
             $usuario->is_influencer = $this->isInfluencer();
             $usuario->is_pdv = $this->isPdv();
             $usuario->is_vendas = $this->isVendas();
+            $usuario->is_staff = $this->isStaff();
         }
 
 

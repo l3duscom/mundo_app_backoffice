@@ -127,6 +127,13 @@ class Console extends BaseController
 			return view('Console/dashboard_parceiro', $data);
 		}
 
+		// ========== DASHBOARD DO STAFF (Colaborador) ==========
+		if ($usuario->is_staff) {
+			return view('Console/dashboard_staff', [
+				'titulo' => 'Dashboard Staff',
+			]);
+		}
+
 		// ========== USUÁRIO NÃO-PARCEIRO ==========
 		return redirect()->to('https://mundodream.com.br');
 	}
