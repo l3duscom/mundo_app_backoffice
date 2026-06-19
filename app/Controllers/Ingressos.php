@@ -728,7 +728,7 @@ class Ingressos extends BaseController
 
 	public function add()
 	{
-		if (!$this->usuarioLogado()->temPermissaoPara('editar-clientes')) {
+		if (!$this->usuarioLogado()->temPermissaoPara('access-controll')) {
 			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
 		}
 
