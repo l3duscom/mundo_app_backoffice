@@ -55,7 +55,8 @@
       "Bash(xargs grep *)",
       "WebFetch(domain:docs.melhorenvio.com.br)",
       "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Contratos.php)",
-      "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Contratos/index.php)"
+      "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Contratos/index.php)",
+      "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Console/dashboard.php)"
     ]
   }
 }

@@ -474,11 +474,22 @@
                         <div class="col-lg-6">
                             <div class="card shadow radius-10">
                                 <div class="card-body">
-                                    <a href="<?= site_url('/acessos/bilheteria') ?>" class="btn btn-success mt-2 shadow w-100"> Bilheteria</a>
+                                    <h6 class="text-muted mb-3"><i class="bx bx-cog me-1"></i>Administração</h6>
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <a href="<?= site_url('/acessos/bilheteria') ?>" class="btn btn-success shadow w-100"><i class="bx bx-store-alt me-1"></i>Bilheteria</a>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="<?= site_url('/acessos/salavip') ?>" class="btn btn-success shadow w-100"><i class="bx bx-crown me-1"></i>Sala VIP</a>
+                                        </div>
+                                        <div class="col-4">
+                                            <a href="<?= site_url('/ingressos/add') ?>" class="btn btn-success shadow w-100"><i class="bx bx-plus-circle me-1"></i>Add Ingressos</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>    
-                    <?php endif ?>  
+                        </div>
+                    <?php endif ?>
                     <?php if(usuario_logado()->temPermissaoPara('juri')): ?>
                         <div class="col-lg-6">
                             <div class="card shadow radius-10">
@@ -486,8 +497,8 @@
                                     <a href="<?= site_url('/concursos') ?>" class="btn btn-success mt-2 shadow w-100"> Gerenciar concursos</a>
                                 </div>
                             </div>
-                        </div>    
-                    <?php endif ?>           
+                        </div>
+                    <?php endif ?>
                 </div>
             
         
