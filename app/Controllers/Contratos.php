@@ -369,6 +369,117 @@ class Contratos extends BaseController
         return $this->response->setJSON($retorno);
     }
 
+    /**
+     * Exporta contratos em CSV filtrando por tipos de item selecionados
+     */
+    public function exportar()
+    {
+        if (!$this->usuarioLogado()->temPermissaoPara('listar-contratos')) {
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para exportar contratos.');
+        }
+
+        $eventId   = (int) ($this->request->getGet('event_id') ?: evento_selecionado());
+        $tipos     = (array) $this->request->getGet('tipos');
+        $statusAba = $this->request->getGet('status_aba') ?: 'ativos';
+
+        $tipos = array_values(array_filter(array_map('trim', $tipos), fn($t) => $t !== ''));
+
+        if (empty($eventId)) {
+            return redirect()->back()->with('atencao', 'Selecione um evento antes de exportar.');
+        }
+
+        if (empty($tipos)) {
+            return redirect()->back()->with('atencao', 'Selecione ao menos um tipo de item para exportar.');
+        }
+
+        $db = \Config\Database::connect();
+
+        $placeholders = implode(',', array_fill(0, count($tipos), '?'));
+
+        $sqlSituacao = $statusAba === 'cancelados'
+            ? "AND c.deleted_at IS NULL AND c.situacao IN ('cancelado','banido')"
+            : ($statusAba === 'excluidos'
+                ? "AND c.deleted_at IS NOT NULL"
+                : "AND c.deleted_at IS NULL AND c.situacao NOT IN ('cancelado','banido')");
+
+        $sql = "SELECT c.codigo                                   AS contrato_codigo,
+                       COALESCE(NULLIF(exp.nome_fantasia,''), exp.nome) AS expositor_nome,
+                       exp.email                                  AS expositor_email,
+                       COALESCE(NULLIF(exp.celular,''), exp.telefone)   AS expositor_telefone,
+                       exp.instagram                              AS expositor_instagram,
+                       ev.nome                                    AS evento_nome,
+                       ci.tipo_item                               AS tipo_item,
+                       ci.descricao                               AS item_descricao,
+                       e.nome                                     AS espaco_nome
+                FROM contrato_itens ci
+                INNER JOIN contratos   c   ON c.id = ci.contrato_id
+                LEFT  JOIN expositores exp ON exp.id = c.expositor_id
+                LEFT  JOIN eventos     ev  ON ev.id = c.event_id
+                LEFT  JOIN espacos     e   ON e.contrato_item_id = ci.id
+                WHERE ci.deleted_at IS NULL
+                  AND c.event_id = ?
+                  AND ci.tipo_item IN ($placeholders)
+                  $sqlSituacao
+                ORDER BY exp.nome ASC, c.codigo ASC, ci.id ASC";
+
+        $binds = array_merge([$eventId], $tipos);
+        $rows  = $db->query($sql, $binds)->getResult();
+
+        $evento     = $this->eventoModel->find($eventId);
+        $nomeEvento = $evento ? preg_replace('/[^a-zA-Z0-9_-]/', '_', $evento->nome) : 'evento_' . $eventId;
+        $filename   = 'contratos_' . $nomeEvento . '_' . date('Y-m-d_His') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        fputcsv($output, [
+            'Código do Contrato',
+            'Expositor',
+            'E-mail',
+            'Telefone',
+            'Evento',
+            'Tipo',
+            'Item',
+            'Espaço',
+            'Instagram',
+        ], ';');
+
+        foreach ($rows as $row) {
+            fputcsv($output, [
+                $row->contrato_codigo ?? '',
+                $row->expositor_nome ?? '',
+                $row->expositor_email ?? '',
+                $row->expositor_telefone ?? '',
+                $row->evento_nome ?? '',
+                $row->tipo_item ?? '',
+                $row->item_descricao ?? '',
+                $row->espaco_nome ?? '',
+                $this->formataInstagramHandle($row->expositor_instagram ?? null),
+            ], ';');
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    private function formataInstagramHandle(?string $instagram): string
+    {
+        $instagram = trim((string) $instagram);
+        if ($instagram === '') {
+            return '';
+        }
+        if (preg_match('#^https?://#i', $instagram)) {
+            $handle = ltrim(preg_replace('#^https?://(www\.)?instagram\.com/#i', '', $instagram), '/');
+            return '@' . rtrim($handle, '/');
+        }
+        return '@' . ltrim($instagram, '@');
+    }
+
     private function formataInstagramExpositor(?string $instagram): string
     {
         $instagram = trim((string) $instagram);

@@ -70,12 +70,65 @@ tr.contrato-bloqueado td .badge {
                 <i class="bx bx-columns"></i>
             </a>
         </div>
+        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalExportar">
+            <i class="bx bx-download me-2"></i>Exportar
+        </button>
         <a href="<?php echo site_url('contratos/criar'); ?>" class="btn btn-primary">
             <i class="bx bx-plus me-2"></i>Novo Contrato
         </a>
     </div>
 </div>
 <!--end breadcrumb-->
+
+<!-- Modal Exportar -->
+<div class="modal fade" id="modalExportar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="formExportar" method="get" action="<?php echo site_url('contratos/exportar'); ?>">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bx bx-download me-2"></i>Exportar contratos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Será exportado um CSV com: código, expositor, e-mail, telefone, evento, tipo, item, espaço e instagram.
+                        Cada linha representa um item de contrato.
+                    </p>
+
+                    <input type="hidden" name="event_id" id="exportarEventoId" value="">
+                    <input type="hidden" name="status_aba" id="exportarStatusAba" value="ativos">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label fw-bold mb-0">Tipos de item a exportar</label>
+                        <div>
+                            <button type="button" class="btn btn-link btn-sm p-0 me-2" id="exportarSelecionarTodos">Selecionar todos</button>
+                            <button type="button" class="btn btn-link btn-sm p-0 text-danger" id="exportarLimparTodos">Limpar</button>
+                        </div>
+                    </div>
+
+                    <div class="row g-2">
+                        <?php foreach (\App\Models\ContratoItemModel::getTiposItem() as $tipo): ?>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input exportar-tipo" type="checkbox" name="tipos[]" value="<?php echo esc($tipo); ?>" id="tipo_<?php echo esc(md5($tipo)); ?>">
+                                    <label class="form-check-label" for="tipo_<?php echo esc(md5($tipo)); ?>">
+                                        <?php echo esc($tipo); ?>
+                                    </label>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success" id="btnExportarSubmit">
+                        <i class="bx bx-download me-1"></i>Baixar CSV
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- Cards de Resumo -->
 <div class="row mb-4" id="cardsResumo">
@@ -384,6 +437,29 @@ $(document).ready(function() {
         $('#filtroParcela').val('');
         table.columns().search('').draw();
         carregarTotais();
+    });
+
+    // Modal Exportar
+    $('#modalExportar').on('show.bs.modal', function() {
+        $('#exportarEventoId').val($('#filtroEvento').val());
+        $('#exportarStatusAba').val($('#filtroStatusAba').val());
+    });
+
+    $('#exportarSelecionarTodos').on('click', function() {
+        $('.exportar-tipo').prop('checked', true);
+    });
+
+    $('#exportarLimparTodos').on('click', function() {
+        $('.exportar-tipo').prop('checked', false);
+    });
+
+    $('#formExportar').on('submit', function(e) {
+        if ($('.exportar-tipo:checked').length === 0) {
+            e.preventDefault();
+            alert('Selecione ao menos um tipo de item para exportar.');
+            return false;
+        }
+        $('#modalExportar').modal('hide');
     });
 });
 </script>

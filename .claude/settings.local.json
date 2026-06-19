@@ -51,7 +51,11 @@
       "Bash(php -l app/Views/Pedidos/ingressos.php)",
       "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Models/CampanhaModel.php\")",
       "Bash(php -l \"c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Campanhas.php\")",
-      "Bash(grep -n 'protected $table\\\\|protected $allowedFields\\\\|protected $returnType' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Models/PedidoModel.php)"
+      "Bash(grep -n 'protected $table\\\\|protected $allowedFields\\\\|protected $returnType' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Models/PedidoModel.php)",
+      "Bash(xargs grep *)",
+      "WebFetch(domain:docs.melhorenvio.com.br)",
+      "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Contratos.php)",
+      "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Contratos/index.php)"
     ]
   }
 }
