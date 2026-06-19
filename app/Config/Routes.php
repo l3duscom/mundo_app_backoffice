@@ -51,6 +51,9 @@ $routes->post('cron', 'Cron::index');
 $routes->get('meets/validar', 'Meets::validar');
 $routes->post('meets/validar-code', 'Meets::validarCode');
 
+// Seleção de evento ativo (staff/parceiro)
+$routes->get('console/selecionar-evento/(:num)', 'Console::selecionarEvento/$1');
+
 $routes->group(
     'cron',
     function ($routes) {

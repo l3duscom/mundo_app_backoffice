@@ -129,13 +129,64 @@ class Console extends BaseController
 
 		// ========== DASHBOARD DO STAFF (Colaborador) ==========
 		if ($usuario->is_staff) {
+			// Eventos ativos para o seletor
+			$eventosAtivos = $this->eventoModel
+				->where('ativo', 1)
+				->orderBy('data_inicio', 'DESC')
+				->findAll();
+
+			// Garante que sempre haja um evento na sessão para o staff,
+			// caso contrário /ingressos/add e demais telas com contexto falham.
+			$eventoIdSessao = session()->get('event_id');
+			$eventoSessaoValido = false;
+			if ($eventoIdSessao) {
+				foreach ($eventosAtivos as $ev) {
+					if ((int) $ev->id === (int) $eventoIdSessao) {
+						$eventoSessaoValido = true;
+						break;
+					}
+				}
+			}
+			if (!$eventoSessaoValido && !empty($eventosAtivos)) {
+				session()->set('event_id', $eventosAtivos[0]->id);
+				$eventoIdSessao = $eventosAtivos[0]->id;
+			}
+
+			$eventoAtual = null;
+			foreach ($eventosAtivos as $ev) {
+				if ((int) $ev->id === (int) $eventoIdSessao) {
+					$eventoAtual = $ev;
+					break;
+				}
+			}
+
 			return view('Console/dashboard_staff', [
-				'titulo' => 'Dashboard Staff',
+				'titulo'         => 'Dashboard Staff',
+				'eventos_ativos' => $eventosAtivos,
+				'evento_atual'   => $eventoAtual,
 			]);
 		}
 
 		// ========== USUÁRIO NÃO-PARCEIRO ==========
 		return redirect()->to('https://mundodream.com.br');
+	}
+
+	/**
+	 * Permite que staff/parceiro troquem o evento ativo na sessão.
+	 */
+	public function selecionarEvento(int $event_id)
+	{
+		$usuario = $this->usuarioLogado();
+		if (!$usuario || (!$usuario->is_staff && !$usuario->is_parceiro && !$usuario->is_admin)) {
+			return redirect()->to(site_url('/'));
+		}
+
+		$evento = $this->eventoModel->find($event_id);
+		if ($evento) {
+			session()->set('event_id', $event_id);
+		}
+
+		return redirect()->to(site_url('console/dashboard'));
 	}
 
 	public function evento($event_id)
