@@ -120,14 +120,16 @@ class MelhorEnvio extends BaseController
             return $this->response->setStatusCode(200)->setJSON(['ok' => true, 'ping' => true]);
         }
 
-        // Eventos reais: exige HMAC valido
+        // Valida assinatura. Em caso de falha, retorna 200 mas NAO processa
+        // (padrao de webhook providers para nao quebrar testes de URL no painel).
         $sig    = $this->request->getHeaderLine('X-ME-Signature');
         $secret = (string) env('MELHOR_ENVIO_WEBHOOK_SECRET');
-        $calc   = hash_hmac('sha256', $raw, $secret);
+        $calc   = $secret !== '' ? hash_hmac('sha256', $raw, $secret) : '';
+        $assinaturaValida = $secret !== '' && $sig !== '' && hash_equals($calc, $sig);
 
-        if ($secret === '' || ! hash_equals($calc, $sig)) {
-            log_message('warning', '[ME-WEBHOOK] assinatura invalida para event=' . $event);
-            return $this->response->setStatusCode(401)->setJSON(['ok' => false]);
+        if (! $assinaturaValida) {
+            log_message('warning', '[ME-WEBHOOK] assinatura invalida ou ausente (event=' . $event . ', secret_set=' . ($secret !== '' ? 'sim' : 'nao') . ')');
+            return $this->response->setStatusCode(200)->setJSON(['ok' => true, 'ignorado' => 'assinatura_invalida']);
         }
 
         log_message('info', '[ME-WEBHOOK] event=' . ($event ?? 'unknown') . ' id=' . ($meId ?? '-'));
