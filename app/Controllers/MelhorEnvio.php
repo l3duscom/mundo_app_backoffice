@@ -122,8 +122,9 @@ class MelhorEnvio extends BaseController
 
         // Valida assinatura. Em caso de falha, retorna 200 mas NAO processa
         // (padrao de webhook providers para nao quebrar testes de URL no painel).
+        // Doc ME: HMAC-SHA256 do body usando o "secret do aplicativo" (client_secret).
         $sig    = $this->request->getHeaderLine('X-ME-Signature');
-        $secret = (string) env('MELHOR_ENVIO_WEBHOOK_SECRET');
+        $secret = (string) (env('MELHOR_ENVIO_WEBHOOK_SECRET') ?: env('MELHOR_ENVIO_CLIENT_SECRET'));
         $calc   = $secret !== '' ? hash_hmac('sha256', $raw, $secret) : '';
         $assinaturaValida = $secret !== '' && $sig !== '' && hash_equals($calc, $sig);
 
@@ -158,9 +159,21 @@ class MelhorEnvio extends BaseController
 
         $update = [];
         switch ($event) {
+            case 'order.created':
+                $update['me_status'] = 'created';
+                break;
+            case 'order.pending':
+                $update['me_status'] = 'pending';
+                break;
+            case 'order.released':
+                $update['me_status'] = 'released';
+                break;
             case 'order.generated':
                 $update['me_status']       = 'generated';
                 $update['me_etiqueta_url'] = $payload['data']['tag_url'] ?? $pedido->me_etiqueta_url;
+                break;
+            case 'order.received':
+                $update['me_status'] = 'received';
                 break;
             case 'order.posted':
                 if ($pedido->me_status !== 'posted') {
@@ -175,6 +188,12 @@ class MelhorEnvio extends BaseController
                 break;
             case 'order.undelivered':
                 $update['me_status'] = 'undelivered';
+                break;
+            case 'order.paused':
+                $update['me_status'] = 'paused';
+                break;
+            case 'order.suspended':
+                $update['me_status'] = 'suspended';
                 break;
             case 'order.cancelled':
                 $update['me_status'] = 'cancelled';
