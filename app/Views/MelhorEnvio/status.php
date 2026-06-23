@@ -9,7 +9,11 @@
     <div class="row mb-3">
         <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h4 class="mb-1"><i class="bx bx-list-ul me-2"></i>Melhor Envio — Logs &amp; Status</h4>
+                <h4 class="mb-1">
+                    <i class="bx bx-list-ul me-2"></i>Melhor Envio — Logs &amp; Status
+                    <?php $ambProd = env('CI_ENVIRONMENT') === 'production'; ?>
+                    <span class="badge bg-<?= $ambProd ? 'danger' : 'warning text-dark' ?> ms-2"><?= $ambProd ? 'PRODUÇÃO' : 'SANDBOX' ?></span>
+                </h4>
                 <p class="text-muted mb-0 small">Trilha completa de chamadas à API e webhooks recebidos.</p>
             </div>
             <a href="<?= site_url('melhor-envio/conectar') ?>" class="btn btn-outline-primary btn-sm">
