@@ -533,83 +533,50 @@
     </div>
 </div>
 
-<!-- Modal Envio (Melhor Envio) -->
-<div class="modal fade bd-example-modal" id="participanteModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+<!-- Modal -->
+<div class="modal fade bd-example-modal" id="participanteModal" tabindex="-1" role="dialog" aria-labelledby="participanteModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bx bx-package me-2"></i>Envio do pedido</h5>
+                <h5 class="modal-title" id="participante>Modal">Gerenciamento de pedido</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
 
-                <!-- Endereco de destino -->
-                <div class="card border-0 bg-light mb-3">
-                    <div class="card-body py-2 px-3">
-                        <h6 class="text-muted mb-2 small"><i class="bx bx-map me-1"></i>Endereço de destino</h6>
-                        <?php
-                        $end = $endereco ?: $cliente;
-                        ?>
-                        <div class="small">
-                            <strong><?= esc($cliente->nome) ?></strong> · CPF <?= esc($cliente->cpf) ?><br>
-                            <?= esc($end->endereco ?? '-') ?>, <?= esc($end->numero ?? '-') ?>
-                            <?php if (!empty($end->bairro)) : ?> · <?= esc($end->bairro) ?><?php endif; ?><br>
-                            <?= esc($end->cidade ?? '-') ?>/<?= esc($end->estado ?? '-') ?> · CEP <strong><?= esc($end->cep ?? '-') ?></strong>
-                        </div>
-                    </div>
-                </div>
 
-                <?php if ($pedido->me_status) : ?>
-                    <!-- Card de envio em andamento -->
-                    <div class="alert alert-info border-0 mb-3">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <div>
-                                <strong>Envio Melhor Envio</strong><br>
-                                <small class="text-muted">
-                                    Serviço: <?= esc($pedido->me_servico_nome ?? '-') ?> ·
-                                    Status: <span class="badge bg-secondary"><?= esc($pedido->me_status) ?></span>
-                                    <?php if ($pedido->me_valor_frete) : ?>
-                                        · Frete: R$ <?= number_format((float) $pedido->me_valor_frete, 2, ',', '.') ?>
-                                    <?php endif; ?>
-                                </small>
-                                <?php if ($pedido->rastreio) : ?>
-                                    <br><small>Rastreio: <code><?= esc($pedido->rastreio) ?></code></small>
-                                <?php endif; ?>
-                            </div>
-                            <?php if ($pedido->me_etiqueta_url) : ?>
-                                <a href="<?= esc($pedido->me_etiqueta_url) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                                    <i class="bx bx-download me-1"></i>Etiqueta
-                                </a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+                <?php echo form_open("pedidos/rastreio/$pedido->id") ?>
+                <?= csrf_field() ?>
+                <input type="hidden" name="pedido_id" value="<?php echo $pedido->id ?>">
+
+                <div class="form-group col-md-12">
+                    <label class="form-control-label">Informe o Código de rastreio</label>
+                    <input type="text" name="rastreio" class="form-control form-control-lg" placeholder="Código de rastreio" value="<?php if ($pedido->rastreio) echo esc($pedido->rastreio); ?>">
+                </div>
+                <p class="text-muted font-13">Ao atualizar o código, o cliente receberá uma notificação, o status do pedido mudará para enviado e o botão de acompanhar entrega será habilitado.</p>
+                <hr>
+                <?php if ($endereco != null) : ?>
+                    Nome: <strong><?= $cliente->nome ?></strong><br>
+                    CPF: <strong><?= $cliente->cpf ?></strong><br>
+                    Rua: <strong><?= $endereco->endereco ?></strong><br>
+                    Nº/comp: <strong><?= $endereco->numero ?></strong><br>
+                    Cidade: <strong><?= $endereco->cidade ?> </strong><br>
+                    Estado: <strong><?= $endereco->estado ?> </strong><br>
+                    CEP: <strong><?= $endereco->cep ?></strong>
+                <?php else : ?>
+                    Nome: <strong><?= $cliente->nome ?></strong><br>
+                    CPF: <strong><?= $cliente->cpf ?></strong><br>
+                    Rua: <strong><?= $cliente->endereco ?></strong><br>
+                    Nº/comp: <strong><?= $cliente->numero ?></strong><br>
+                    Cidade: <strong><?= $cliente->cidade ?> </strong><br>
+                    Estado: <strong><?= $cliente->estado ?> </strong><br>
+                    CEP: <strong><?= $cliente->cep ?></strong>
                 <?php endif; ?>
-
-                <!-- Wizard Step 1: Cotar -->
-                <div id="meWizard">
-                    <button type="button" id="btnCotarFrete" class="btn btn-success w-100 mb-3" data-pedido-id="<?= (int) $pedido->id ?>">
-                        <i class="bx bx-calculator me-1"></i>Cotar Frete
-                    </button>
-
-                    <div id="meCotacaoLoading" class="text-center text-muted py-3" style="display:none;">
-                        <div class="spinner-border spinner-border-sm text-success me-2"></div>Cotando frete...
-                    </div>
-
-                    <div id="meCotacaoErro" class="alert alert-warning d-none mb-3"></div>
-
-                    <div id="meCotacaoResultado" class="d-none">
-                        <label class="form-label small text-muted mb-2">Serviços disponíveis (ordenados por preço):</label>
-                        <div id="meListaServicos" class="list-group mb-3"></div>
-                        <small class="text-muted d-block mt-2">
-                            <i class="bx bx-info-circle me-1"></i>Volume padrão: A<?= (int) env('ME_VOL_ALTURA', 2) ?> · L<?= (int) env('ME_VOL_LARGURA', 12) ?> · C<?= (int) env('ME_VOL_COMPRIMENTO', 17) ?> cm · <?= env('ME_VOL_PESO', 0.5) ?> kg
-                        </small>
-                    </div>
-                </div>
-
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <input id="btn-salvar" type="submit" value="Enviar pedido" class="btn btn-primary btn-sm">
             </div>
+            <?php echo form_close(); ?>
         </div>
     </div>
 </div>
@@ -1211,98 +1178,6 @@
         });
 
     });
-
-    // ===== Melhor Envio - Wizard de cotacao =====
-    (function () {
-        const btn = document.getElementById('btnCotarFrete');
-        if (!btn) return;
-
-        const csrfName  = '<?= csrf_token() ?>';
-        const csrfHash  = '<?= csrf_hash() ?>';
-        const loading   = document.getElementById('meCotacaoLoading');
-        const erroBox   = document.getElementById('meCotacaoErro');
-        const resultBox = document.getElementById('meCotacaoResultado');
-        const lista     = document.getElementById('meListaServicos');
-
-        btn.addEventListener('click', function () {
-            const pedidoId = this.dataset.pedidoId;
-            erroBox.classList.add('d-none');
-            resultBox.classList.add('d-none');
-            lista.innerHTML = '';
-            loading.style.display = 'block';
-            btn.disabled = true;
-
-            const form = new FormData();
-            form.append(csrfName, csrfHash);
-
-            fetch('<?= site_url('pedidos-envio/cotar') ?>/' + pedidoId, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                body: form,
-            })
-            .then(r => r.json())
-            .then(j => {
-                loading.style.display = 'none';
-                btn.disabled = false;
-
-                if (!j.success) {
-                    erroBox.textContent = j.message || 'Falha ao cotar.';
-                    erroBox.classList.remove('d-none');
-                    return;
-                }
-
-                if (!j.servicos || !j.servicos.length) {
-                    erroBox.textContent = 'Nenhum servico disponivel para esse destino.';
-                    erroBox.classList.remove('d-none');
-                    return;
-                }
-
-                j.servicos.forEach(s => {
-                    const item = document.createElement(s.disponivel ? 'label' : 'div');
-                    item.className = 'list-group-item d-flex align-items-center gap-2' + (s.disponivel ? '' : ' bg-light text-muted');
-
-                    const imgHtml = s.transportadora_picture
-                        ? `<img src="${s.transportadora_picture}" alt="${s.transportadora}" style="width:32px;height:32px;object-fit:contain;${s.disponivel ? '' : 'opacity:0.4;'}">`
-                        : '';
-
-                    if (s.disponivel) {
-                        item.innerHTML = `
-                            <input type="radio" name="meServico" value="${s.id}" class="form-check-input me-2">
-                            ${imgHtml}
-                            <div class="flex-grow-1">
-                                <div><strong>${s.nome}</strong> <small class="text-muted">· ${s.transportadora}</small></div>
-                                <small class="text-muted">Prazo estimado: ${s.prazo_dias} dia(s)</small>
-                            </div>
-                            <div class="text-end">
-                                <strong class="text-success">${s.preco_formatado}</strong>
-                            </div>
-                        `;
-                    } else {
-                        item.innerHTML = `
-                            <i class="bx bx-x-circle text-danger me-2" style="font-size:1.2rem;"></i>
-                            ${imgHtml}
-                            <div class="flex-grow-1">
-                                <div><strong>${s.nome}</strong> <small>· ${s.transportadora}</small></div>
-                                <small class="text-danger"><i class="bx bx-info-circle me-1"></i>${s.erro || 'Indisponível'}</small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-secondary">indisponível</span>
-                            </div>
-                        `;
-                    }
-                    lista.appendChild(item);
-                });
-
-                resultBox.classList.remove('d-none');
-            })
-            .catch(() => {
-                loading.style.display = 'none';
-                btn.disabled = false;
-                erroBox.textContent = 'Erro de rede ao cotar frete.';
-                erroBox.classList.remove('d-none');
-            });
-        });
-    })();
 </script>
 
 <?php echo $this->endSection() ?>

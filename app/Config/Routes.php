@@ -54,19 +54,6 @@ $routes->post('meets/validar-code', 'Meets::validarCode');
 // Seleção de evento ativo (staff/parceiro)
 $routes->get('console/selecionar-evento/(:num)', 'Console::selecionarEvento/$1');
 
-// Melhor Envio - OAuth + webhook + status
-$routes->group('melhor-envio', function ($routes) {
-    $routes->get('conectar', 'MelhorEnvio::conectar');
-    $routes->get('callback', 'MelhorEnvio::callback');
-    $routes->get('status',   'MelhorEnvio::status');
-    $routes->match(['get', 'post'], 'webhook', 'MelhorEnvio::webhook');
-});
-
-// Pedidos envio - wizard de cotacao/compra/etiqueta
-$routes->group('pedidos-envio', function ($routes) {
-    $routes->post('cotar/(:num)', 'PedidosEnvio::cotar/$1');
-});
-
 $routes->group(
     'cron',
     function ($routes) {
