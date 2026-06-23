@@ -109,19 +109,26 @@ class MelhorEnvio extends BaseController
             ]);
         }
 
-        $raw    = $this->request->getBody() ?? '';
+        $raw     = $this->request->getBody() ?? '';
+        $payload = json_decode($raw, true);
+        $event   = is_array($payload) ? ($payload['event'] ?? null) : null;
+        $meId    = is_array($payload) ? ($payload['data']['id'] ?? null) : null;
+
+        // Ping/teste de cadastro do ME: corpo vazio ou sem campo "event" -> 200 OK
+        if ($raw === '' || ! $event) {
+            log_message('info', '[ME-WEBHOOK] ping/teste recebido (sem event)');
+            return $this->response->setStatusCode(200)->setJSON(['ok' => true, 'ping' => true]);
+        }
+
+        // Eventos reais: exige HMAC valido
         $sig    = $this->request->getHeaderLine('X-ME-Signature');
         $secret = (string) env('MELHOR_ENVIO_WEBHOOK_SECRET');
         $calc   = hash_hmac('sha256', $raw, $secret);
 
         if ($secret === '' || ! hash_equals($calc, $sig)) {
-            log_message('warning', '[ME-WEBHOOK] assinatura invalida');
+            log_message('warning', '[ME-WEBHOOK] assinatura invalida para event=' . $event);
             return $this->response->setStatusCode(401)->setJSON(['ok' => false]);
         }
-
-        $payload = json_decode($raw, true);
-        $event   = $payload['event'] ?? null;
-        $meId    = $payload['data']['id'] ?? null;
 
         log_message('info', '[ME-WEBHOOK] event=' . ($event ?? 'unknown') . ' id=' . ($meId ?? '-'));
 
@@ -137,7 +144,7 @@ class MelhorEnvio extends BaseController
             'erro'          => null,
         ]);
 
-        if (! $event || ! $meId) {
+        if (! $meId) {
             return $this->response->setStatusCode(200)->setJSON(['ok' => true]);
         }
 
