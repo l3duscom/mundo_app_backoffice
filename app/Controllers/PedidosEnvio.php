@@ -156,33 +156,41 @@ class PedidosEnvio extends BaseController
 
     /**
      * Normaliza resposta do /api/v2/me/shipment/calculate para o front.
-     * Filtra servicos com erro, ordena por preco crescente.
+     * Inclui servicos com erro (marcados como indisponivel) - facilita debug.
+     * Ordem: disponiveis (por preco asc), depois indisponiveis.
      */
     private function normalizaCotacao(array $resposta): array
     {
         $itens = [];
         foreach ($resposta as $s) {
-            if (! is_array($s)) {
+            if (! is_array($s) || ! isset($s['id'])) {
                 continue;
             }
-            if (! empty($s['error'])) {
-                continue;
-            }
-            if (! isset($s['id'], $s['price'])) {
-                continue;
-            }
+
+            $disponivel = empty($s['error']) && isset($s['price']);
+            $preco      = $disponivel ? (float) $s['price'] : null;
+
             $itens[] = [
-                'id'              => (int) $s['id'],
-                'nome'            => $s['name'] ?? '',
-                'transportadora'  => $s['company']['name'] ?? '',
+                'id'                     => (int) $s['id'],
+                'nome'                   => $s['name'] ?? '',
+                'transportadora'         => $s['company']['name'] ?? '',
                 'transportadora_picture' => $s['company']['picture'] ?? '',
-                'preco'           => (float) $s['price'],
-                'preco_formatado' => 'R$ ' . number_format((float) $s['price'], 2, ',', '.'),
-                'prazo_dias'      => (int) ($s['delivery_time'] ?? 0),
-                'pacote'          => $s['packages'][0] ?? null,
+                'disponivel'             => $disponivel,
+                'erro'                   => $s['error'] ?? null,
+                'preco'                  => $preco,
+                'preco_formatado'        => $preco !== null ? 'R$ ' . number_format($preco, 2, ',', '.') : null,
+                'prazo_dias'             => (int) ($s['delivery_time'] ?? 0),
+                'pacote'                 => $s['packages'][0] ?? null,
             ];
         }
-        usort($itens, fn($a, $b) => $a['preco'] <=> $b['preco']);
+
+        usort($itens, function ($a, $b) {
+            if ($a['disponivel'] !== $b['disponivel']) {
+                return $a['disponivel'] ? -1 : 1;
+            }
+            return ($a['preco'] ?? PHP_FLOAT_MAX) <=> ($b['preco'] ?? PHP_FLOAT_MAX);
+        });
+
         return $itens;
     }
 }

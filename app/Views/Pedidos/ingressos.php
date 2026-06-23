@@ -1258,19 +1258,38 @@
                 }
 
                 j.servicos.forEach(s => {
-                    const item = document.createElement('label');
-                    item.className = 'list-group-item d-flex align-items-center gap-2';
-                    item.innerHTML = `
-                        <input type="radio" name="meServico" value="${s.id}" class="form-check-input me-2">
-                        ${s.transportadora_picture ? `<img src="${s.transportadora_picture}" alt="${s.transportadora}" style="width:32px;height:32px;object-fit:contain;">` : ''}
-                        <div class="flex-grow-1">
-                            <div><strong>${s.nome}</strong> <small class="text-muted">· ${s.transportadora}</small></div>
-                            <small class="text-muted">Prazo estimado: ${s.prazo_dias} dia(s)</small>
-                        </div>
-                        <div class="text-end">
-                            <strong class="text-success">${s.preco_formatado}</strong>
-                        </div>
-                    `;
+                    const item = document.createElement(s.disponivel ? 'label' : 'div');
+                    item.className = 'list-group-item d-flex align-items-center gap-2' + (s.disponivel ? '' : ' bg-light text-muted');
+
+                    const imgHtml = s.transportadora_picture
+                        ? `<img src="${s.transportadora_picture}" alt="${s.transportadora}" style="width:32px;height:32px;object-fit:contain;${s.disponivel ? '' : 'opacity:0.4;'}">`
+                        : '';
+
+                    if (s.disponivel) {
+                        item.innerHTML = `
+                            <input type="radio" name="meServico" value="${s.id}" class="form-check-input me-2">
+                            ${imgHtml}
+                            <div class="flex-grow-1">
+                                <div><strong>${s.nome}</strong> <small class="text-muted">· ${s.transportadora}</small></div>
+                                <small class="text-muted">Prazo estimado: ${s.prazo_dias} dia(s)</small>
+                            </div>
+                            <div class="text-end">
+                                <strong class="text-success">${s.preco_formatado}</strong>
+                            </div>
+                        `;
+                    } else {
+                        item.innerHTML = `
+                            <i class="bx bx-x-circle text-danger me-2" style="font-size:1.2rem;"></i>
+                            ${imgHtml}
+                            <div class="flex-grow-1">
+                                <div><strong>${s.nome}</strong> <small>· ${s.transportadora}</small></div>
+                                <small class="text-danger"><i class="bx bx-info-circle me-1"></i>${s.erro || 'Indisponível'}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-secondary">indisponível</span>
+                            </div>
+                        `;
+                    }
                     lista.appendChild(item);
                 });
 
