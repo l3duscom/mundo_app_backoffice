@@ -99,6 +99,16 @@ class MelhorEnvio extends BaseController
      */
     public function webhook()
     {
+        // GET = health-check para validacao da URL no painel ME / browser
+        if ($this->request->getMethod(true) === 'GET') {
+            return $this->response->setStatusCode(200)->setJSON([
+                'ok'       => true,
+                'endpoint' => 'melhor-envio/webhook',
+                'aceita'   => 'POST',
+                'ambiente' => env('CI_ENVIRONMENT'),
+            ]);
+        }
+
         $raw    = $this->request->getBody() ?? '';
         $sig    = $this->request->getHeaderLine('X-ME-Signature');
         $secret = (string) env('MELHOR_ENVIO_WEBHOOK_SECRET');

@@ -59,7 +59,7 @@ $routes->group('melhor-envio', function ($routes) {
     $routes->get('conectar', 'MelhorEnvio::conectar');
     $routes->get('callback', 'MelhorEnvio::callback');
     $routes->get('status',   'MelhorEnvio::status');
-    $routes->post('webhook', 'MelhorEnvio::webhook');
+    $routes->match(['get', 'post'], 'webhook', 'MelhorEnvio::webhook');
 });
 
 $routes->group(
