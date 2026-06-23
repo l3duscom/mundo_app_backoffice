@@ -33,6 +33,15 @@ class PedidoModel extends Model
         'updated_at',
         'charge_id',
         'comprovante',
+        'me_order_id',
+        'me_protocol',
+        'me_servico_id',
+        'me_servico_nome',
+        'me_etiqueta_url',
+        'me_status',
+        'me_valor_frete',
+        'me_postado_em',
+        'me_entregue_em',
     ];
 
     // Dates

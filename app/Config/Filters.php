@@ -47,6 +47,7 @@ class Filters extends BaseConfig
                     'webhook/backoffice',
                     'api/acessos/check',   // OK: CSRF liberado aqui
                     'api/*',   // Todas as rotas da API não usam CSRF
+                    'melhor-envio/webhook',
                 ],
             ],
         ],
