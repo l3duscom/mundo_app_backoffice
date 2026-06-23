@@ -62,6 +62,11 @@ $routes->group('melhor-envio', function ($routes) {
     $routes->match(['get', 'post'], 'webhook', 'MelhorEnvio::webhook');
 });
 
+// Pedidos envio - wizard de cotacao/compra/etiqueta
+$routes->group('pedidos-envio', function ($routes) {
+    $routes->post('cotar/(:num)', 'PedidosEnvio::cotar/$1');
+});
+
 $routes->group(
     'cron',
     function ($routes) {
