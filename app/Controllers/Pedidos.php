@@ -824,7 +824,7 @@ class Pedidos extends BaseController
 
 
 
-			$this->enviaEmailRastreio($cliente, $pedido_id);
+			$this->enviaEmailRastreio($cliente, $pedido_id, (int) $pedido->evento_id);
 
 			return redirect()->to(site_url("pedidos/ingressos/" . $pedido_id))->with('sucesso', "Participante alterado com sucesso");
 		}
@@ -832,8 +832,14 @@ class Pedidos extends BaseController
 		return redirect()->to(site_url("pedidos/ingressos/" . $pedido_id))->with('atencao', "Erro ao alterar o participante, contate o suporte!");
 	}
 
-	private function enviaEmailRastreio(object $cliente, ?int $pedido_id = null): void
+	private function enviaEmailRastreio(object $cliente, ?int $pedido_id = null, ?int $event_id = null): void
 	{
+		// Buscar dados do evento se o event_id foi fornecido
+		$evento = null;
+		if ($event_id) {
+			$evento = $this->eventoModel->find($event_id);
+		}
+
 		// Buscar order bumps do pedido (se houver)
 		$orderBumps = [];
 		if ($pedido_id) {
@@ -846,6 +852,7 @@ class Pedidos extends BaseController
 
 		$data = [
 			'cliente' => $cliente,
+			'evento' => $evento,
 			'orderBumps' => $orderBumps,
 		];
 
