@@ -1986,39 +1986,54 @@ class Checkout extends BaseController
 		if ($cliente != null) {
 			$user_id = $cliente->usuario_id;
 		} else {
-			//criqar usuario e pegar o ID
-			//$user_id = $this->usuarioModel->getInsertID();
-			$cliente = new Cliente($post);
+			$expositorModel = new \App\Models\ExpositorModel();
+			$expositor = $expositorModel
+				->withDeleted(true)
+				->where('email', $email)
+				->orderBy('id', 'DESC')
+				->first();
 
-			if ($this->clienteModel->save($cliente)) {
-				// Cria usuario do cliente
-				$newuser = $this->criaUsuarioParaCliente($cliente);
-
-				// Envia dados de acesso ao clente
-				$this->enviaEmailCriacaoEmailAcesso($cliente, $newuser);
-
-
-
-				$cliente_id = $this->clienteModel->getInsertID();
-
-				$atributos = [
-					'clientes.id',
-					'clientes.nome',
-					'clientes.cpf',
-					'clientes.email',
-					'clientes.telefone',
-					'clientes.deleted_at',
-					'clientes.usuario_id',
-					'clientes.customer_id'
+			if ($expositor != null && !empty($expositor->usuario_id)) {
+				$user_id = $expositor->usuario_id;
+				$cliente = (object) [
+					'nome'  => $expositor->nome,
+					'email' => $expositor->email,
 				];
+			} else {
+				//criqar usuario e pegar o ID
+				//$user_id = $this->usuarioModel->getInsertID();
+				$cliente = new Cliente($post);
 
-				$cliente = $this->clienteModel->select($atributos)
-					->withDeleted(true)
-					->where('clientes.id', $cliente_id)
-					->orderBy('id', 'DESC')
-					->first();
+				if ($this->clienteModel->save($cliente)) {
+					// Cria usuario do cliente
+					$newuser = $this->criaUsuarioParaCliente($cliente);
 
-				$user_id = $cliente->usuario_id;
+					// Envia dados de acesso ao clente
+					$this->enviaEmailCriacaoEmailAcesso($cliente, $newuser);
+
+
+
+					$cliente_id = $this->clienteModel->getInsertID();
+
+					$atributos = [
+						'clientes.id',
+						'clientes.nome',
+						'clientes.cpf',
+						'clientes.email',
+						'clientes.telefone',
+						'clientes.deleted_at',
+						'clientes.usuario_id',
+						'clientes.customer_id'
+					];
+
+					$cliente = $this->clienteModel->select($atributos)
+						->withDeleted(true)
+						->where('clientes.id', $cliente_id)
+						->orderBy('id', 'DESC')
+						->first();
+
+					$user_id = $cliente->usuario_id;
+				}
 			}
 		}
 
