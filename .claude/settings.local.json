@@ -63,7 +63,28 @@
       "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Console/dashboard_staff.php)",
       "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Layout/principal.php)",
       "Bash(php -l c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Routes.php)",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "Bash(git revert *)",
+      "Bash(git -c core.editor=true revert --continue)",
+      "Bash(git checkout *)",
+      "Bash(git rm *)",
+      "Bash(git commit -m 'revert: desfaz integracao Melhor Envio *)",
+      "Bash(git stash *)",
+      "Bash(git push *)",
+      "Bash(git -C \"c:/Users/Edu/Documents/Projetos/mundo_app\" log --oneline --all --since=\"2025-09-01\" -- 'app/Views/**/email*' 'app/Views/Email*')",
+      "Bash(git -C \"c:/Users/Edu/Documents/Projetos/mundo_app\" log --oneline --all -- 'app/Views/Concursos/email*')",
+      "Bash(git -C \"c:/Users/Edu/Documents/Projetos/mundo_app\" show --stat cbc7d290)",
+      "Bash(git -C \"c:/Users/Edu/Documents/Projetos/mundo_app\" log --oneline --all --since=\"2026-05-01\")",
+      "Bash(git -C \"c:/Users/Edu/Documents/Projetos/mundo_app\" log --oneline --all --grep -i email)",
+      "Bash(php -l app/Controllers/Checkout.php)",
+      "Bash(php -l app/Controllers/Pdv.php)",
+      "Bash(php -l app/Views/Pedidos/email_pedido.php)",
+      "Bash(php -l app/Views/Pedidos/email_pedido_cartao.php)",
+      "Bash(php -l app/Controllers/Ingressos.php)",
+      "Bash(php -l app/Controllers/Concursos.php)",
+      "Bash(php -l app/Views/Pedidos/email_paid.php)",
+      "Bash(php -l app/Views/Pedidos/email_cortesia.php)",
+      "Bash(php -l app/Views/Pedidos/email_envio_cartao.php)"
     ]
   }
 }

@@ -33,6 +33,7 @@ class Ingressos extends BaseController
 	private $resendService;
 	private $bonusModel;
 	private $codigoBonusModel;
+	private $pedidoOrderBumpModel;
 
 
 	public function __construct()
@@ -48,6 +49,7 @@ class Ingressos extends BaseController
 		$this->resendService = new ResendService();
 		$this->bonusModel = new \App\Models\BonusModel();
 		$this->codigoBonusModel = new \App\Models\CodigoBonusModel();
+		$this->pedidoOrderBumpModel = new \App\Models\PedidoOrderBumpModel();
 	}
 
 	public function index()
@@ -236,7 +238,7 @@ class Ingressos extends BaseController
 				->where('usuario_id', $credencial->user_id)
 				->first();
 
-			$this->enviaEmailCinemark($cliente);
+			$this->enviaEmailCinemark($cliente, (int) ($post['pedido_id'] ?? 0));
 
 			$retorno['id'] = $post['pedido_id'];
 
@@ -653,10 +655,21 @@ class Ingressos extends BaseController
 		return view('Ingressos/cinemark', $data);
 	}
 
-	private function enviaEmailCinemark(object $cliente): void
+	private function enviaEmailCinemark(object $cliente, ?int $pedido_id = null): void
 	{
+		// Buscar order bumps do pedido (se houver)
+		$orderBumps = [];
+		if ($pedido_id) {
+			try {
+				$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+			} catch (\Throwable $e) {
+				log_message('error', 'Falha ao buscar order bumps para email cinemark: ' . $e->getMessage());
+			}
+		}
+
 		$data = [
 			'cliente' => $cliente,
+			'orderBumps' => $orderBumps,
 		];
 
 		$mensagem = view('Pedidos/email_cortesia', $data);

@@ -824,7 +824,7 @@ class Pedidos extends BaseController
 
 
 
-			$this->enviaEmailRastreio($cliente);
+			$this->enviaEmailRastreio($cliente, $pedido_id);
 
 			return redirect()->to(site_url("pedidos/ingressos/" . $pedido_id))->with('sucesso', "Participante alterado com sucesso");
 		}
@@ -832,10 +832,21 @@ class Pedidos extends BaseController
 		return redirect()->to(site_url("pedidos/ingressos/" . $pedido_id))->with('atencao', "Erro ao alterar o participante, contate o suporte!");
 	}
 
-	private function enviaEmailRastreio(object $cliente): void
+	private function enviaEmailRastreio(object $cliente, ?int $pedido_id = null): void
 	{
+		// Buscar order bumps do pedido (se houver)
+		$orderBumps = [];
+		if ($pedido_id) {
+			try {
+				$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+			} catch (\Throwable $e) {
+				log_message('error', 'Falha ao buscar order bumps para email rastreio: ' . $e->getMessage());
+			}
+		}
+
 		$data = [
 			'cliente' => $cliente,
+			'orderBumps' => $orderBumps,
 		];
 
 		$mensagem = view('Pedidos/email_rastreio', $data);
@@ -1148,10 +1159,21 @@ class Pedidos extends BaseController
 		return $cliente;
 	}
 
-	private function enviaEmailEnvioCartao(object $cliente): void
+	private function enviaEmailEnvioCartao(object $cliente, ?int $pedido_id = null): void
 	{
+		// Buscar order bumps do pedido (se houver)
+		$orderBumps = [];
+		if ($pedido_id) {
+			try {
+				$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+			} catch (\Throwable $e) {
+				log_message('error', 'Falha ao buscar order bumps para email envio cartao: ' . $e->getMessage());
+			}
+		}
+
 		$data = [
 			'cliente' => $cliente,
+			'orderBumps' => $orderBumps,
 		];
 
 		$mensagem = view('Pedidos/email_envio_cartao', $data);

@@ -6,6 +6,39 @@
 <p><strong>Acesse:</strong><a href="https://mundodream.com.br"> sua área de membros</a> com o email <?= $cliente->email ?> para ter acesso aos seus ingressos!</p>
 <hr>
 
+<?php if (!empty($orderBumps)): ?>
+<hr>
+<h3>Produtos adicionais:</h3>
+<table cellpadding="6" cellspacing="0" border="0" style="border-collapse:collapse; font-family: Arial, sans-serif; font-size: 14px;">
+    <?php
+        $totalOrderBumps = 0;
+        foreach ($orderBumps as $ob):
+            $obQtd = max(1, (int) ($ob->quantidade ?? 1));
+            $obSubtotal = (float) $ob->preco_unitario * $obQtd;
+            $totalOrderBumps += $obSubtotal;
+    ?>
+    <tr>
+        <td style="padding:4px 8px;">•</td>
+        <td style="padding:4px 8px;">
+            <strong><?= esc($ob->nome) ?></strong>
+            <?php if ($obQtd > 1): ?>
+                <span style="color:#6d28d9; font-weight:bold;"> &nbsp;×&nbsp;<?= $obQtd ?></span>
+            <?php endif; ?>
+        </td>
+        <td style="padding:4px 8px; text-align:right;">
+            R$ <?= number_format($obSubtotal, 2, ',', '.') ?>
+        </td>
+    </tr>
+    <?php endforeach; ?>
+    <tr>
+        <td colspan="3" style="border-top:1px solid #e5e7eb; padding-top:6px; text-align:right;">
+            <strong>Total produtos: R$ <?= number_format($totalOrderBumps, 2, ',', '.') ?></strong>
+        </td>
+    </tr>
+</table>
+<p style="font-size: 12px; color: #6b7280;">Seus produtos ficam disponíveis em <a href="https://mundodream.com.br/console/dashboard">sua área de membros</a>, na aba "Meus Produtos".</p>
+<?php endif; ?>
+
 <hr>
 <h3>Detalhes do evento:</h3>
 <p>

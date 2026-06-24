@@ -11,6 +11,7 @@ class Pdv extends BaseController
     private $eventoModel;
     private $ticketModel;
     private $pedidoModel;
+    private $pedidoOrderBumpModel;
     private $ingressoModel;
     private $usuarioModel;
     private $clienteModel;
@@ -23,6 +24,7 @@ class Pdv extends BaseController
         $this->eventoModel = new \App\Models\EventoModel();
         $this->ticketModel = new \App\Models\TicketModel();
         $this->pedidoModel = new \App\Models\PedidoModel();
+        $this->pedidoOrderBumpModel = new \App\Models\PedidoOrderBumpModel();
         $this->ingressoModel = new \App\Models\IngressoModel();
         $this->usuarioModel = new \App\Models\UsuarioModel();
         $this->clienteModel = new \App\Models\ClienteModel();
@@ -700,10 +702,18 @@ class Pdv extends BaseController
 
             if (!$cliente || !$evento) return;
 
+            $orderBumps = [];
+            try {
+                $orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedidoId);
+            } catch (\Throwable $e) {
+                log_message('error', 'Falha ao buscar order bumps para email PDV: ' . $e->getMessage());
+            }
+
             $data = [
                 'cliente' => $cliente,
                 'evento' => $evento,
                 'pedido' => $pedido,
+                'orderBumps' => $orderBumps,
             ];
 
             $mensagem = view('Pedidos/email_pedido', $data);

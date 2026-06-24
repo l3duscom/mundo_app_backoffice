@@ -50,6 +50,7 @@ class Checkout extends BaseController
 		$this->cartaoModel = new \App\Models\CartaoModel();
 		$this->cartaoCreditoModel = new \App\Models\CartaoCreditoModel();
 		$this->pedidoModel = new \App\Models\PedidoModel();
+		$this->pedidoOrderBumpModel = new \App\Models\PedidoOrderBumpModel();
 		$this->ingressoModel = new \App\Models\IngressoModel();
 		$this->grupoUsuarioModel = new \App\Models\GrupoUsuarioModel();
 		$this->transactionModel = new \App\Models\TransactionModel();
@@ -406,7 +407,7 @@ class Checkout extends BaseController
 			];
 
 			$this->enderecoModel->skipValidation(true)->protect(false)->insert($endereco);
-			$this->enviaEmailPedidoCartao($cliente);
+			$this->enviaEmailPedidoCartao($cliente, null, $pedido_id);
 
 			//$retorno['id'] = $pedido_id;
 
@@ -1177,7 +1178,7 @@ class Checkout extends BaseController
 
 			$this->enderecoModel->skipValidation(true)->protect(false)->insert($endereco);
 
-			$this->enviaEmailPedidoCartao($cliente);
+			$this->enviaEmailPedidoCartao($cliente, null, $pedido_id);
 			/*
 			$atributos = [
 				'clientes.id',
@@ -1503,7 +1504,7 @@ class Checkout extends BaseController
 
 
 
-			$this->enviaEmailPedido((object)$montaemail);
+			$this->enviaEmailPedido((object)$montaemail, null, $pedido_id);
 
 			/*
 			$atributos = [
@@ -1633,7 +1634,7 @@ class Checkout extends BaseController
 					'estado' => $post['estado'],
 				]);
 
-				$this->enviaEmailPedidoCartao($cliente, $event_id);
+				$this->enviaEmailPedidoCartao($cliente, $event_id, $pedido_id);
 
 				if (in_array($status, ['CONFIRMED', 'RECEIVED'])) {
 					unset($_SESSION['carrinho']);
@@ -1782,7 +1783,7 @@ class Checkout extends BaseController
 				'copiaecola' => $transaction['payload'],
 				'expire_at' => strtotime($transaction['expirationDate']),
 				'valor' => $payment['value']
-			], $event_id);
+			], $event_id, $pedido_id);
 
 			unset($_SESSION['carrinho']);
 
@@ -2085,7 +2086,7 @@ class Checkout extends BaseController
 		];
 
 
-		$this->enviaEmailCortesia((object)$montaemail, $event_id);
+		$this->enviaEmailCortesia((object)$montaemail, $event_id, $pedido_id);
 
 
 
@@ -2173,7 +2174,7 @@ class Checkout extends BaseController
 		$this->ingressoModel->skipValidation(true)->protect(false)->insert($ingressos);
 
 
-		$this->enviaEmailPedido($cliente, $event_id);
+		$this->enviaEmailPedido($cliente, $event_id, $pedido_id);
 
 		return redirect()->to(site_url("ingressos"))->with('sucesso', "Seu ingresso foi gerado com sucesso! Apresente seu cartão na bilheteria do evento para garantir seu acesso.");
 	}
@@ -2309,7 +2310,7 @@ class Checkout extends BaseController
 		return $transaction;
 	}
 
-	private function enviaEmailPedido(object $cliente, int $event_id = null): void
+	private function enviaEmailPedido(object $cliente, int $event_id = null, ?int $pedido_id = null): void
 	{
 		// Buscar dados do evento se o event_id foi fornecido
 		$evento = null;
@@ -2317,9 +2318,20 @@ class Checkout extends BaseController
 			$evento = $this->eventoModel->find($event_id);
 		}
 
+		// Buscar order bumps do pedido (se houver)
+		$orderBumps = [];
+		if ($pedido_id) {
+			try {
+				$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+			} catch (\Throwable $e) {
+				log_message('error', 'Falha ao buscar order bumps para email PIX: ' . $e->getMessage());
+			}
+		}
+
 		$data = [
 			'cliente' => $cliente,
 			'evento' => $evento,
+			'orderBumps' => $orderBumps,
 		];
 
 		$mensagem = view('Pedidos/email_pedido', $data);
@@ -2332,7 +2344,7 @@ class Checkout extends BaseController
 		);
 	}
 
-	private function enviaEmailCortesia(object $cliente, int $event_id = null): void
+	private function enviaEmailCortesia(object $cliente, int $event_id = null, ?int $pedido_id = null): void
 	{
 		// Buscar dados do evento se o event_id foi fornecido
 		$evento = null;
@@ -2340,9 +2352,20 @@ class Checkout extends BaseController
 			$evento = $this->eventoModel->find($event_id);
 		}
 
+		// Buscar order bumps do pedido (se houver)
+		$orderBumps = [];
+		if ($pedido_id) {
+			try {
+				$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+			} catch (\Throwable $e) {
+				log_message('error', 'Falha ao buscar order bumps para email cortesia: ' . $e->getMessage());
+			}
+		}
+
 		$data = [
 			'cliente' => $cliente,
 			'evento' => $evento,
+			'orderBumps' => $orderBumps,
 		];
 
 		$mensagem = view('Pedidos/email_cortesia', $data);
@@ -2356,7 +2379,7 @@ class Checkout extends BaseController
 	}
 
 
-	private function enviaEmailPedidoCartao(object $cliente, int $event_id = null): void
+	private function enviaEmailPedidoCartao(object $cliente, int $event_id = null, ?int $pedido_id = null): void
 	{
 		// Buscar dados do evento se o event_id foi fornecido
 		$evento = null;
@@ -2364,9 +2387,20 @@ class Checkout extends BaseController
 			$evento = $this->eventoModel->find($event_id);
 		}
 
+		// Buscar order bumps do pedido (se houver)
+		$orderBumps = [];
+		if ($pedido_id) {
+			try {
+				$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+			} catch (\Throwable $e) {
+				log_message('error', 'Falha ao buscar order bumps para email cartão: ' . $e->getMessage());
+			}
+		}
+
 		$data = [
 			'cliente' => $cliente,
 			'evento' => $evento,
+			'orderBumps' => $orderBumps,
 		];
 
 		$mensagem = view('Pedidos/email_pedido_cartao', $data);
@@ -2425,12 +2459,12 @@ class Checkout extends BaseController
 
 		// Buscar o evento_id do pedido
 		$pedido = $this->pedidoModel->find($pedido_id);
-		$this->enviaEmailPaid($cliente, $pedido->evento_id);
+		$this->enviaEmailPaid($cliente, $pedido->evento_id, $pedido_id);
 
 		return redirect()->back()->with('info', "Alterado com sucesso!");
 	}
 
-	private function enviaEmailPaid(object $cliente, int $event_id = null): void
+	private function enviaEmailPaid(object $cliente, int $event_id = null, ?int $pedido_id = null): void
 	{
 		// Buscar dados do evento se o event_id foi fornecido
 		$evento = null;
@@ -2438,9 +2472,20 @@ class Checkout extends BaseController
 			$evento = $this->eventoModel->find($event_id);
 		}
 
+		// Buscar order bumps do pedido (se houver)
+		$orderBumps = [];
+		if ($pedido_id) {
+			try {
+				$orderBumps = $this->pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+			} catch (\Throwable $e) {
+				log_message('error', 'Falha ao buscar order bumps para email paid: ' . $e->getMessage());
+			}
+		}
+
 		$data = [
 			'cliente' => $cliente,
 			'evento' => $evento,
+			'orderBumps' => $orderBumps,
 		];
 
 		$mensagem = view('Pedidos/email_paid', $data);

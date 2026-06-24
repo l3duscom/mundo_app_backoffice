@@ -2183,10 +2183,22 @@ class Concursos extends BaseController
 		return $cliente;
 	}
 
-	private function enviaEmailEnvioCartao(object $cliente): void
+	private function enviaEmailEnvioCartao(object $cliente, ?int $pedido_id = null): void
 	{
+		// Buscar order bumps do pedido (se houver)
+		$orderBumps = [];
+		if ($pedido_id) {
+			try {
+				$pedidoOrderBumpModel = new \App\Models\PedidoOrderBumpModel();
+				$orderBumps = $pedidoOrderBumpModel->getOrderBumpsPorPedido($pedido_id);
+			} catch (\Throwable $e) {
+				log_message('error', 'Falha ao buscar order bumps para email envio cartao: ' . $e->getMessage());
+			}
+		}
+
 		$data = [
 			'cliente' => $cliente,
+			'orderBumps' => $orderBumps,
 		];
 
 		$mensagem = view('Pedidos/email_envio_cartao', $data);
