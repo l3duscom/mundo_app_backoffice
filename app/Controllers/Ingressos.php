@@ -253,7 +253,13 @@ class Ingressos extends BaseController
 
 		$cli = $this->clienteModel->withDeleted(true)->where('usuario_id', $user_id)->first();
 
-		$cliente = $this->buscaclienteOu404($cli->id);
+		if ($cli) {
+			$cliente = $this->buscaclienteOu404($cli->id);
+			$nomeTitular = $cliente->nome;
+		} else {
+			$expositor = (new \App\Models\ExpositorModel())->where('usuario_id', $user_id)->first();
+			$nomeTitular = $expositor->nome_fantasia ?? $expositor->nome ?? $this->usuarioLogado()->nome;
+		}
 
 
 		$ingresso = $this->ingressoModel->recuperaIngresso($id);
@@ -262,7 +268,7 @@ class Ingressos extends BaseController
 			if ($ingresso->participante != null) {
 				$participante = $ingresso->participante;
 			} else {
-				$participante = $cliente->nome;
+				$participante = $nomeTitular;
 			}
 
 			$generator = new BarcodeGeneratorHTML();

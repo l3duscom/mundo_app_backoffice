@@ -123,7 +123,28 @@ class Console extends BaseController
 			} else {
 				$data['contratos_por_evento'] = [];
 			}
-			
+
+			// Ingressos vinculados ao usuário do parceiro (cortesias, compras, etc.)
+			$ingressos = $this->ingressoModel->recuperaIngressosPorUsuario($usuario->id);
+
+			$ingressosAtuais = [];
+			$ingressosAnteriores = [];
+			$hoje = date('Y-m-d');
+			$limiteAnterior = date('Y-m-d', strtotime('-2 days', strtotime($hoje)));
+
+			foreach ($ingressos as $key => $ing) {
+				$dataFim = $ing->data_fim ?? null;
+				if ($dataFim && $dataFim < $limiteAnterior) {
+					$ingressosAnteriores[] = $ing;
+				} else {
+					$ingressosAtuais[] = $ing;
+				}
+				$ingressos[$key]->qr = (new QRCode)->render($ing->codigo);
+			}
+
+			$data['ingressos_atuais']      = $ingressosAtuais;
+			$data['ingressos_anteriores']  = $ingressosAnteriores;
+
 			return view('Console/dashboard_parceiro', $data);
 		}
 

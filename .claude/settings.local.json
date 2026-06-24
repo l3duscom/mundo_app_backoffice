@@ -84,7 +84,10 @@
       "Bash(php -l app/Controllers/Concursos.php)",
       "Bash(php -l app/Views/Pedidos/email_paid.php)",
       "Bash(php -l app/Views/Pedidos/email_cortesia.php)",
-      "Bash(php -l app/Views/Pedidos/email_envio_cartao.php)"
+      "Bash(php -l app/Views/Pedidos/email_envio_cartao.php)",
+      "Bash(grep -n -i \"ingresso\\\\|pdf\\\\|baixar\\\\|download\" 'c:/Users/Edu/Documents/Projetos/mundo_app/app/Views/Console/dashboard.php' | head -80)",
+      "Read(//c/Users/Edu/Documents/Projetos/mundo_app/app/Views/Console/**)",
+      "Bash(grep -n 'endforeach\\\\|endif\\\\|endSection\\\\|<?php echo $this->section' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Console/dashboard_parceiro.php)"
     ]
   }
 }

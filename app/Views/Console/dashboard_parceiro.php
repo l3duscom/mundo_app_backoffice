@@ -570,8 +570,116 @@
         </div>
     </div>
     <?php endforeach; ?>
-    
+
     <?php endif; ?>
+    <?php endif; ?>
+
+    <!-- Ingressos do parceiro -->
+    <?php $temIngressos = !empty($ingressos_atuais) || !empty($ingressos_anteriores); ?>
+    <?php if ($temIngressos) : ?>
+    <div class="card shadow-sm border-0 mb-4 mt-4" style="border-radius: 12px;">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="bi bi-ticket-perforated text-primary me-2"></i>Meus Ingressos</h5>
+            <small class="text-muted">Ingressos vinculados à sua conta</small>
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-tabs mb-3" id="ingressosParceiroTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="ing-atuais-tab" data-bs-toggle="tab" data-bs-target="#ing-atuais" type="button" role="tab">
+                        Atuais <?php if (!empty($ingressos_atuais)) : ?><span class="badge bg-primary ms-1"><?= count($ingressos_atuais) ?></span><?php endif; ?>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ing-anteriores-tab" data-bs-toggle="tab" data-bs-target="#ing-anteriores" type="button" role="tab">
+                        Anteriores <?php if (!empty($ingressos_anteriores)) : ?><span class="badge bg-secondary ms-1"><?= count($ingressos_anteriores) ?></span><?php endif; ?>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <?php
+                $renderIngressos = function ($lista) use ($expositor) {
+                    if (empty($lista)) {
+                        echo '<div class="text-center text-muted py-4"><i class="bi bi-ticket"></i> Nenhum ingresso.</div>';
+                        return;
+                    }
+                    foreach ($lista as $i) :
+                        $nomeParticipante = $i->participante ?? ($expositor->nome_fantasia ?? $expositor->nome ?? '');
+                        $dataInicio = !empty($i->data_inicio)
+                            ? (($i->data_inicio instanceof DateTimeInterface)
+                                ? $i->data_inicio->format('d/m/Y')
+                                : (($dt = DateTime::createFromFormat('!Y-m-d', (string) $i->data_inicio)) ? $dt->format('d/m/Y') : ''))
+                            : '';
+                        $dataFimFmt = !empty($i->data_fim)
+                            ? (($i->data_fim instanceof DateTimeInterface)
+                                ? $i->data_fim->format('d/m/Y')
+                                : (($dt = DateTime::createFromFormat('!Y-m-d', (string) $i->data_fim)) ? $dt->format('d/m/Y') : ''))
+                            : '';
+                        $horaInicio = !empty($i->hora_inicio) ? substr($i->hora_inicio, 0, 5) : '';
+                        $horaFim = !empty($i->hora_fim) ? substr($i->hora_fim, 0, 5) : '';
+                ?>
+                <div class="border rounded mb-3 p-3" style="background:#f8f9fa;">
+                    <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                        <div>
+                            <?php if ($i->tipo === 'produto') : ?>
+                                <span class="badge bg-danger mb-1">Produto - Não válido para acesso</span><br>
+                            <?php endif; ?>
+                            <strong class="d-block"><?= esc($i->nome_evento) ?></strong>
+                            <small class="text-muted">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                <?= esc($dataInicio) ?><?php if ($dataFimFmt && $dataFimFmt !== $dataInicio) : ?> - <?= esc($dataFimFmt) ?><?php endif; ?>
+                                <?php if ($horaInicio) : ?>
+                                    &nbsp;|&nbsp; <i class="bi bi-clock me-1"></i><?= esc($horaInicio) ?><?php if ($horaFim && $horaFim !== $horaInicio) : ?> - <?= esc($horaFim) ?><?php endif; ?>
+                                <?php endif; ?>
+                                <?php if (!empty($i->local)) : ?>
+                                    <br><i class="bi bi-geo-alt me-1"></i><?= esc($i->local) ?>
+                                <?php endif; ?>
+                            </small>
+                        </div>
+                        <?php if ($i->tipo !== 'produto') : ?>
+                        <a href="<?= site_url('/ingressos/gerarIngressoPdf/' . $i->id) ?>" target="_blank" class="btn btn-sm btn-warning shadow">
+                            <i class="bi bi-download me-1"></i> Baixar PDF
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                    <hr class="my-2">
+                    <div class="row g-2">
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small text-uppercase">Ingresso</div>
+                            <strong><?= esc($i->nome) ?></strong>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small text-uppercase">Código</div>
+                            <strong><?= esc($i->codigo) ?></strong>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small text-uppercase">Participante</div>
+                            <strong><?= esc($nomeParticipante) ?></strong>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="text-muted small text-uppercase">Acesso</div>
+                            <strong><?= empty($i->frete) ? 'Retirar no local' : 'Receber em casa' ?></strong>
+                        </div>
+                    </div>
+                    <?php if (!empty($i->qr)) : ?>
+                    <div class="text-center mt-3">
+                        <img src="<?= $i->qr ?>" style="width:140px; height:140px; background:#fff; padding:4px; border:1px solid #dee2e6; border-radius:6px;" alt="QR Code <?= esc($i->codigo) ?>">
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach;
+                };
+                ?>
+
+                <div class="tab-pane fade show active" id="ing-atuais" role="tabpanel">
+                    <?php $renderIngressos($ingressos_atuais); ?>
+                </div>
+                <div class="tab-pane fade" id="ing-anteriores" role="tabpanel">
+                    <?php $renderIngressos($ingressos_anteriores); ?>
+                </div>
+            </div>
+        </div>
+    </div>
     <?php endif; ?>
 
 </div>
