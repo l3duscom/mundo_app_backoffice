@@ -88,6 +88,7 @@ $routes->group('api/cronograma', ['filter' => 'secureApi'], function ($routes) {
     $routes->get('/', 'Api\Cronograma::index', ['filter' => 'jwtAuth']); // Lista todos os cronogramas
     $routes->get('(:num)', 'Api\Cronograma::show/$1', ['filter' => 'jwtAuth']); // Detalhes de um cronograma
     $routes->get('evento/(:num)', 'Api\Cronograma::byEvento/$1', ['filter' => 'jwtAuth']); // Cronogramas por evento
+    $routes->get('evento/(:num)/itens', 'Api\Cronograma::byEventoComItens/$1', ['filter' => 'jwtAuth']); // Cronogramas + itens por evento
     $routes->post('/', 'Api\Cronograma::create', ['filter' => 'jwtAuth']); // Cria novo cronograma
     $routes->put('(:num)', 'Api\Cronograma::update/$1', ['filter' => 'jwtAuth']); // Atualiza cronograma
     $routes->patch('(:num)', 'Api\Cronograma::update/$1', ['filter' => 'jwtAuth']); // Atualiza parcialmente
@@ -421,6 +422,32 @@ $routes->group('api/ingressos', ['filter' => 'secureApi'], function ($routes) {
     $routes->get('/', 'Api\Ingressos::index', ['filter' => 'jwtAuth']); // Lista todos os ingressos do usuário
     $routes->get('atuais', 'Api\Ingressos::atuais', ['filter' => 'jwtAuth']); // Lista apenas ingressos atuais (não expirados)
     $routes->get('(:num)', 'Api\Ingressos::show/$1', ['filter' => 'jwtAuth']); // Detalhes de um ingresso específico (com QR code)
+});
+
+// ========================================
+// Rotas da API de Banners
+// ========================================
+$routes->group('api/banners', ['filter' => 'secureApi'], function ($routes) {
+    $routes->get('/', 'Api\Banners::index', ['filter' => 'jwtAuth']); // Lista todos os banners (filtros: event_id, ativo)
+    $routes->get('evento/(:num)', 'Api\Banners::byEvento/$1', ['filter' => 'jwtAuth']); // Banners por evento
+});
+
+// ========================================
+// Rotas da API de Perfil
+// ========================================
+$routes->group('api/perfil', ['filter' => 'secureApi'], function ($routes) {
+    $routes->get('/', 'Api\Perfil::index', ['filter' => 'jwtAuth']);          // Dados do perfil (cliente ou expositor)
+    $routes->put('/', 'Api\Perfil::update', ['filter' => 'jwtAuth']);         // Atualiza nome/email/cliente/expositor
+    $routes->patch('/', 'Api\Perfil::update', ['filter' => 'jwtAuth']);       // Atualiza parcialmente
+    $routes->post('senha', 'Api\Perfil::senha', ['filter' => 'jwtAuth']);     // Altera senha
+    $routes->post('imagem', 'Api\Perfil::imagem', ['filter' => 'jwtAuth']);   // Upload de foto
+});
+
+// ========================================
+// Rotas da API de Meet & Greet
+// ========================================
+$routes->group('api/meets', ['filter' => 'secureApi'], function ($routes) {
+    $routes->get('/', 'Api\Meets::index', ['filter' => 'jwtAuth']); // Reservas do usuário autenticado (GET /api/meets?event_id=X)
 });
 
 

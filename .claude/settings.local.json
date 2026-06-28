@@ -89,7 +89,15 @@
       "Read(//c/Users/Edu/Documents/Projetos/mundo_app/app/Views/Console/**)",
       "Bash(grep -n 'endforeach\\\\|endif\\\\|endSection\\\\|<?php echo $this->section' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Views/Console/dashboard_parceiro.php)",
       "Bash(grep -n \"api/access\\\\|api/ingresso\\\\|api/auth\\\\|Api\\\\\\\\\\\\\\\\Acessos\\\\|Api\\\\\\\\\\\\\\\\Ingressos\\\\|Api\\\\\\\\\\\\\\\\Usuarios\" 'c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Routes.php')",
-      "Bash(grep -rn \"ClienteModel\\\\|->clienteModel\\\\|clientes\\\\.\\\\|new \\\\\\\\\\\\\\\\App\\\\\\\\\\\\\\\\Models\\\\\\\\\\\\\\\\Cliente\" 'c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Api/')"
+      "Bash(grep -rn \"ClienteModel\\\\|->clienteModel\\\\|clientes\\\\.\\\\|new \\\\\\\\\\\\\\\\App\\\\\\\\\\\\\\\\Models\\\\\\\\\\\\\\\\Cliente\" 'c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Controllers/Api/')",
+      "Bash(ls 'c:/Users/Edu/Documents/Projetos/mundo_app/app/Controllers/Api/' 2>/dev/null)",
+      "Read(//c/Users/Edu/Documents/Projetos/mundo_app/app/Controllers/Api/**)",
+      "Bash(grep -n \"api/\" 'c:/Users/Edu/Documents/Projetos/mundo_app/app/Config/Routes.php' | grep -iE \"banner|meet|perfil\" 2>/dev/null)",
+      "Read(//c/Users/Edu/Documents/Projetos/mundo_app/app/Config/**)",
+      "Bash(grep -n \"public function \" 'c:/Users/Edu/Documents/Projetos/mundo_app/app/Controllers/Api/Cronograma.php' > /tmp/a.txt *)",
+      "Read(//tmp/**)",
+      "Bash(grep -n \"public function \\\\|private function \" 'c:/Users/Edu/Documents/Projetos/mundo_app/app/Controllers/Api/Auth.php' > /tmp/a.txt *)",
+      "Bash(grep -n \"public function \\\\|private function \" 'c:/Users/Edu/Documents/Projetos/mundo_app/app/Controllers/Api/Conquistas.php' > /tmp/a.txt *)"
     ]
   }
 }
