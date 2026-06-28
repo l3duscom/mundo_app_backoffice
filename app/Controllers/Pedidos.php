@@ -716,7 +716,36 @@ class Pedidos extends BaseController
 
 		$cli = $this->clienteModel->withDeleted(true)->where('usuario_id', $pedido->user_id)->first();
 
-		$cliente = $this->buscaclienteOu404($cli->id);
+		$expositor = null;
+		if ($cli) {
+			$cliente = $this->buscaclienteOu404($cli->id);
+		} else {
+			$expositor = (new \App\Models\ExpositorModel())
+				->withDeleted(true)
+				->where('usuario_id', $pedido->user_id)
+				->first();
+
+			if (!$expositor) {
+				throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Pedido sem cliente ou expositor vinculado");
+			}
+
+			$cliente = (object) [
+				'id'           => null,
+				'nome'         => $expositor->nome_fantasia ?? $expositor->nome,
+				'email'        => $expositor->email,
+				'telefone'     => $expositor->telefone,
+				'cpf'          => $expositor->documento,
+				'cep'          => $expositor->cep,
+				'endereco'     => $expositor->endereco,
+				'numero'       => $expositor->numero,
+				'complemento'  => $expositor->complemento,
+				'bairro'       => $expositor->bairro,
+				'cidade'       => $expositor->cidade,
+				'estado'       => $expositor->estado,
+				'usuario_id'   => $expositor->usuario_id,
+				'is_expositor' => true,
+			];
+		}
 
 
 		$endereco = $this->enderecoModel->where('pedido_id', $pedido_id)->first();
@@ -775,6 +804,7 @@ class Pedidos extends BaseController
 			'ingressos' => $ingressos,
 			'pedido' => $pedido,
 			'cliente' => $cliente,
+			'expositor' => $expositor,
 			'endereco' => $endereco,
 			'credenciais' => $credenciais,
 			'acessosPorIngresso' => $acessosPorIngresso,
@@ -820,11 +850,23 @@ class Pedidos extends BaseController
 				->where('usuario_id', $pedido->user_id)
 				->first();
 
+			if (!$cliente) {
+				$expositor = (new \App\Models\ExpositorModel())
+					->where('usuario_id', $pedido->user_id)
+					->first();
 
+				if ($expositor) {
+					$cliente = (object) [
+						'nome'     => $expositor->nome_fantasia ?? $expositor->nome,
+						'email'    => $expositor->email,
+						'telefone' => $expositor->telefone,
+					];
+				}
+			}
 
-
-
-			$this->enviaEmailRastreio($cliente, $pedido_id, (int) $pedido->evento_id);
+			if ($cliente) {
+				$this->enviaEmailRastreio($cliente, $pedido_id, (int) $pedido->evento_id);
+			}
 
 			return redirect()->to(site_url("pedidos/ingressos/" . $pedido_id))->with('sucesso', "Participante alterado com sucesso");
 		}

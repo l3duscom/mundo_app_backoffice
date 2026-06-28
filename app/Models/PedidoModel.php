@@ -312,10 +312,10 @@ ORDER BY p11.updated_at DESC;
             'pedidos.evento_id',
             'pedidos.cupom_id',
             'pedidos.valor_desconto',
-            'clientes.email',
-            'clientes.telefone',
-            'clientes.nome',
-            'clientes.cpf',
+            'COALESCE(clientes.email, expositores.email) as email',
+            'COALESCE(clientes.telefone, expositores.telefone) as telefone',
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome',
+            'COALESCE(clientes.cpf, expositores.documento) as cpf',
             'cupons.codigo as cupom_codigo',
             'cupons.nome as cupom_nome',
 
@@ -325,7 +325,8 @@ ORDER BY p11.updated_at DESC;
 
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
-            ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('clientes', 'clientes.usuario_id = usuarios.id', 'left')
+            ->join('expositores', 'expositores.usuario_id = usuarios.id', 'left')
             ->join('cupons', 'cupons.id = pedidos.cupom_id', 'left')
             ->where('pedidos.evento_id', $event_id)
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
@@ -345,10 +346,10 @@ ORDER BY p11.updated_at DESC;
             'pedidos.frete',
             'pedidos.total',
             'pedidos.evento_id',
-            'clientes.email',
-            'clientes.telefone',
-            'clientes.nome',
-            'clientes.cpf',
+            'COALESCE(clientes.email, expositores.email) as email',
+            'COALESCE(clientes.telefone, expositores.telefone) as telefone',
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome',
+            'COALESCE(clientes.cpf, expositores.documento) as cpf',
             'ingressos.cinemark'
 
         ];
@@ -358,7 +359,8 @@ ORDER BY p11.updated_at DESC;
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
             ->join('ingressos', 'ingressos.pedido_id = pedidos.id')
-            ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('clientes', 'clientes.usuario_id = usuarios.id', 'left')
+            ->join('expositores', 'expositores.usuario_id = usuarios.id', 'left')
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
             ->where('ingressos.cinemark is null')
             ->where('pedidos.evento_id', $event_id)
@@ -379,10 +381,10 @@ ORDER BY p11.updated_at DESC;
             'pedidos.frete',
             'pedidos.total',
             'pedidos.evento_id',
-            'clientes.email',
-            'clientes.telefone',
-            'clientes.nome',
-            'clientes.cpf',
+            'COALESCE(clientes.email, expositores.email) as email',
+            'COALESCE(clientes.telefone, expositores.telefone) as telefone',
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome',
+            'COALESCE(clientes.cpf, expositores.documento) as cpf',
             'ingressos.cinemark'
 
         ];
@@ -392,7 +394,8 @@ ORDER BY p11.updated_at DESC;
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
             ->join('ingressos', 'ingressos.pedido_id = pedidos.id')
-            ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('clientes', 'clientes.usuario_id = usuarios.id', 'left')
+            ->join('expositores', 'expositores.usuario_id = usuarios.id', 'left')
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
             ->where('ingressos.cinemark is not null')
             ->like('ingressos.nome', 'vip')
@@ -413,10 +416,10 @@ ORDER BY p11.updated_at DESC;
             'pedidos.frete',
             'pedidos.total',
             'pedidos.evento_id',
-            'clientes.email',
-            'clientes.telefone',
-            'clientes.nome',
-            'clientes.cpf'
+            'COALESCE(clientes.email, expositores.email) as email',
+            'COALESCE(clientes.telefone, expositores.telefone) as telefone',
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome',
+            'COALESCE(clientes.cpf, expositores.documento) as cpf'
 
         ];
 
@@ -424,7 +427,8 @@ ORDER BY p11.updated_at DESC;
 
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
-            ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('clientes', 'clientes.usuario_id = usuarios.id', 'left')
+            ->join('expositores', 'expositores.usuario_id = usuarios.id', 'left')
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
             ->where('pedidos.evento_id', $event_id)
             ->where('pedidos.frete', 1)
@@ -445,10 +449,10 @@ ORDER BY p11.updated_at DESC;
             'pedidos.frete',
             'pedidos.total',
             'pedidos.evento_id',
-            'clientes.email',
-            'clientes.telefone',
-            'clientes.nome',
-            'clientes.cpf'
+            'COALESCE(clientes.email, expositores.email) as email',
+            'COALESCE(clientes.telefone, expositores.telefone) as telefone',
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome',
+            'COALESCE(clientes.cpf, expositores.documento) as cpf'
 
         ];
 
@@ -456,7 +460,8 @@ ORDER BY p11.updated_at DESC;
 
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
-            ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('clientes', 'clientes.usuario_id = usuarios.id', 'left')
+            ->join('expositores', 'expositores.usuario_id = usuarios.id', 'left')
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
             ->where('pedidos.evento_id', $event_id)
             ->where('pedidos.frete', 1)
@@ -533,16 +538,17 @@ ORDER BY p11.updated_at DESC;
             'pedidos.total',
             'pedidos.evento_id',
             'pedidos.data_vencimento',
-            'clientes.email',
-            'clientes.telefone',
-            'clientes.nome',
-            'clientes.cpf'
+            'COALESCE(clientes.email, expositores.email) as email',
+            'COALESCE(clientes.telefone, expositores.telefone) as telefone',
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome',
+            'COALESCE(clientes.cpf, expositores.documento) as cpf'
 
         ];
 
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
-            ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('clientes', 'clientes.usuario_id = usuarios.id', 'left')
+            ->join('expositores', 'expositores.usuario_id = usuarios.id', 'left')
             ->where('pedidos.evento_id', $event_id)
             ->whereIn('pedidos.status', ['PENDING', 'OVERDUE'])
             ->orderBy('pedidos.created_at', 'DESC')
@@ -562,16 +568,17 @@ ORDER BY p11.updated_at DESC;
             'pedidos.total',
             'pedidos.evento_id',
             'pedidos.data_vencimento',
-            'clientes.email',
-            'clientes.telefone',
-            'clientes.nome',
-            'clientes.cpf'
+            'COALESCE(clientes.email, expositores.email) as email',
+            'COALESCE(clientes.telefone, expositores.telefone) as telefone',
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome',
+            'COALESCE(clientes.cpf, expositores.documento) as cpf'
 
         ];
 
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
-            ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('clientes', 'clientes.usuario_id = usuarios.id', 'left')
+            ->join('expositores', 'expositores.usuario_id = usuarios.id', 'left')
             ->where('pedidos.evento_id', $event_id)
             ->whereIn('pedidos.status', ['REFUNDED'])
             ->orderBy('pedidos.created_at', 'DESC')
@@ -591,16 +598,17 @@ ORDER BY p11.updated_at DESC;
             'pedidos.total',
             'pedidos.evento_id',
             'pedidos.data_vencimento',
-            'clientes.email',
-            'clientes.telefone',
-            'clientes.nome',
-            'clientes.cpf'
+            'COALESCE(clientes.email, expositores.email) as email',
+            'COALESCE(clientes.telefone, expositores.telefone) as telefone',
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome',
+            'COALESCE(clientes.cpf, expositores.documento) as cpf'
 
         ];
 
         return $this->select($atributos)
             ->join('usuarios', 'usuarios.id = pedidos.user_id')
-            ->join('clientes', 'clientes.usuario_id = usuarios.id')
+            ->join('clientes', 'clientes.usuario_id = usuarios.id', 'left')
+            ->join('expositores', 'expositores.usuario_id = usuarios.id', 'left')
             ->where('pedidos.evento_id', $event_id)
             ->like('pedidos.status', 'CHARGEBACK')
             ->orderBy('pedidos.created_at', 'DESC')
