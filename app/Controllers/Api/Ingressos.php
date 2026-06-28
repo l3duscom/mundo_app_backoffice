@@ -12,6 +12,7 @@ use chillerlan\QRCode\QRCode;
 class Ingressos extends BaseController
 {
     private $clienteModel;
+    private $expositorModel;
     private $ingressoModel;
     private $pedidoModel;
     private $cartaoModel;
@@ -20,10 +21,50 @@ class Ingressos extends BaseController
     public function __construct()
     {
         $this->clienteModel = new \App\Models\ClienteModel();
+        $this->expositorModel = new \App\Models\ExpositorModel();
         $this->ingressoModel = new \App\Models\IngressoModel();
         $this->pedidoModel = new \App\Models\PedidoModel();
         $this->cartaoModel = new \App\Models\CartaoModel();
         $this->ticketModel = new \App\Models\TicketModel();
+    }
+
+    /**
+     * Resolve o "titular" do usuário autenticado: cliente ou, na ausência, expositor.
+     * Retorna um objeto normalizado com id (do cliente quando existir), nome, email, cpf, telefone e is_expositor.
+     */
+    private function resolveTitular(int $userId, ?string $emailAutenticado = null)
+    {
+        $cliente = $this->clienteModel->withDeleted(true)
+            ->where('usuario_id', $userId)
+            ->first();
+
+        if ($cliente) {
+            return (object) [
+                'id'           => $cliente->id,
+                'nome'         => $cliente->nome ?? null,
+                'email'        => $emailAutenticado ?? ($cliente->email ?? null),
+                'cpf'          => $cliente->cpf ?? null,
+                'telefone'     => $cliente->telefone ?? null,
+                'is_expositor' => false,
+            ];
+        }
+
+        $expositor = $this->expositorModel->withDeleted(true)
+            ->where('usuario_id', $userId)
+            ->first();
+
+        if (!$expositor) {
+            return null;
+        }
+
+        return (object) [
+            'id'           => null,
+            'nome'         => $expositor->nome_fantasia ?? $expositor->nome,
+            'email'        => $emailAutenticado ?? ($expositor->email ?? null),
+            'cpf'          => $expositor->documento ?? null,
+            'telefone'     => $expositor->telefone ?? null,
+            'is_expositor' => true,
+        ];
     }
 
     /**
@@ -49,16 +90,14 @@ class Ingressos extends BaseController
         $userId = $usuarioAutenticado['user_id'];
 
         try {
-            // Busca o cliente vinculado ao usuário
-            $cliente = $this->clienteModel->withDeleted(true)
-                ->where('usuario_id', $userId)
-                ->first();
+            // Resolve cliente ou expositor vinculado
+            $cliente = $this->resolveTitular($userId, $usuarioAutenticado['email'] ?? null);
 
             if (!$cliente) {
                 return $this->response
                     ->setJSON([
                         'success' => false,
-                        'message' => 'Cliente não encontrado para este usuário'
+                        'message' => 'Nenhum cliente ou expositor vinculado a este usuário'
                     ])
                     ->setStatusCode(404);
             }
@@ -162,9 +201,10 @@ class Ingressos extends BaseController
                         'cliente' => [
                             'id' => $cliente->id,
                             'nome' => $cliente->nome ?? null,
-                            'email' => $usuarioAutenticado['email'],
+                            'email' => $usuarioAutenticado['email'] ?? ($cliente->email ?? null),
                             'cpf' => $cliente->cpf ?? null,
                             'telefone' => $cliente->telefone ?? null,
+                            'is_expositor' => $cliente->is_expositor ?? false,
                         ],
                         'ingressos' => [
                             'atuais' => $ingressos_atuais,

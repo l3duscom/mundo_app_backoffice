@@ -357,13 +357,14 @@ class IngressoModel extends Model
             'eventos.hora_inicio',
             'eventos.hora_fim',
             'eventos.local',
-            'clientes.nome as nome_cliente'
+            'COALESCE(clientes.nome, expositores.nome_fantasia, expositores.nome) as nome_cliente'
         ];
 
         $retorno = $this->select($atributos)
             ->join('pedidos', 'pedidos.id = ingressos.pedido_id')
             ->join('usuarios', 'usuarios.id = ingressos.user_id')
-            ->join('clientes', 'usuarios.id = clientes.usuario_id')
+            ->join('clientes', 'usuarios.id = clientes.usuario_id', 'left')
+            ->join('expositores', 'usuarios.id = expositores.usuario_id', 'left')
             ->join('eventos', 'eventos.id = pedidos.evento_id')
             ->where('pedidos.id', $id)
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
