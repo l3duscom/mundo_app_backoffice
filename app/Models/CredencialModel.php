@@ -15,9 +15,21 @@ class CredencialModel extends Model
         'codigo',
         'acessos',
         'ativo',
-
-
+        'ticket_alimentacao',
+        'ticket_alimentacao_em',
     ];
+
+    /**
+     * Marca a retirada do ticket de alimentação para a credencial.
+     * Se $usado === false, desmarca (útil para desfazer entrega errada).
+     */
+    public function marcarTicketAlimentacao(int $id, bool $usado = true): bool
+    {
+        return $this->update($id, [
+            'ticket_alimentacao'    => $usado ? 1 : 0,
+            'ticket_alimentacao_em' => $usado ? date('Y-m-d H:i:s') : null,
+        ]);
+    }
 
     // Dates
     protected $useTimestamps = true;

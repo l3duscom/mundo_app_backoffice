@@ -55,6 +55,36 @@
 
 
 
+    <!-- Modal Ticket Alimentação (1ª entrada VIP) -->
+    <div class="modal fade" id="ticketAlimentacaoModal" tabindex="-1" aria-labelledby="ticketAlimentacaoModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning bg-opacity-25">
+                    <h5 class="modal-title" id="ticketAlimentacaoModalLabel">
+                        <i class="bx bx-restaurant me-2"></i>Ticket de Alimentação
+                    </h5>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="mb-2">Primeira entrada da pulseira na sala VIP:</p>
+                    <p class="mb-3"><strong class="ingresso-nome"></strong></p>
+                    <div class="form-check form-check-lg d-inline-flex align-items-center">
+                        <input class="form-check-input me-2" type="checkbox" id="chkTicketAlimentacao" name="retirado" value="1" style="width:22px;height:22px;">
+                        <label class="form-check-label fs-5" for="chkTicketAlimentacao">
+                            Ticket de alimentação entregue
+                        </label>
+                    </div>
+                    <input type="hidden" name="credencial_id" value="">
+                    <p class="text-muted small mt-3">Marque se o ticket de alimentação foi entregue agora. Caso pule, poderá ser marcado posteriormente.</p>
+                    <div id="responseTicketAlimentacao"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btnPularTicket" class="btn btn-outline-secondary">Pular</button>
+                    <button type="button" id="btnConfirmarTicket" class="btn btn-primary">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php echo $this->endSection() ?>
 
 
@@ -113,11 +143,17 @@
                                 $("#response").html('<div class="alert alert-info">' + response
                                     .info + '</div>');
 
+                            } else if (response.ticket_alimentacao && response.ticket_alimentacao.mostrar_checkbox) {
+
+                                // Primeira leitura + ticket ainda não retirado → abre modal
+                                $('#ticketAlimentacaoModal .ingresso-nome').text(response.nome || '');
+                                $('#ticketAlimentacaoModal input[name=credencial_id]').val(response.credencial_id);
+                                $('#ticketAlimentacaoModal input[name=retirado]').prop('checked', false);
+                                $('#ticketAlimentacaoModal').modal('show');
+
                             } else {
 
-                                // Tudo certo com a atualização do usuário
-                                // Podemos agora redirecioná-lo tranquilamente
-
+                                // Já lido antes ou já retirado → redireciona normal
                                 window.location.href =
                                     "<?php echo site_url("acessos/salavip/"); ?>";
 
@@ -174,6 +210,54 @@
 
             });
 
+            // ---- Modal Ticket de Alimentação (sala VIP - 1ª entrada) ----
+            function fecharModalERedirecionar() {
+                $('#ticketAlimentacaoModal').modal('hide');
+                setTimeout(function() {
+                    window.location.href = "<?php echo site_url('acessos/salavip/'); ?>";
+                }, 400);
+            }
+
+            $("#btnPularTicket").on('click', function() {
+                // Não marca nada — só fecha e volta.
+                fecharModalERedirecionar();
+            });
+
+            $("#btnConfirmarTicket").on('click', function() {
+                var $modal        = $('#ticketAlimentacaoModal');
+                var credencialId  = $modal.find('input[name=credencial_id]').val();
+                var retirado      = $modal.find('input[name=retirado]').is(':checked') ? 1 : 0;
+
+                $("#btnConfirmarTicket").prop('disabled', true).text('Salvando...');
+                $("#responseTicketAlimentacao").html('');
+
+                $.ajax({
+                    type: 'POST',
+                    url: '<?php echo site_url('acessos/marcarTicketAlimentacao'); ?>',
+                    data: {
+                        credencial_id: credencialId,
+                        retirado: retirado,
+                        '<?php echo csrf_token(); ?>': '<?php echo csrf_hash(); ?>'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.sucesso) {
+                            fecharModalERedirecionar();
+                        } else {
+                            $("#responseTicketAlimentacao").html(
+                                '<div class="alert alert-danger mt-2">' + (response.erro || 'Erro ao salvar.') + '</div>'
+                            );
+                            $("#btnConfirmarTicket").prop('disabled', false).text('Confirmar');
+                        }
+                    },
+                    error: function() {
+                        $("#responseTicketAlimentacao").html(
+                            '<div class="alert alert-danger mt-2">Erro de rede ao salvar.</div>'
+                        );
+                        $("#btnConfirmarTicket").prop('disabled', false).text('Confirmar');
+                    }
+                });
+            });
 
         });
     </script>

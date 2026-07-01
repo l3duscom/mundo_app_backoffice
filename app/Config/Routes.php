@@ -323,7 +323,10 @@ $routes->get('api/checkout/obrigado', 'Api\Checkout::obrigado');
 $routes->post('api/checkout/notify', 'Api\Checkout::notify');
 $routes->post('notify', 'Api\Checkout::notify'); // Rota alternativa para o ASAAS
 $routes->post('webhook/backoffice', 'Webhook::backoffice'); // Rota webhook específica
-$routes->post('api/acessos/check', 'Api\Acessos::check'); 
+$routes->post('api/acessos/check', 'Api\Acessos::check');
+$routes->post('api/acessos/salavip', 'Api\Acessos::checkSalaVip');
+$routes->post('api/acessos/salavip/ticket-alimentacao/(:num)', 'Api\Acessos::marcarTicketAlimentacao/$1');
+$routes->post('api/acessos/orderbump/(:num)/usar', 'Api\Acessos::marcarOrderBump/$1');
 
 // Rotas do Checkout
 $routes->get('checkout/pix/(:num)', 'Checkout::pix/$1');
@@ -449,6 +452,9 @@ $routes->group('api/perfil', ['filter' => 'secureApi'], function ($routes) {
 $routes->group('api/meets', ['filter' => 'secureApi'], function ($routes) {
     $routes->get('/', 'Api\Meets::index', ['filter' => 'jwtAuth']); // Reservas do usuário autenticado (GET /api/meets?event_id=X)
 });
+
+// Validação de reserva de M&G pelo operador (portaria/staff) - sem JWT, mesmo padrão do /api/acessos/check
+$routes->post('api/meets/validar', 'Api\Meets::validar');
 
 
 // ========================================

@@ -129,7 +129,10 @@ class Acessos extends BaseController
 			'ingressos.nome',
 			'pedidos.evento_id',
 			'pedidos.status',
-			'pedidos.user_id'
+			'pedidos.user_id',
+			'credenciais.id AS credencial_id',
+			'credenciais.ticket_alimentacao',
+			'credenciais.ticket_alimentacao_em'
 		];
 
 		$ingresso = $this->ingressoModel->select($atributos)
@@ -149,7 +152,7 @@ class Acessos extends BaseController
 			if (stripos($ingresso->nome, 'VIP') !== false) {
 				// Conta o total de acessos já realizados para este ingresso VIP
 				$totalAcessos = $this->checkModel->where('ingresso_id', $ingresso->id)->where('tipo_acesso', 'ACESSO')->countAllResults();
-				
+
 				$acesso = new Check($post);
 				$acesso->usuario_id = $ingresso->user_id;
 				$acesso->ingresso_id = $ingresso->id;
@@ -157,6 +160,20 @@ class Acessos extends BaseController
 				$acesso->tipo_acesso = $post['tipo'];
 
 				if ($this->checkModel->save($acesso)) {
+					// Estado do ticket de alimentação (para a view exibir o checkbox)
+					$ticketRetirado  = (int) ($ingresso->ticket_alimentacao ?? 0) === 1;
+					$primeiraLeitura = $totalAcessos === 0;
+
+					$retorno['ingresso_id']            = (int) $ingresso->id;
+					$retorno['credencial_id']          = (int) $ingresso->credencial_id;
+					$retorno['nome']                   = $ingresso->nome;
+					$retorno['primeira_leitura']       = $primeiraLeitura;
+					$retorno['ticket_alimentacao']     = [
+						'retirado'         => $ticketRetirado,
+						'retirado_em'      => $ingresso->ticket_alimentacao_em ?? null,
+						'mostrar_checkbox' => $primeiraLeitura && !$ticketRetirado,
+					];
+
 					session()->setFlashdata('atencao', '<span style="font-size: 36px; padding:20px">ATENÇÃO! </span><br><span style="padding:20px">Entrada permitida apenas com pulseira inviolada</span><br><span style="padding:20px">Este ingresso já foi utilizado <strong style="color:purple">' . ($totalAcessos + 1) . '</strong> vezes</span><br><strong>' . $ingresso->nome . '</strong>');
 					return $this->response->setJSON($retorno);
 				}
@@ -374,6 +391,60 @@ class Acessos extends BaseController
 		return view('Carrinho/girafinhas', $data);
 	}
 
+
+	/**
+	 * Marca a retirada do ticket de alimentação da credencial (sala VIP).
+	 * POST acessos/marcarTicketAlimentacao (AJAX)
+	 * Body: credencial_id, retirado (0|1, opcional — se omitido, alterna)
+	 */
+	public function marcarTicketAlimentacao()
+	{
+		if (!$this->request->isAJAX()) {
+			return redirect()->back();
+		}
+
+		if (!$this->usuarioLogado()->temPermissaoPara('access-controll')) {
+			return $this->response->setStatusCode(403)->setJSON([
+				'sucesso' => false,
+				'erro'    => 'Sem permissão.',
+			]);
+		}
+
+		$retorno['token'] = csrf_hash();
+
+		$credencialId = (int) ($this->request->getPost('credencial_id') ?? 0);
+		if ($credencialId <= 0) {
+			$retorno['erro'] = 'ID de credencial inválido.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$credencialModel = new \App\Models\CredencialModel();
+		$credencial      = $credencialModel->find($credencialId);
+		if (!$credencial) {
+			$retorno['erro'] = 'Credencial não encontrada.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$post = $this->request->getPost();
+		if (array_key_exists('retirado', $post)) {
+			$novoEstado = (bool) $post['retirado'];
+		} else {
+			$novoEstado = ((int) ($credencial->ticket_alimentacao ?? 0)) !== 1;
+		}
+
+		if (!$credencialModel->marcarTicketAlimentacao($credencialId, $novoEstado)) {
+			$retorno['erro'] = 'Não foi possível atualizar o ticket de alimentação.';
+			return $this->response->setJSON($retorno);
+		}
+
+		$credencial = $credencialModel->find($credencialId);
+		$retorno['sucesso']            = true;
+		$retorno['retirado']           = (int) ($credencial->ticket_alimentacao ?? 0) === 1;
+		$retorno['retirado_em']        = $credencial->ticket_alimentacao_em ?? null;
+		$retorno['credencial_id']      = (int) $credencial->id;
+
+		return $this->response->setJSON($retorno);
+	}
 
 	/**
 	 * Método que recupera o cliente
