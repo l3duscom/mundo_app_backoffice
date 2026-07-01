@@ -131,14 +131,18 @@ class Acessos extends BaseController
 			'pedidos.status',
 			'pedidos.user_id',
 			'credenciais.id AS credencial_id',
-			'credenciais.ticket_alimentacao',
-			'credenciais.ticket_alimentacao_em'
+			'credencial_ticket_alimentacao.retirado_em AS ticket_alimentacao_em'
 		];
 
 		$ingresso = $this->ingressoModel->select($atributos)
 			->withDeleted(true)
 			->join('pedidos', 'pedidos.id = ingressos.pedido_id')
 			->join('credenciais', 'credenciais.ingresso_id = ingressos.id')
+			->join(
+				'credencial_ticket_alimentacao',
+				'credencial_ticket_alimentacao.credencial_id = credenciais.id',
+				'left'
+			)
 			->where('pedidos.evento_id', $post['evento_id'])
 			->where('credenciais.codigo', $post['codigo'])
 			->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
@@ -161,7 +165,7 @@ class Acessos extends BaseController
 
 				if ($this->checkModel->save($acesso)) {
 					// Estado do ticket de alimentação (para a view exibir o checkbox)
-					$ticketRetirado  = (int) ($ingresso->ticket_alimentacao ?? 0) === 1;
+					$ticketRetirado  = !empty($ingresso->ticket_alimentacao_em);
 					$primeiraLeitura = $totalAcessos === 0;
 
 					$retorno['ingresso_id']            = (int) $ingresso->id;
@@ -419,29 +423,40 @@ class Acessos extends BaseController
 		}
 
 		$credencialModel = new \App\Models\CredencialModel();
-		$credencial      = $credencialModel->find($credencialId);
+		$ticketModel     = new \App\Models\CredencialTicketAlimentacaoModel();
+
+		$credencial = $credencialModel->find($credencialId);
 		if (!$credencial) {
 			$retorno['erro'] = 'Credencial não encontrada.';
 			return $this->response->setJSON($retorno);
 		}
 
-		$post = $this->request->getPost();
+		$post      = $this->request->getPost();
+		$atual     = $ticketModel->porCredencial($credencialId);
+		$jaMarcado = !empty($atual);
+
 		if (array_key_exists('retirado', $post)) {
 			$novoEstado = (bool) $post['retirado'];
 		} else {
-			$novoEstado = ((int) ($credencial->ticket_alimentacao ?? 0)) !== 1;
+			$novoEstado = !$jaMarcado;
 		}
 
-		if (!$credencialModel->marcarTicketAlimentacao($credencialId, $novoEstado)) {
+		$operadorId = (int) ($this->usuarioLogado()->id ?? 0) ?: null;
+
+		$ok = $novoEstado
+			? $ticketModel->marcar($credencialId, $operadorId)
+			: $ticketModel->desmarcar($credencialId);
+
+		if (!$ok) {
 			$retorno['erro'] = 'Não foi possível atualizar o ticket de alimentação.';
 			return $this->response->setJSON($retorno);
 		}
 
-		$credencial = $credencialModel->find($credencialId);
-		$retorno['sucesso']            = true;
-		$retorno['retirado']           = (int) ($credencial->ticket_alimentacao ?? 0) === 1;
-		$retorno['retirado_em']        = $credencial->ticket_alimentacao_em ?? null;
-		$retorno['credencial_id']      = (int) $credencial->id;
+		$registro                 = $ticketModel->porCredencial($credencialId);
+		$retorno['sucesso']       = true;
+		$retorno['retirado']      = $registro !== null;
+		$retorno['retirado_em']   = $registro->retirado_em ?? null;
+		$retorno['credencial_id'] = (int) $credencial->id;
 
 		return $this->response->setJSON($retorno);
 	}

@@ -325,14 +325,18 @@ class Acessos extends ResourceController
             'pedidos.frete',
             'pedidos.rastreio',
             'credenciais.id AS credencial_id',
-            'credenciais.ticket_alimentacao',
-            'credenciais.ticket_alimentacao_em',
+            'credencial_ticket_alimentacao.retirado_em AS ticket_alimentacao_em',
         ];
 
         $ingresso = $this->ingressoModel->select($atributos)
             ->withDeleted(true)
             ->join('pedidos', 'pedidos.id = ingressos.pedido_id')
             ->join('credenciais', 'credenciais.ingresso_id = ingressos.id')
+            ->join(
+                'credencial_ticket_alimentacao',
+                'credencial_ticket_alimentacao.credencial_id = credenciais.id',
+                'left'
+            )
             ->where('pedidos.evento_id', $eventoId)
             ->where('credenciais.codigo', $codigo)
             ->whereIn('pedidos.status', ['CONFIRMED', 'RECEIVED', 'paid', 'RECEIVED_IN_CASH'])
@@ -388,7 +392,7 @@ class Acessos extends ResourceController
         }
 
         $primeiraLeitura = $totalAcessos === 0;
-        $ticketRetirado  = (int) ($ingresso->ticket_alimentacao ?? 0) === 1;
+        $ticketRetirado  = !empty($ingresso->ticket_alimentacao_em);
 
         return $this->respond([
             'success'             => true,
@@ -445,6 +449,7 @@ class Acessos extends ResourceController
         }
 
         $credencialModel = model('CredencialModel');
+        $ticketModel     = model('CredencialTicketAlimentacaoModel');
 
         $credencial = $credencialModel->find($credencialId);
         if (!$credencial) {
@@ -455,21 +460,29 @@ class Acessos extends ResourceController
             ], 404);
         }
 
-        $payload = $this->request->getJSON(true) ?? $this->request->getRawInput() ?? [];
+        $payload    = $this->request->getJSON(true) ?? $this->request->getRawInput() ?? [];
+        $atual      = $ticketModel->porCredencial($credencialId);
+        $jaRetirado = !empty($atual);
 
         if (array_key_exists('retirado', $payload)) {
             $novoEstado = (bool) $payload['retirado'];
         } else {
-            $novoEstado = ((int) ($credencial->ticket_alimentacao ?? 0)) !== 1;
+            $novoEstado = !$jaRetirado;
         }
 
-        $ok = $credencialModel->marcarTicketAlimentacao($credencialId, $novoEstado);
+        $operadorId = isset($payload['operador']) ? (int) $payload['operador'] : null;
+
+        if ($novoEstado) {
+            $ok = $ticketModel->marcar($credencialId, $operadorId);
+        } else {
+            $ok = $ticketModel->desmarcar($credencialId);
+        }
 
         if (!$ok) {
             return $this->failServerError('Não foi possível atualizar o ticket de alimentação.');
         }
 
-        $credencial = $credencialModel->find($credencialId);
+        $registro = $ticketModel->porCredencial($credencialId);
 
         return $this->respond([
             'success' => true,
@@ -477,8 +490,8 @@ class Acessos extends ResourceController
             'ticket_alimentacao' => [
                 'credencial_id' => (int) $credencial->id,
                 'ingresso_id'   => (int) $credencial->ingresso_id,
-                'retirado'      => (int) ($credencial->ticket_alimentacao ?? 0) === 1,
-                'retirado_em'   => $credencial->ticket_alimentacao_em ?? null,
+                'retirado'      => $registro !== null,
+                'retirado_em'   => $registro->retirado_em ?? null,
             ],
         ], 200);
     }

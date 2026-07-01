@@ -572,7 +572,7 @@ Não valida janela de data do ticket (a sala VIP fica ativa durante todo o event
 ```
 
 - `code` = `"ALREADY_USED"` quando `access_count_before > 0` — mesma semântica do `/api/acessos/check`.
-- **`ticket_alimentacao`**: estado do ticket de alimentação vinculado à credencial (persistido em `credenciais.ticket_alimentacao`).
+- **`ticket_alimentacao`**: estado do ticket de alimentação vinculado à credencial (persistido em tabela auxiliar `credencial_ticket_alimentacao` — uma linha por credencial que já retirou).
   - `retirado` (bool): se o ticket já foi entregue.
   - `retirado_em` (datetime|null): quando foi marcado.
   - `mostrar_checkbox` (bool): **dica de UX** — é `true` apenas quando é a 1ª leitura desta pulseira **e** o ticket ainda não foi retirado. Use este flag para decidir se exibe o checkbox no app. Se `false`, o app pode omitir o checkbox (mas ainda pode mostrar "já retirado em ..." se `retirado === true`).
