@@ -74,12 +74,17 @@ class Acessos extends BaseController
             return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
         }
 
-		$event_id = 12;
-		$evento = $this->eventoModel->find($event_id);
+		$event_id = evento_selecionado();
+		$evento   = $event_id ? $this->eventoModel->find($event_id) : null;
+
+		if (!$evento) {
+			return redirect()->to(site_url('/'))->with('atencao', 'Selecione um evento primeiro para validar acessos.');
+		}
 
 		$data = [
-			'titulo' => 'Acesso sala vip',
-
+			'titulo'   => 'Acesso sala vip - ' . esc($evento->nome),
+			'evento'   => $evento,
+			'event_id' => (int) $event_id,
 		];
 
 
@@ -95,12 +100,17 @@ class Acessos extends BaseController
             return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
         }
 
-		$event_id = 12;
-		$evento = $this->eventoModel->find($event_id);
+		$event_id = evento_selecionado();
+		$evento   = $event_id ? $this->eventoModel->find($event_id) : null;
+
+		if (!$evento) {
+			return redirect()->to(site_url('/'))->with('atencao', 'Selecione um evento primeiro para validar acessos.');
+		}
 
 		$data = [
-			'titulo' => 'Acesso ao evento',
-
+			'titulo'   => 'Acesso ao evento - ' . esc($evento->nome),
+			'evento'   => $evento,
+			'event_id' => (int) $event_id,
 		];
 
 

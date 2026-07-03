@@ -98,7 +98,8 @@
       "Read(//tmp/**)",
       "Bash(grep -n \"public function \\\\|private function \" 'c:/Users/Edu/Documents/Projetos/mundo_app/app/Controllers/Api/Auth.php' > /tmp/a.txt *)",
       "Bash(grep -n \"public function \\\\|private function \" 'c:/Users/Edu/Documents/Projetos/mundo_app/app/Controllers/Api/Conquistas.php' > /tmp/a.txt *)",
-      "Bash(grep -n \"api/access\\\\|Api\\\\\\\\\\\\\\\\Acessos\" 'c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Routes.php')"
+      "Bash(grep -n \"api/access\\\\|Api\\\\\\\\\\\\\\\\Acessos\" 'c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Routes.php')",
+      "Bash(grep -n 'autenticacao\\\\|autoload\\\\|$helpers' c:/Users/Edu/Documents/Projetos/mundo_app_backoffice/app/Config/Autoload.php)"
     ]
   }
 }

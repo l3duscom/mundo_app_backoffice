@@ -1,6 +1,6 @@
 <div class="row">
-    <input type="hidden" name="operador" value="1">
-    <input type="hidden" name="evento_id" value="12">
+    <input type="hidden" name="operador" value="<?= (int) usuario_logado()->id ?>">
+    <input type="hidden" name="evento_id" value="<?= (int) ($event_id ?? evento_selecionado()) ?>">
     <input type="hidden" name="tipo" value="ACESSO">
 
     <div class="form-group">
