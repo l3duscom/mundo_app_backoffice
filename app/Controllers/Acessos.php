@@ -149,6 +149,11 @@ class Acessos extends BaseController
 			->orderBy('id', 'DESC')
 			->first();
 
+		// TEMP DEBUG - remover depois de identificar a causa
+		log_message('error', '[SALAVIP WEB] post=' . json_encode($post));
+		log_message('error', '[SALAVIP WEB] eventoId=' . ($post['evento_id'] ?? 'NULL') . ' codigo=[' . ($post['codigo'] ?? 'NULL') . '] len=' . strlen((string) ($post['codigo'] ?? '')));
+		log_message('error', '[SALAVIP WEB] sql=' . (string) $this->ingressoModel->db->getLastQuery());
+		log_message('error', '[SALAVIP WEB] ingresso=' . json_encode($ingresso));
 
 
 		if ($ingresso) {

@@ -343,6 +343,12 @@ class Acessos extends ResourceController
             ->orderBy('ingressos.id', 'DESC')
             ->first();
 
+        // TEMP DEBUG - remover depois de identificar a causa
+        log_message('error', '[SALAVIP] payload=' . json_encode($payload));
+        log_message('error', '[SALAVIP] eventoId=' . $eventoId . ' codigo=[' . $codigo . '] len=' . strlen((string) $codigo));
+        log_message('error', '[SALAVIP] sql=' . (string) $this->ingressoModel->db->getLastQuery());
+        log_message('error', '[SALAVIP] ingresso=' . json_encode($ingresso));
+
         if (!$ingresso) {
             return $this->respond([
                 'success' => false,
