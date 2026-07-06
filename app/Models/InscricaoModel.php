@@ -107,6 +107,7 @@ class InscricaoModel extends Model
             'inscricoes.nome_social',
             'inscricoes.marca',
             'inscricoes.musica',
+            'inscricoes.nome_musica',
             'inscricoes.grupo',
             'inscricoes.referencia',
             'inscricoes.video_led',
