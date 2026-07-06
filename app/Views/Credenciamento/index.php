@@ -108,7 +108,7 @@
     <!-- Bloqueado: Prazo expirado -->
     <div class="alert alert-danger">
         <i class="bi bi-clock-fill me-2"></i>
-        <strong>Prazo de edição encerrado.</strong> O credenciamento só pode ser editado até 5 dias antes do evento.
+        <strong>Prazo de edição encerrado.</strong> O credenciamento só pode ser editado até 1 dia antes do evento.
         <?php if ($evento) : ?>
         <br><small>Data do evento: <?= date('d/m/Y', strtotime($evento->data_inicio)) ?></small>
         <?php endif; ?>
@@ -118,7 +118,7 @@
     <div class="alert alert-info">
         <i class="bi bi-info-circle me-2"></i>
         <?php if ($evento && $evento->data_inicio) : ?>
-        <?php $prazoLimite = date('d/m/Y', strtotime('-5 days', strtotime($evento->data_inicio))); ?>
+        <?php $prazoLimite = date('d/m/Y', strtotime('-1 day', strtotime($evento->data_inicio))); ?>
         Você pode editar o credenciamento até <strong><?= $prazoLimite ?></strong>.
         <?php else : ?>
         Preencha todos os dados do credenciamento.

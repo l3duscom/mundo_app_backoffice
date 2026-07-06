@@ -62,26 +62,26 @@ class CredenciamentoModel extends Model
     }
 
     /**
-     * Verifica se está dentro do prazo de edição (até 5 dias antes do evento)
+     * Verifica se está dentro do prazo de edição (até 1 dia antes do evento)
      */
     public function dentroDoPrazo(int $contratoId): bool
     {
         $contratoModel = new \App\Models\ContratoModel();
         $eventoModel = new \App\Models\EventoModel();
-        
+
         $contrato = $contratoModel->find($contratoId);
         if (!$contrato) {
             return false;
         }
-        
+
         $evento = $eventoModel->find($contrato->event_id);
         if (!$evento || !$evento->data_inicio) {
             return true; // Sem data definida, permite edição
         }
-        
+
         $dataEvento = strtotime($evento->data_inicio);
-        $prazoLimite = strtotime('-5 days', $dataEvento);
-        
+        $prazoLimite = strtotime('-1 day', $dataEvento);
+
         return time() < $prazoLimite;
     }
 
