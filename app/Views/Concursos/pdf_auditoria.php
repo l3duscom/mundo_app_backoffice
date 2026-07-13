@@ -129,7 +129,7 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
         <div class="col esq">
             <div class="rot">DADOS AUDITÁVEIS</div>
             <b>Gerado em:</b> <?= esc($geradoEm) ?> (timestamp <?= (int) $timestampUnix ?>)
-            &nbsp;·&nbsp; <b>Por:</b> <?= esc($geradoPor) ?> (ID <?= (int) $geradoPorId ?><?php if (!empty($geradoPorEmail)): ?>, <?= esc($geradoPorEmail) ?><?php endif; ?>)<br>
+            &nbsp;·&nbsp; <b>Por:</b> <?= esc($geradoPor) ?><br>
             <b>IP:</b> <?= esc($ip) ?>
             &nbsp;·&nbsp; <b>User-Agent:</b> <?= esc(substr($userAgent ?? '', 0, 90)) ?><br>
             <b>Hash SHA-256:</b> <span class="hash"><?= esc($hashDocumento) ?></span>
@@ -147,7 +147,7 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
             $jm = $juradosOficiaisMap[$jid];
             if ($i++ > 0) echo ' · ';
             ?>
-            <?= esc($jm['nome']) ?> <span class="muted">(ID <?= (int) $jm['id'] ?><?php if (!empty($jm['email'])): ?> · <?= esc($jm['email']) ?><?php endif; ?>)</span>
+            <?= esc($jm['nome']) ?>
         <?php endforeach; ?>
     </div>
 
@@ -239,7 +239,7 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
                                     $countJurados++;
                                 ?>
                                     <tr>
-                                        <td class="jur"><?= esc($jm['nome']) ?> <span class="muted">(ID <?= (int) $jm['id'] ?>)</span></td>
+                                        <td class="jur"><?= esc($jm['nome']) ?></td>
                                         <?php foreach ($notasKeys as $nk):
                                             $v = $av[$nk] ?? null;
                                             if ($v !== null) $notasSomadas[$nk] += (float) $v;
@@ -284,7 +284,7 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
                                     }
                                     ?>
                                     <tr>
-                                        <td class="jur"><?= esc($av['jurado_nome']) ?> <span class="muted">(ID <?= (int) $av['jurado_id'] ?>) · fora do painel oficial</span></td>
+                                        <td class="jur"><?= esc($av['jurado_nome']) ?> <span class="muted">· fora do painel oficial</span></td>
                                         <?php foreach ($notasKeys as $nk): ?>
                                             <td class="note"><?= isset($av[$nk]) ? number_format((float) $av[$nk], 2, ',', '.') : '-' ?></td>
                                         <?php endforeach; ?>
