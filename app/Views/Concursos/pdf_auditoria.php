@@ -253,7 +253,7 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
                                                     }
                                                     echo esc(implode(', ', $bits));
                                                 ?>, total: <?= number_format((float) ($d['nota_total'] ?? 0), 2, ',', '.') ?>.
-                                                Foi mantida somente a avaliação de maior nota_total (critério do ranking).
+                                                Foi mantida somente a avaliação de maior nota válida (critério do ranking).
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -286,7 +286,7 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
                                                 ⚠ Nota duplicada do mesmo jurado <strong>desconsiderada</strong>
                                                 (aval. ID <?= (int) ($d['id'] ?? 0) ?><?php if (!empty($d['created_at'])): ?>, registrada em <?= esc(date('d/m/Y H:i', strtotime($d['created_at']))) ?><?php endif; ?>) —
                                                 total: <?= number_format((float) ($d['nota_total'] ?? 0), 2, ',', '.') ?>.
-                                                Foi mantida somente a avaliação de maior nota_total.
+                                                Foi mantida somente a avaliação de maior nota válida.
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -321,7 +321,7 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
         Caso ocorra falha na inserção da nota diretamente no sistema, o jurado transmite as notas — critério a critério
         (<?php $lbls = array_values($categoriasNotas); echo esc(implode(', ', $lbls)); ?>) — à coordenação do concurso,
         que registra o valor por escrito e, em seguida, faz a inserção no sistema em nome do jurado.
-        Caso essa inserção ocorra <strong>após a divulgação do pódio</strong>, a premiação é paga
+        Caso essa inserção ocorra <strong>após a divulgação do pódio</strong>, a premiação é entregue
         <strong>tanto ao vencedor anunciado quanto ao vencedor ajustado</strong> pelo recalculo, e a coordenação realiza
         <strong>pronunciamento oficial</strong> comunicando o ajuste. Esta política garante que nenhum participante seja
         prejudicado por falha técnica alheia à sua performance e preserva a validade jurídica do resultado.
