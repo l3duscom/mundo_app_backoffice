@@ -517,13 +517,30 @@ class Concursos extends BaseController
 		}
 
 		// Para cada inscrição, buscar avaliações detalhadas
+		// - Agrupa por jurado_id: escolhe a de maior nota_total (mesmo critério do ranking com MAX())
+		// - Duplicatas ficam registradas separadamente para exibir aviso no relatório
 		foreach ($ranking as &$item) {
-			$item['avaliacoes'] = $this->avaliacaoModel->getAvaliacoesDetalhadas((int) $item['inscricao_id']);
-			// Indexa por jurado_id para render mais rápido no view
-			$item['avaliacoes_por_jurado'] = [];
-			foreach ($item['avaliacoes'] as $av) {
-				$item['avaliacoes_por_jurado'][(int) $av['jurado_id']] = $av;
+			$avaliacoes = $this->avaliacaoModel->getAvaliacoesDetalhadas((int) $item['inscricao_id']);
+			$item['avaliacoes'] = $avaliacoes;
+
+			$porJurado = [];
+			foreach ($avaliacoes as $av) {
+				$jid = (int) $av['jurado_id'];
+				if (!isset($porJurado[$jid])) {
+					$porJurado[$jid] = ['picked' => $av, 'duplicates' => []];
+					continue;
+				}
+				$notaAtual = (float) $av['nota_total'];
+				$notaMax   = (float) $porJurado[$jid]['picked']['nota_total'];
+				if ($notaAtual > $notaMax) {
+					// A anterior vira duplicata desconsiderada
+					$porJurado[$jid]['duplicates'][] = $porJurado[$jid]['picked'];
+					$porJurado[$jid]['picked'] = $av;
+				} else {
+					$porJurado[$jid]['duplicates'][] = $av;
+				}
 			}
+			$item['avaliacao_por_jurado'] = $porJurado;
 		}
 		unset($item);
 
@@ -540,18 +557,24 @@ class Concursos extends BaseController
 			$evento = (new \App\Models\EventoModel())->find($concurso->evento_id);
 		}
 
-		// Hash de integridade dos dados (para conferência posterior)
+		// Hash de integridade dos dados (para conferência posterior).
+		// Considera apenas a avaliação "picked" por jurado (a mesma usada no ranking via MAX).
 		$hashPayload = json_encode([
 			'concurso_id' => (int) $concurso->id,
 			'categoria'   => $categoria,
 			'ranking'     => array_map(function ($r) {
+				$avaliacoesFinal = [];
+				foreach (($r['avaliacao_por_jurado'] ?? []) as $jid => $rec) {
+					$avaliacoesFinal[] = [
+						'jurado_id'          => (int) $jid,
+						'nota_total_usada'   => (float) $rec['picked']['nota_total'],
+						'duplicadas_ignoradas' => count($rec['duplicates']),
+					];
+				}
 				return [
 					'inscricao_id' => (int) $r['inscricao_id'],
 					'media'        => (float) $r['media_nota_total'],
-					'avaliacoes'   => array_map(fn($a) => [
-						'jurado_id'  => (int) $a['jurado_id'],
-						'nota_total' => (float) $a['nota_total'],
-					], $r['avaliacoes'] ?? []),
+					'avaliacoes'   => $avaliacoesFinal,
 				];
 			}, $ranking),
 		]);

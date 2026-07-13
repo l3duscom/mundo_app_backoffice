@@ -42,9 +42,18 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
 
         .juradosBox {
             border: 1px solid #dcd0e6; background: #faf6fd; padding: 6px 10px;
-            margin: 8px 0 12px; font-size: 9px;
+            margin: 8px 0 8px; font-size: 9px;
         }
         .juradosBox b { color: #6C038F; }
+
+        .avisoBox {
+            border: 1px solid #f0d68a; background: #fff8e1; padding: 7px 10px;
+            margin: 0 0 12px; font-size: 8.8px; line-height: 1.45; color: #5c4400;
+        }
+        .avisoBox .tit {
+            display: block; color: #7a5a00; font-weight: bold; font-size: 9px;
+            margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.4px;
+        }
 
         .stats { width: 100%; margin: 8px 0 10px; border-collapse: collapse; }
         .stats td {
@@ -92,7 +101,11 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
         table.jurados td.jur   { font-weight: bold; text-align: left; }
         table.jurados td.note  { text-align: center; }
         table.jurados td.tot   { text-align: center; background: #f9f2fd; font-weight: bold; color: #6C038F; }
-        table.jurados tr.miss td { background: #fff2f2; color: #a00; font-style: italic; }
+        table.jurados tr.dup td {
+            background: #fff8e6; color: #8a6d1c; font-style: italic; font-size: 7.8px;
+        }
+        table.jurados tr.dup td.jur { color: #8a6d1c; }
+        table.jurados td.dup-msg { text-align: left; }
 
         .empty { text-align: center; padding: 40px 20px; color: #888; }
     </style>
@@ -136,6 +149,17 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
             ?>
             <?= esc($jm['nome']) ?> <span class="muted">(ID <?= (int) $jm['id'] ?><?php if (!empty($jm['email'])): ?> · <?= esc($jm['email']) ?><?php endif; ?>)</span>
         <?php endforeach; ?>
+    </div>
+
+    <div class="avisoBox">
+        <span class="tit">Protocolo em caso de falha de inserção de nota</span>
+        Caso ocorra falha na inserção da nota diretamente no sistema, o jurado transmite as notas — critério a critério
+        (<?php $lbls = array_values($categoriasNotas); echo esc(implode(', ', $lbls)); ?>) — à coordenação do concurso,
+        que registra o valor por escrito e, em seguida, faz a inserção no sistema em nome do jurado.
+        Caso essa inserção ocorra <strong>após a divulgação do pódio</strong>, a premiação é paga
+        <strong>tanto ao vencedor anunciado quanto ao vencedor ajustado</strong> pelo recalculo, e a coordenação realiza
+        <strong>pronunciamento oficial</strong> comunicando o ajuste. Esta política garante que nenhum participante seja
+        prejudicado por falha técnica alheia à sua performance e preserva a validade jurídica do resultado.
     </div>
 
     <table class="stats">
@@ -202,35 +226,57 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
                                 $notasSomadas = array_fill_keys($notasKeys, 0);
                                 $totalSomado  = 0;
                                 $countJurados = 0;
+
+                                // Só entra na tabela jurado que efetivamente avaliou.
+                                // Jurados sem avaliação são omitidos (fica registrado no
+                                // "X/Y avaliações" do cabeçalho da inscrição).
                                 foreach ($juradosOficiaisIds as $jid):
-                                    $jm = $juradosOficiaisMap[$jid];
-                                    $av = $item['avaliacoes_por_jurado'][$jid] ?? null;
+                                    $rec = $item['avaliacao_por_jurado'][$jid] ?? null;
+                                    if ($rec === null) continue;
+                                    $jm  = $juradosOficiaisMap[$jid];
+                                    $av  = $rec['picked'];
+                                    $dup = $rec['duplicates'];
+                                    $countJurados++;
                                 ?>
-                                    <?php if ($av): $countJurados++; ?>
-                                        <tr>
-                                            <td class="jur"><?= esc($jm['nome']) ?> <span class="muted">(ID <?= (int) $jm['id'] ?>)</span></td>
-                                            <?php foreach ($notasKeys as $nk):
-                                                $v = $av[$nk] ?? null;
-                                                if ($v !== null) $notasSomadas[$nk] += (float) $v;
-                                            ?>
-                                                <td class="note"><?= $v !== null ? number_format((float) $v, 2, ',', '.') : '-' ?></td>
-                                            <?php endforeach; ?>
-                                            <?php $totalSomado += (float) ($av['nota_total'] ?? 0); ?>
-                                            <td class="tot"><?= number_format((float) ($av['nota_total'] ?? 0), 2, ',', '.') ?></td>
-                                            <td class="note"><?= !empty($av['created_at']) ? esc(date('d/m/Y H:i', strtotime($av['created_at']))) : '-' ?></td>
+                                    <tr>
+                                        <td class="jur"><?= esc($jm['nome']) ?> <span class="muted">(ID <?= (int) $jm['id'] ?>)</span></td>
+                                        <?php foreach ($notasKeys as $nk):
+                                            $v = $av[$nk] ?? null;
+                                            if ($v !== null) $notasSomadas[$nk] += (float) $v;
+                                        ?>
+                                            <td class="note"><?= $v !== null ? number_format((float) $v, 2, ',', '.') : '-' ?></td>
+                                        <?php endforeach; ?>
+                                        <?php $totalSomado += (float) ($av['nota_total'] ?? 0); ?>
+                                        <td class="tot"><?= number_format((float) ($av['nota_total'] ?? 0), 2, ',', '.') ?></td>
+                                        <td class="note"><?= !empty($av['created_at']) ? esc(date('d/m/Y H:i', strtotime($av['created_at']))) : '-' ?></td>
+                                    </tr>
+                                    <?php foreach ($dup as $d): ?>
+                                        <tr class="dup">
+                                            <td class="jur" colspan="<?= count($notasKeys) + 3 ?>" class="dup-msg">
+                                                ⚠ Nota duplicada do mesmo jurado <strong>desconsiderada</strong>
+                                                (aval. ID <?= (int) ($d['id'] ?? 0) ?><?php if (!empty($d['created_at'])): ?>, registrada em <?= esc(date('d/m/Y H:i', strtotime($d['created_at']))) ?><?php endif; ?>) —
+                                                <?php
+                                                    $bits = [];
+                                                    foreach ($notasKeys as $nk) {
+                                                        $lbl = $categoriasNotas[$nk];
+                                                        $vd  = $d[$nk] ?? null;
+                                                        $bits[] = $lbl . ': ' . ($vd !== null ? number_format((float) $vd, 2, ',', '.') : '-');
+                                                    }
+                                                    echo esc(implode(', ', $bits));
+                                                ?>, total: <?= number_format((float) ($d['nota_total'] ?? 0), 2, ',', '.') ?>.
+                                                Foi mantida somente a avaliação de maior nota_total (critério do ranking).
+                                            </td>
                                         </tr>
-                                    <?php else: ?>
-                                        <tr class="miss">
-                                            <td class="jur"><?= esc($jm['nome']) ?> <span class="muted">(ID <?= (int) $jm['id'] ?>)</span></td>
-                                            <td class="note" colspan="<?= count($notasKeys) + 2 ?>">Sem avaliação registrada</td>
-                                        </tr>
-                                    <?php endif; ?>
+                                    <?php endforeach; ?>
                                 <?php endforeach; ?>
 
                                 <?php
-                                // Avaliações fora do corpo oficial (se houver)
-                                foreach (($item['avaliacoes'] ?? []) as $av) {
-                                    if (in_array((int) $av['jurado_id'], $juradosOficiaisIds, true)) continue;
+                                // Avaliações fora do corpo oficial (jurados extras) — mesma lógica de dedup
+                                $extras = $item['avaliacao_por_jurado'] ?? [];
+                                foreach ($extras as $jid => $rec) {
+                                    if (in_array((int) $jid, $juradosOficiaisIds, true)) continue;
+                                    $av  = $rec['picked'];
+                                    $dup = $rec['duplicates'];
                                     $countJurados++;
                                     $totalSomado += (float) ($av['nota_total'] ?? 0);
                                     foreach ($notasKeys as $nk) {
@@ -245,6 +291,16 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
                                         <td class="tot"><?= number_format((float) ($av['nota_total'] ?? 0), 2, ',', '.') ?></td>
                                         <td class="note"><?= !empty($av['created_at']) ? esc(date('d/m/Y H:i', strtotime($av['created_at']))) : '-' ?></td>
                                     </tr>
+                                    <?php foreach ($dup as $d): ?>
+                                        <tr class="dup">
+                                            <td class="jur" colspan="<?= count($notasKeys) + 3 ?>" class="dup-msg">
+                                                ⚠ Nota duplicada do mesmo jurado <strong>desconsiderada</strong>
+                                                (aval. ID <?= (int) ($d['id'] ?? 0) ?><?php if (!empty($d['created_at'])): ?>, registrada em <?= esc(date('d/m/Y H:i', strtotime($d['created_at']))) ?><?php endif; ?>) —
+                                                total: <?= number_format((float) ($d['nota_total'] ?? 0), 2, ',', '.') ?>.
+                                                Foi mantida somente a avaliação de maior nota_total.
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
                                     <?php
                                 }
                                 ?>
