@@ -151,17 +151,6 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
         <?php endforeach; ?>
     </div>
 
-    <div class="avisoBox">
-        <span class="tit">Protocolo em caso de falha de inserção de nota</span>
-        Caso ocorra falha na inserção da nota diretamente no sistema, o jurado transmite as notas — critério a critério
-        (<?php $lbls = array_values($categoriasNotas); echo esc(implode(', ', $lbls)); ?>) — à coordenação do concurso,
-        que registra o valor por escrito e, em seguida, faz a inserção no sistema em nome do jurado.
-        Caso essa inserção ocorra <strong>após a divulgação do pódio</strong>, a premiação é paga
-        <strong>tanto ao vencedor anunciado quanto ao vencedor ajustado</strong> pelo recalculo, e a coordenação realiza
-        <strong>pronunciamento oficial</strong> comunicando o ajuste. Esta política garante que nenhum participante seja
-        prejudicado por falha técnica alheia à sua performance e preserva a validade jurídica do resultado.
-    </div>
-
     <table class="stats">
         <tr>
             <td><span class="n"><?= (int) $totalParticipantes ?></span><span class="l">Participantes classificados</span></td>
@@ -284,7 +273,7 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
                                     }
                                     ?>
                                     <tr>
-                                        <td class="jur"><?= esc($av['jurado_nome']) ?> <span class="muted">· fora do painel oficial</span></td>
+                                        <td class="jur"><?= esc($av['jurado_nome']) ?></td>
                                         <?php foreach ($notasKeys as $nk): ?>
                                             <td class="note"><?= isset($av[$nk]) ? number_format((float) $av[$nk], 2, ',', '.') : '-' ?></td>
                                         <?php endforeach; ?>
@@ -326,6 +315,17 @@ $notasKeys = array_keys($categoriasNotas); // ex: ['nota_1','nota_2','nota_3','n
             <?php endforeach; ?>
         </table>
     <?php endif; ?>
+
+    <div class="avisoBox">
+        <span class="tit">Protocolo em caso de falha de inserção de nota</span>
+        Caso ocorra falha na inserção da nota diretamente no sistema, o jurado transmite as notas — critério a critério
+        (<?php $lbls = array_values($categoriasNotas); echo esc(implode(', ', $lbls)); ?>) — à coordenação do concurso,
+        que registra o valor por escrito e, em seguida, faz a inserção no sistema em nome do jurado.
+        Caso essa inserção ocorra <strong>após a divulgação do pódio</strong>, a premiação é paga
+        <strong>tanto ao vencedor anunciado quanto ao vencedor ajustado</strong> pelo recalculo, e a coordenação realiza
+        <strong>pronunciamento oficial</strong> comunicando o ajuste. Esta política garante que nenhum participante seja
+        prejudicado por falha técnica alheia à sua performance e preserva a validade jurídica do resultado.
+    </div>
 
     <script type="text/php">
         if (isset($pdf)) {
