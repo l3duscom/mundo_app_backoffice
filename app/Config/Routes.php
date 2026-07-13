@@ -362,6 +362,8 @@ $routes->group('api/checkout', ['filter' => 'apiKey'], function ($routes) {
 });
 
 $routes->get('concursos/ranking/(:num)', 'Concursos::ranking/$1');
+$routes->get('concursos/classificacao-pdf/(:num)', 'Concursos::classificacaoPdf/$1');
+$routes->get('concursos/auditoria-pdf/(:num)', 'Concursos::auditoriaPdf/$1');
 $routes->get('concursos/exportar-completo/(:num)', 'Concursos::exportarCsvCompleto/$1');
 $routes->get('concursos/exportar-contatos/(:num)', 'Concursos::exportarCsvContatos/$1');
 $routes->get('concursos/(:num)', 'Concursos::index/$1');

@@ -175,6 +175,14 @@
                 <option value="grupo" <?= $categoria === 'grupo' ? 'selected' : '' ?>>Grupo (3+)</option>
             </select>
         <?php endif; ?>
+        <a href="<?php echo site_url("concursos/classificacao-pdf/{$concurso->id}") . '?categoria=' . urlencode($categoria); ?>"
+           target="_blank" class="btn btn-outline-primary" title="Baixar PDF da classificação">
+            <i class="bx bx-file me-1"></i>PDF Classificação
+        </a>
+        <a href="<?php echo site_url("concursos/auditoria-pdf/{$concurso->id}") . '?categoria=' . urlencode($categoria); ?>"
+           target="_blank" class="btn btn-outline-danger" title="Baixar PDF de auditoria (com notas por jurado)">
+            <i class="bx bx-shield-quarter me-1"></i>PDF Auditoria
+        </a>
         <a href="<?php echo site_url("concursos/gerenciar/{$concurso->id}"); ?>" class="btn btn-outline-secondary">
             <i class="bx bx-arrow-back me-2"></i>Voltar
         </a>

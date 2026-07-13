@@ -10,6 +10,8 @@ use App\Entities\Endereco;
 use App\Entities\Inscricao;
 use App\Traits\ValidacoesTrait;
 use App\Services\ResendService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 
 
@@ -399,6 +401,220 @@ class Concursos extends BaseController
 		];
 
 		return view('Concursos/ranking', $data);
+	}
+
+	/**
+	 * Gera PDF da CLASSIFICAÇÃO — mesmos dados exibidos na tela de ranking.
+	 *
+	 * GET concursos/classificacao-pdf/{id}?categoria=solo|dupla|grupo|todos
+	 */
+	public function classificacaoPdf($id)
+	{
+		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
+			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+		}
+
+		$concurso = $this->concursoModel->withDeleted(true)->where('id', $id)->first();
+		if (!$concurso) {
+			return redirect()->back()->with('erro', 'Concurso não encontrado.');
+		}
+
+		$categoria = $this->request->getGet('categoria') ?? 'todos';
+		$isCosplay = in_array($concurso->tipo, ['desfile_cosplay', 'apresentacao_cosplay', 'cosplay_kids']);
+
+		$ranking = $this->inscricaoModel->getRankingConcurso($id, $concurso->tipo, $categoria);
+
+		$totalParticipantes = count($ranking);
+		$mediaGeral = $totalParticipantes > 0
+			? round(array_sum(array_column($ranking, 'media_nota_total')) / $totalParticipantes, 2)
+			: 0;
+		$maiorNota = $totalParticipantes > 0
+			? max(array_column($ranking, 'media_nota_total'))
+			: 0;
+
+		$evento = null;
+		if (!empty($concurso->evento_id)) {
+			$evento = (new \App\Models\EventoModel())->find($concurso->evento_id);
+		}
+
+		$data = [
+			'concurso'            => $concurso,
+			'ranking'             => $ranking,
+			'categoria'           => $categoria,
+			'isCosplay'           => $isCosplay,
+			'totalParticipantes'  => $totalParticipantes,
+			'mediaGeral'          => $mediaGeral,
+			'maiorNota'           => $maiorNota,
+			'evento'              => $evento,
+			'geradoEm'            => date('d/m/Y H:i:s'),
+			'geradoPor'           => $this->usuarioLogado()->nome,
+			'geradoPorId'         => (int) $this->usuarioLogado()->id,
+			'hashDocumento'       => substr(hash('sha256', 'CLASSIF-' . $id . '-' . $categoria . '-' . microtime(true)), 0, 16),
+		];
+
+		return $this->renderPdf(
+			view('Concursos/pdf_classificacao', $data),
+			'classificacao-' . $this->slugPdf($concurso->nome) . '-' . ($categoria !== 'todos' ? $categoria . '-' : '') . date('Y-m-d-His') . '.pdf'
+		);
+	}
+
+	/**
+	 * Gera PDF de AUDITORIA — mesma classificação + notas por jurado + hash de integridade.
+	 *
+	 * GET concursos/auditoria-pdf/{id}?categoria=solo|dupla|grupo|todos
+	 */
+	public function auditoriaPdf($id)
+	{
+		if (!$this->usuarioLogado()->temPermissaoPara('juri')) {
+			return redirect()->back()->with('atencao', $this->usuarioLogado()->nome . ', você não tem permissão para acessar esse menu.');
+		}
+
+		$concurso = $this->concursoModel->withDeleted(true)->where('id', $id)->first();
+		if (!$concurso) {
+			return redirect()->back()->with('erro', 'Concurso não encontrado.');
+		}
+
+		$categoria = $this->request->getGet('categoria') ?? 'todos';
+		$isCosplay = in_array($concurso->tipo, ['desfile_cosplay', 'apresentacao_cosplay', 'cosplay_kids']);
+
+		$ranking = $this->inscricaoModel->getRankingConcurso($id, $concurso->tipo, $categoria);
+
+		// Labels das colunas de notas (mesmo padrão do detalhesAvaliacao)
+		if ($isCosplay) {
+			$categoriasNotas = [
+				'nota_1' => 'Dificuldade',
+				'nota_2' => 'Fidelidade',
+				'nota_3' => 'Naturalidade',
+				'nota_4' => 'Itens/Acessórios',
+			];
+		} else {
+			$categoriasNotas = [
+				'nota_1' => 'Coreografia',
+				'nota_2' => 'Sincronia',
+				'nota_3' => 'Performance',
+				'nota_4' => 'Figurino',
+			];
+		}
+
+		// Nomes reais dos jurados oficiais (IDs fixos)
+		$juradosOficiaisIds = [8294, 8292, 18];
+		$juradosOficiaisMap = [];
+		$juradosRows = $this->usuarioModel
+			->select('id, nome, email')
+			->whereIn('id', $juradosOficiaisIds)
+			->findAll();
+		foreach ($juradosRows as $j) {
+			$juradosOficiaisMap[(int) $j->id] = [
+				'id'    => (int) $j->id,
+				'nome'  => $j->nome,
+				'email' => $j->email,
+			];
+		}
+		foreach ($juradosOficiaisIds as $jid) {
+			if (!isset($juradosOficiaisMap[$jid])) {
+				$juradosOficiaisMap[$jid] = ['id' => $jid, 'nome' => 'Jurado #' . $jid, 'email' => null];
+			}
+		}
+
+		// Para cada inscrição, buscar avaliações detalhadas
+		foreach ($ranking as &$item) {
+			$item['avaliacoes'] = $this->avaliacaoModel->getAvaliacoesDetalhadas((int) $item['inscricao_id']);
+			// Indexa por jurado_id para render mais rápido no view
+			$item['avaliacoes_por_jurado'] = [];
+			foreach ($item['avaliacoes'] as $av) {
+				$item['avaliacoes_por_jurado'][(int) $av['jurado_id']] = $av;
+			}
+		}
+		unset($item);
+
+		$totalParticipantes = count($ranking);
+		$mediaGeral = $totalParticipantes > 0
+			? round(array_sum(array_column($ranking, 'media_nota_total')) / $totalParticipantes, 2)
+			: 0;
+		$maiorNota = $totalParticipantes > 0
+			? max(array_column($ranking, 'media_nota_total'))
+			: 0;
+
+		$evento = null;
+		if (!empty($concurso->evento_id)) {
+			$evento = (new \App\Models\EventoModel())->find($concurso->evento_id);
+		}
+
+		// Hash de integridade dos dados (para conferência posterior)
+		$hashPayload = json_encode([
+			'concurso_id' => (int) $concurso->id,
+			'categoria'   => $categoria,
+			'ranking'     => array_map(function ($r) {
+				return [
+					'inscricao_id' => (int) $r['inscricao_id'],
+					'media'        => (float) $r['media_nota_total'],
+					'avaliacoes'   => array_map(fn($a) => [
+						'jurado_id'  => (int) $a['jurado_id'],
+						'nota_total' => (float) $a['nota_total'],
+					], $r['avaliacoes'] ?? []),
+				];
+			}, $ranking),
+		]);
+		$hashDocumento = hash('sha256', $hashPayload);
+
+		$data = [
+			'concurso'             => $concurso,
+			'ranking'              => $ranking,
+			'categoria'            => $categoria,
+			'isCosplay'            => $isCosplay,
+			'totalParticipantes'   => $totalParticipantes,
+			'mediaGeral'           => $mediaGeral,
+			'maiorNota'            => $maiorNota,
+			'evento'               => $evento,
+			'categoriasNotas'      => $categoriasNotas,
+			'juradosOficiaisIds'   => $juradosOficiaisIds,
+			'juradosOficiaisMap'   => $juradosOficiaisMap,
+			'geradoEm'             => date('d/m/Y H:i:s'),
+			'geradoPor'            => $this->usuarioLogado()->nome,
+			'geradoPorId'          => (int) $this->usuarioLogado()->id,
+			'geradoPorEmail'       => $this->usuarioLogado()->email ?? null,
+			'ip'                   => $this->request->getIPAddress(),
+			'userAgent'            => (string) $this->request->getUserAgent(),
+			'hashDocumento'        => $hashDocumento,
+			'timestampUnix'        => time(),
+		];
+
+		return $this->renderPdf(
+			view('Concursos/pdf_auditoria', $data),
+			'auditoria-' . $this->slugPdf($concurso->nome) . '-' . ($categoria !== 'todos' ? $categoria . '-' : '') . date('Y-m-d-His') . '.pdf',
+			'A4',
+			'landscape'
+		);
+	}
+
+	/**
+	 * Renderiza o HTML em PDF via dompdf e streams no navegador.
+	 */
+	private function renderPdf(string $html, string $filename, string $paper = 'A4', string $orientation = 'portrait')
+	{
+		$options = new Options();
+		$options->set('isRemoteEnabled', true);
+		$options->set('isHtml5ParserEnabled', true);
+		$options->set('defaultFont', 'DejaVu Sans');
+
+		$dompdf = new Dompdf($options);
+		$dompdf->loadHtml($html, 'UTF-8');
+		$dompdf->setPaper($paper, $orientation);
+		$dompdf->render();
+		$dompdf->stream($filename, ['Attachment' => false]);
+		exit;
+	}
+
+	/**
+	 * Converte texto em slug pra usar em nome de arquivo.
+	 */
+	private function slugPdf(?string $texto): string
+	{
+		$texto = (string) $texto;
+		$texto = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $texto) ?: $texto;
+		$texto = strtolower($texto);
+		$texto = preg_replace('/[^a-z0-9]+/', '-', $texto);
+		return trim($texto, '-') ?: 'concurso';
 	}
 
 	/**
